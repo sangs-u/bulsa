@@ -49,8 +49,16 @@ const GAME = {
   });
 
   // ── Build world ────────────────────────────────────────
-  buildLiftingScene();
-  registerLiftingHazards();
+  if (typeof buildLiftingScene === 'function') {
+    buildLiftingScene();
+  } else {
+    console.error('buildLiftingScene 없음 — scene.js 로딩 순서 확인');
+  }
+  if (typeof registerLiftingHazards === 'function') {
+    registerLiftingHazards();
+  } else {
+    console.error('registerLiftingHazards 없음 — hazards.js 로딩 순서 확인');
+  }
 
   // ── Init systems ───────────────────────────────────────
   initPlayer();

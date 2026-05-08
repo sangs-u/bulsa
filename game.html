@@ -198,32 +198,30 @@
 <!-- Mobile look area (right side swipe) -->
 <div id="mobile-look"></div>
 
-<!-- 1. Three.js — 반드시 모든 모듈보다 먼저 로드 -->
+<!-- 1. Three.js 먼저 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-<!-- 2~4. 데이터/계산 모듈 -->
+<!-- 2. 데이터/계산 -->
 <script src="i18n/strings.js"></script>
 <script src="scenarios/lifting/data.js"></script>
 <script src="scenarios/lifting/calc.js"></script>
 
-<!-- 5~9. 코어 엔진 (GAME 객체 초기화) -->
+<!-- 3. 씬 먼저 (engine보다 앞에) -->
+<script src="scenarios/lifting/scene.js"></script>
+<script src="scenarios/lifting/hazards.js"></script>
+
+<!-- 4. 코어 시스템 -->
 <script src="core/engine.js"></script>
 <script src="core/player.js"></script>
 <script src="core/interaction.js"></script>
 <script src="core/hud.js"></script>
 <script src="core/accident.js"></script>
-
-<!-- 10~15. 확장 시스템 (GAME 초기화 이후) -->
 <script src="core/npc.js"></script>
 <script src="core/instruction.js"></script>
 <script src="core/building.js"></script>
 <script src="core/tbm.js"></script>
 <script src="core/signboard.js"></script>
 <script src="core/ending.js"></script>
-
-<!-- 16~17. 시나리오 씬/위험요소 (GAME.scene 존재 이후) -->
-<script src="scenarios/lifting/scene.js"></script>
-<script src="scenarios/lifting/hazards.js"></script>
 
 <script>
   // ── Player name flow ──────────────────────────────────────
