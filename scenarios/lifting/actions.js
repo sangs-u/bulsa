@@ -2,6 +2,9 @@
 // Judgment ONLY at evaluateLift(). NO feedback to player during collection.
 
 const LIFT_STATE = {
+  planWritten:     false,  // Phase 1 완료
+  safetyChecked:   false,  // Phase 2 완료
+  outriggerExtended: false, // Phase 3 완료
   slingInspected:  false,
   pinSecured:      false,
   specChecked:     false,

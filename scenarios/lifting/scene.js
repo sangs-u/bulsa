@@ -70,6 +70,11 @@ function buildLiftingScene() {
   _buildContainerOffice(scene);
   _buildForklift(scene);
   _buildMaterialPiles(scene);
+
+  // ── New scene objects ──────────────────────────────────
+  _buildOffice(scene);
+  _buildOutriggers(scene);
+  _buildLiftTarget(scene);
 }
 
 // ── Ground grid ────────────────────────────────────────────
@@ -577,6 +582,108 @@ function _buildMaterialPiles(scene) {
     const b = new THREE.Mesh(new THREE.SphereGeometry(0.28,10,7), bagM);
     b.scale.set(1,0.72,1.3); b.position.set(x,y,z); scene.add(b);
   });
+}
+
+// ── Office desk (현장 사무실 책상) ─────────────────────────
+function _buildOffice(scene) {
+  const woodMat  = new THREE.MeshLambertMaterial({ color: 0x8B7355 });
+  const legMat   = new THREE.MeshLambertMaterial({ color: 0x6B5335 });
+  const paperMat = new THREE.MeshLambertMaterial({ color: 0xFFFFDD });
+  const hatMat   = new THREE.MeshLambertMaterial({ color: 0xFFCC00 });
+
+  const group = new THREE.Group();
+
+  // Desk top
+  const top = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.06, 0.9), woodMat);
+  top.position.set(0, 0.75, 0);
+  top.castShadow = true;
+  top.receiveShadow = true;
+  group.add(top);
+
+  // Body panel (under top)
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.69, 0.9), woodMat);
+  body.position.set(0, 0.345, 0);
+  body.castShadow = true;
+  body.receiveShadow = true;
+  group.add(body);
+
+  // 4 legs
+  [[-0.83, -0.38], [0.83, -0.38], [-0.83, 0.38], [0.83, 0.38]].forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.75, 0.08), legMat);
+    leg.position.set(lx, 0.375, lz);
+    group.add(leg);
+  });
+
+  // Papers on desk
+  const papers = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.3), paperMat);
+  papers.position.set(-0.5, 0.805, -0.2);
+  group.add(papers);
+
+  // Hard hat on desk
+  const hat = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 12), hatMat);
+  hat.position.set(0.4, 0.93, 0.0);
+  hat.scale.set(1, 0.72, 1);
+  group.add(hat);
+  const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.025, 20), hatMat);
+  hatBrim.position.set(0.4, 0.80, 0.0);
+  group.add(hatBrim);
+
+  group.position.set(10, 0, 2);
+  scene.add(group);
+
+  GAME.officeDesk = group;
+
+  // Add desk body to colliders (first child = top, second = body)
+  GAME.colliders.push(body);
+}
+
+// ── Outriggers (아웃트리거 4개) ────────────────────────────
+function _buildOutriggers(scene) {
+  // Crane mast center: x=14, z=-8
+  // Outrigger corners: 2m out from mast center
+  const armMat = new THREE.MeshLambertMaterial({ color: 0xFFAA00 });
+  const padMat = new THREE.MeshLambertMaterial({ color: 0x444444 });
+
+  const corners = [
+    { x: 12, z: -6,  label: 'FL' }, // front-left
+    { x: 16, z: -6,  label: 'FR' }, // front-right
+    { x: 12, z: -10, label: 'BL' }, // back-left
+    { x: 16, z: -10, label: 'BR' }, // back-right
+  ];
+
+  GAME._outriggers = [];
+
+  corners.forEach(({ x, z }) => {
+    // Arm (접힌 상태 — 수평, BoxGeometry)
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.12, 0.8), armMat);
+    arm.position.set(x, 0.55, z);
+    arm.rotation.y = 0;
+    arm.castShadow = true;
+    scene.add(arm);
+
+    // Pad (처음에 숨김)
+    const pad = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 20), padMat);
+    pad.position.set(x, 0.025, z);
+    pad.visible = false;
+    scene.add(pad);
+
+    GAME._outriggers.push({ arm, pad, extended: false });
+  });
+}
+
+// ── Lift target marker (인양 목표 위치 마커) ───────────────
+function _buildLiftTarget(scene) {
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0x00FF88,
+    transparent: true,
+    opacity: 0.3,
+    wireframe: false,
+    side: THREE.DoubleSide,
+  });
+  const marker = new THREE.Mesh(new THREE.BoxGeometry(4, 0.1, 0.5), mat);
+  marker.position.set(0, 5.5, -8);
+  scene.add(marker);
+  GAME._liftTarget = marker;
 }
 
 // ── Site props (cones, boxes, trees) ──────────────────────

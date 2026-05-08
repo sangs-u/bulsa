@@ -239,6 +239,141 @@
   </div>
 </div>
 
+<!-- Plan Panel (Phase 1) -->
+<div id="plan-panel" class="panel hidden">
+  <div class="panel-header">
+    <span class="panel-icon">📋</span>
+    <h2 id="plan-title">작업계획서 작성</h2>
+    <span class="panel-phase">Phase 1/6</span>
+  </div>
+  <div class="panel-body">
+    <div class="plan-section">
+      <h3>화물 정보</h3>
+      <div class="plan-row">
+        <label>화물명</label>
+        <input type="text" id="plan-cargo-name" value="RC보 (Reinforced Concrete Beam)" readonly>
+      </div>
+      <div class="plan-row">
+        <label>중량 (ton)</label>
+        <input type="number" id="plan-weight" value="3.2" readonly>
+      </div>
+      <div class="plan-row">
+        <label>형상</label>
+        <input type="text" id="plan-shape" value="직사각형 단면" readonly>
+      </div>
+    </div>
+    <div class="plan-section">
+      <h3>작업 인원 확인</h3>
+      <div class="plan-checklist">
+        <label><input type="checkbox" class="plan-check" data-key="crew_foreman"> 작업반장 — 1인</label>
+        <label><input type="checkbox" class="plan-check" data-key="crew_crane"> 크레인 운전원 — 1인</label>
+        <label><input type="checkbox" class="plan-check" data-key="crew_rigger"> 줄걸이 작업자 — 1인</label>
+        <label><input type="checkbox" class="plan-check" data-key="crew_signal"> 신호수 — 1인</label>
+        <label><input type="checkbox" class="plan-check" data-key="crew_safety"> 안전감시자 — 1인</label>
+      </div>
+    </div>
+    <div class="plan-section">
+      <h3>위험 확인</h3>
+      <div class="plan-checklist">
+        <label><input type="checkbox" class="plan-check" data-key="risk_path"> 인양 경로 장애물 확인</label>
+        <label><input type="checkbox" class="plan-check" data-key="risk_ground"> 지반 지지력 확인</label>
+        <label><input type="checkbox" class="plan-check" data-key="risk_wind"> 풍속 확인 (10m/s 이하)</label>
+        <label><input type="checkbox" class="plan-check" data-key="risk_emergency"> 비상연락체계 확인</label>
+      </div>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <span id="plan-progress-text">0 / 9 항목 완료</span>
+    <button id="plan-btn-sign" class="btn-primary" disabled>서명 및 제출</button>
+  </div>
+</div>
+
+<!-- Safety Panel (Phase 2) -->
+<div id="safety-panel" class="panel hidden">
+  <div class="panel-header">
+    <span class="panel-icon">🔢</span>
+    <h2>안전성 검토</h2>
+    <span class="panel-phase">Phase 2/6</span>
+  </div>
+  <div class="panel-body">
+    <div class="safety-calc-row">
+      <span class="calc-label">화물 중량</span>
+      <span class="calc-value" id="sc-weight">3.2 ton</span>
+    </div>
+    <div class="safety-calc-row">
+      <span class="calc-label">인양각도 (α)</span>
+      <span class="calc-value" id="sc-angle">58°</span>
+    </div>
+    <div class="safety-calc-row">
+      <span class="calc-label">각도계수 (K)</span>
+      <span class="calc-value" id="sc-k">—</span>
+    </div>
+    <div class="safety-calc-row">
+      <span class="calc-label">줄 수</span>
+      <span class="calc-value">2줄</span>
+    </div>
+    <div class="safety-calc-row">
+      <span class="calc-label">슬링 SWL</span>
+      <span class="calc-value" id="sc-swl">—</span>
+    </div>
+    <div class="safety-calc-row highlight">
+      <span class="calc-label">줄당 장력 (Ts)</span>
+      <span class="calc-value" id="sc-ts">—</span>
+    </div>
+    <div class="safety-calc-row highlight">
+      <span class="calc-label">사용률</span>
+      <span class="calc-value" id="sc-sr">—</span>
+    </div>
+    <div id="safety-result" class="safety-result-box hidden"></div>
+  </div>
+  <div class="panel-footer">
+    <button id="safety-btn-calc" class="btn-primary">계산 실행</button>
+    <button id="safety-btn-confirm" class="btn-primary hidden">검토 완료</button>
+  </div>
+</div>
+
+<!-- Equipment Panel (Phase 3) -->
+<div id="equipment-panel" class="panel hidden">
+  <div class="panel-header">
+    <span class="panel-icon">🏗</span>
+    <h2>장비 세팅</h2>
+    <span class="panel-phase">Phase 3/6</span>
+  </div>
+  <div class="panel-body">
+    <p class="equipment-guide">크레인 옆으로 이동하여 아웃트리거를 확장하세요.</p>
+    <div class="equipment-checklist">
+      <div class="eq-item" id="eq-outrigger">
+        <span class="eq-icon">⬜</span>
+        <span>아웃트리거 4방향 확장</span>
+        <span class="eq-status">대기</span>
+      </div>
+      <div class="eq-item" id="eq-level">
+        <span class="eq-icon">⬜</span>
+        <span>수평 확인</span>
+        <span class="eq-status">대기</span>
+      </div>
+      <div class="eq-item" id="eq-overload">
+        <span class="eq-icon">⬜</span>
+        <span>과부하 방지장치 확인</span>
+        <span class="eq-status">대기</span>
+      </div>
+    </div>
+    <div id="level-indicator" class="hidden">
+      <div class="bubble-container">
+        <div class="bubble" id="bubble-dot"></div>
+      </div>
+      <p>버블을 중앙으로 맞추세요</p>
+      <button id="level-confirm-btn" class="btn-secondary">수평 확인 완료</button>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button id="equipment-btn-confirm" class="btn-primary" disabled>세팅 완료</button>
+  </div>
+</div>
+
+<!-- Structure complete toast -->
+<div id="structure-complete-msg" class="structure-toast hidden"></div>
+
 <!-- GLB loading indicator -->
 <div id="glb-loading" class="hidden" style="position:fixed;bottom:20px;right:20px;padding:8px 14px;background:rgba(0,0,0,0.7);color:#fff;border-radius:8px;font-size:13px;z-index:999;">캐릭터 로딩 중…</div>
 
@@ -308,6 +443,7 @@
 <script src="core/tbm.js"></script>
 <script src="core/ending.js"></script>
 <script src="core/building.js"></script>
+<script src="core/structure.js"></script>
 <script src="core/postfx.js"></script>
 
 <script>
@@ -324,12 +460,15 @@
   function startGame() {
     document.getElementById('blocker').style.display = 'none';
     GAME.state.gameStarted = true;
+    GAME.state.phase = 1;
     initNPCs();
     initInstructions();
     initBuilding();
+    if (typeof initStructure === 'function') initStructure();
     initSignboard();
     initEnding();
     initTBM();
+    updateHUD();
     _openBriefing();
   }
 

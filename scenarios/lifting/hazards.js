@@ -88,6 +88,41 @@ function registerLiftingHazards() {
 
   // 펄스 없음 — 경고 표시 제거
   GAME._pulseHazards = null;
+
+  // ── 책상 invisible trigger sphere ─────────────────────────
+  const deskTrigger = new THREE.Mesh(
+    new THREE.SphereGeometry(1.2, 8, 6),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  deskTrigger.position.set(10, 1.0, 2);
+  scene.add(deskTrigger);
+
+  // Phase 1: 작업계획서 작성
+  GAME.interactables.push({
+    mesh: deskTrigger,
+    type: 'action',
+    actionId: 'write_plan',
+    label: '작업계획서 작성 (E)',
+    phase: 1,
+  });
+
+  // Phase 2: 안전성 검토 (계획서 작성 후 활성화)
+  GAME.interactables.push({
+    mesh: deskTrigger,
+    type: 'action',
+    actionId: 'safety_review',
+    label: '안전성 검토 (E)',
+    phase: 2,
+  });
+
+  // Phase 3: 아웃트리거 확장 (크레인 옆 상호작용)
+  GAME.interactables.push({
+    mesh: GAME._outriggers[0].arm,
+    type: 'action',
+    actionId: 'extend_outrigger',
+    label: '아웃트리거 확장 (E)',
+    phase: 3,
+  });
 }
 
 // ── 위험구역 근로자 기하학 빌드 ────────────────────────────────
