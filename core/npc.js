@@ -73,7 +73,7 @@ class NPC {
     if (dir.length() > 0.25) {
       dir.normalize().multiplyScalar(delta * 1.2);
       this.group.position.add(dir);
-      this.group.rotation.y = Math.atan2(dir.x, dir.z);
+      this.group.rotation.y = Math.atan2(dir.x, dir.z) + (this._char ? Math.PI : 0);
       return true;
     }
     this.group.position.copy(this._targetPos);
@@ -324,7 +324,7 @@ class NPC {
     if (dir.length() > 0.3) {
       dir.normalize().multiplyScalar(delta * 0.4);
       pos.add(dir);
-      this.group.rotation.y = Math.atan2(dir.x, dir.z);
+      this.group.rotation.y = Math.atan2(dir.x, dir.z) + (this._char ? Math.PI : 0);
     }
   }
 
@@ -443,7 +443,7 @@ function tickAllNPCs(delta, elapsed) {
 
     const spd = Math.sqrt(v.velocity.x * v.velocity.x + v.velocity.z * v.velocity.z);
     if (spd > 0.08) {
-      npc.group.rotation.y = Math.atan2(v.velocity.x, v.velocity.z);
+      npc.group.rotation.y = Math.atan2(v.velocity.x, v.velocity.z) + (npc._char ? Math.PI : 0);
       // Switch to Walk anim when moving
       if (npc._char) npc._playAnim('Walk');
     } else {
