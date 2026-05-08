@@ -1,14 +1,36 @@
 {
-  "timestamp": "2026-05-08T12:25:16.425Z",
+  "timestamp": "2026-05-08T12:39:08.193Z",
   "url": "https://sangs-u.github.io/bulsa/game.html?s=lifting",
-  "consoleErrors": [
-    "Failed to load resource: the server responded with a status of 404 ()"
-  ],
-  "consoleWarnings": [
-    "[character.js] GLB load failed — geometry fallback active ProgressEvent"
-  ],
-  "failed404": [
-    "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier/Soldier.glb"
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "failed404": [],
+  "gameplayFails": [],
+  "npcPositions": [
+    {
+      "id": "gimc",
+      "x": 6.153355909903662,
+      "z": -6.6661115677700415
+    },
+    {
+      "id": "park",
+      "x": -4.409016877431866,
+      "z": -7.744065422397701
+    },
+    {
+      "id": "lee",
+      "x": 3.401452896024929,
+      "z": -15.968572823823084
+    },
+    {
+      "id": "ahmad",
+      "x": 8.141425265108216,
+      "z": -12.606620496638547
+    },
+    {
+      "id": "nguyen",
+      "x": -1.9558313884515377,
+      "z": -4.580576339477886
+    }
   ],
   "screenshots": [
     "01_load.png",
@@ -17,15 +39,22 @@
     "03_game_entered.png",
     "03_game_start.png",
     "04_move_forward.png",
+    "04_movement.png",
+    "05_actions_done.png",
     "05_move_strafe.png",
     "06_after10s.png",
+    "06_crane_boarded.png",
+    "07_beam_rising.png",
     "07_interact_e.png",
-    "08_final.png"
+    "08_cutscene.png",
+    "08_final.png",
+    "09_complete.png"
   ],
   "summary": {
-    "errorCount": 1,
-    "warningCount": 1,
-    "count404": 1,
-    "status": "FAIL"
+    "errorCount": 0,
+    "warningCount": 0,
+    "count404": 0,
+    "gameplayFails": 0,
+    "status": "PASS"
   }
 }

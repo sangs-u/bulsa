@@ -12,13 +12,13 @@ async function runQA() {
 
   const errors       = [];
   const warnings     = [];
-  const failed404    = [];   // 실패한 URL 목록
+  const failed404    = [];
+  const qaFails      = [];   // 게임플레이 완주 실패 항목
 
   const browser = await chromium.launch({ headless: false, slowMo: 40 });
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   const page    = await context.newPage();
 
-  // ── 이벤트 리스너 (최초부터) ────────────────────────────
   page.on('console', msg => {
     const t = msg.type(), txt = msg.text();
     if (t === 'error')   errors.push(txt);
@@ -40,13 +40,13 @@ async function runQA() {
   console.log('══════════════════════════════════════\n');
 
   // ── 1. 페이지 로딩 ────────────────────────────────────────
-  console.log('[1/7] 페이지 로딩...');
+  console.log('[1/9] 페이지 로딩...');
   await page.goto(URL, { waitUntil: 'networkidle', timeout: 40000 });
   await page.waitForTimeout(2500);
   await ss('01_load');
 
   // ── 2. 이름 입력 ─────────────────────────────────────────
-  console.log('[2/7] 이름 입력...');
+  console.log('[2/9] 이름 입력...');
   const nameInput = page.locator('#player-name-input');
   if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
     await nameInput.fill('QA봇');
@@ -56,15 +56,15 @@ async function runQA() {
   await ss('02_name');
 
   // ── 3. "클릭하여 시작" 블로커 ────────────────────────────
-  console.log('[3/7] 게임 시작 버튼...');
+  console.log('[3/9] 게임 시작 버튼...');
   const blocker = page.locator('#blocker button, #blocker .start-btn');
   if (await blocker.isVisible({ timeout: 4000 }).catch(() => false)) {
     await blocker.click();
     await page.waitForTimeout(1500);
   }
 
-  // ── 4. 브리핑 오버레이 닫기 ──────────────────────────────
-  console.log('[4/7] 브리핑 → TBM 처리...');
+  // ── 4. 브리핑 + TBM 처리 ─────────────────────────────────
+  console.log('[4/9] 브리핑 → TBM 처리...');
   const briefingBtn = page.locator('#briefing-btn, .briefing-btn');
   if (await briefingBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
     await briefingBtn.click();
@@ -72,10 +72,9 @@ async function runQA() {
     console.log('  ✓ 브리핑 닫힘');
   }
 
-  // TBM 패널 처리: 체크박스 전부 체크 → 작업 시작
   const tbmPanel = page.locator('#tbm-panel');
   if (await tbmPanel.isVisible({ timeout: 4000 }).catch(() => false)) {
-    console.log('  ↳ TBM 패널 발견 — 체크리스트 완료 중...');
+    console.log('  ↳ TBM 패널 — 체크리스트 완료 중...');
     const checkboxes = tbmPanel.locator('.tbm-check-item, input[type=checkbox], .tbm-checklist input');
     const count = await checkboxes.count();
     for (let i = 0; i < count; i++) {
@@ -89,7 +88,6 @@ async function runQA() {
       await page.waitForTimeout(1000);
       console.log('  ✓ TBM 완료');
     } else {
-      // 강제 닫기 시도
       await page.evaluate(() => {
         const panel = document.getElementById('tbm-panel');
         if (panel) panel.classList.add('hidden');
@@ -100,43 +98,138 @@ async function runQA() {
   }
   await ss('03_game_entered');
 
-  // ── 5. WASD 이동 테스트 ───────────────────────────────────
-  console.log('[5/7] WASD 이동 (8초)...');
-  // 먼저 캔버스 클릭으로 포커스 확보
+  // ── 5. WASD 이동 확인 ────────────────────────────────────
+  console.log('[5/9] WASD 이동 테스트 (5초)...');
   await page.locator('#gameCanvas').click({ force: true }).catch(() => {});
   await page.waitForTimeout(500);
-
   await page.keyboard.down('w');
-  await page.waitForTimeout(2500);
+  await page.waitForTimeout(2000);
   await page.keyboard.up('w');
-  await ss('04_move_forward');
-
   await page.keyboard.down('a');
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1000);
   await page.keyboard.up('a');
   await page.keyboard.down('d');
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1000);
   await page.keyboard.up('d');
-  await ss('05_move_strafe');
-
   await page.keyboard.down('s');
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1000);
   await page.keyboard.up('s');
+  await ss('04_movement');
 
-  // ── 6. NPC 배회 / 미니맵 확인 ────────────────────────────
-  console.log('[6/7] 10초 대기 (NPC + 미니맵 확인)...');
-  await page.waitForTimeout(10000);
-  await ss('06_after10s');
+  // ── 6. 전체 점검 행동 수행 (direct evaluate) ─────────────
+  console.log('[6/9] 전체 점검 행동 수행...');
+  await page.evaluate(() => {
+    // 6가지 필수 행동 직접 실행
+    if (typeof performAction === 'function') {
+      performAction('inspect_sling');
+      performAction('secure_pin');
+      performAction('measure_angle');
+      performAction('evacuate_worker');
+      performAction('assign_signal');
+    }
+    // 사양서 확인
+    if (typeof openSpecPopup === 'function') {
+      openSpecPopup();
+      setTimeout(() => {
+        if (typeof closeSpecPopup === 'function') closeSpecPopup();
+      }, 300);
+    }
+  });
+  await page.waitForTimeout(1500);
+  await ss('05_actions_done');
 
-  // ── 7. E 상호작용 + 최종 ─────────────────────────────────
-  console.log('[7/7] E키 상호작용 + 최종 캡처...');
-  await page.keyboard.press('e');
-  await page.waitForTimeout(800);
-  await ss('07_interact_e');
-  await page.keyboard.press('Escape');
-  await page.waitForTimeout(500);
-  await page.waitForTimeout(5000);
-  await ss('08_final');
+  // LIFT_STATE 검증
+  const liftState = await page.evaluate(() => {
+    if (typeof LIFT_STATE === 'undefined') return null;
+    return {
+      slingInspected:  LIFT_STATE.slingInspected,
+      pinSecured:      LIFT_STATE.pinSecured,
+      angleMeasured:   LIFT_STATE.angleMeasured,
+      specChecked:     LIFT_STATE.specChecked,
+      workerEvacuated: LIFT_STATE.workerEvacuated,
+      signalAssigned:  LIFT_STATE.signalAssigned,
+    };
+  });
+  if (!liftState) {
+    qaFails.push('LIFT_STATE 없음');
+  } else {
+    const missing = Object.entries(liftState).filter(([,v]) => !v).map(([k]) => k);
+    if (missing.length) {
+      qaFails.push(`점검 미완료 항목: ${missing.join(', ')}`);
+      console.log('  ⚠ 미완료:', missing.join(', '));
+    } else {
+      console.log('  ✓ 전체 점검 완료:', JSON.stringify(liftState));
+    }
+  }
+
+  // ── 7. 크레인 탑승 → 인양 시작 ───────────────────────────
+  console.log('[7/9] 크레인 탑승 → 인양 시작...');
+  await page.evaluate(() => {
+    if (typeof boardCrane === 'function') boardCrane();
+  });
+  await page.waitForTimeout(1000);
+  await ss('06_crane_boarded');
+
+  await page.evaluate(() => {
+    if (typeof evaluateLift === 'function') evaluateLift();
+  });
+
+  // ── 8. 완주 대기 (빔 상승 + 컷신 = ~13초) ────────────────
+  console.log('[8/9] 완주 대기 (최대 18초)...');
+  await page.waitForTimeout(4000);
+  await ss('07_beam_rising');
+  await page.waitForTimeout(7000);
+  await ss('08_cutscene');
+  await page.waitForTimeout(7000);
+  await ss('09_complete');
+
+  // 완주 패널 확인
+  const completeVisible = await page.evaluate(() => {
+    const el = document.getElementById('complete-panel');
+    return el ? !el.classList.contains('hidden') : false;
+  });
+  if (completeVisible) {
+    console.log('  ✓ 완주 패널 표시됨 — 게임 시작→완주 끊김 없음');
+  } else {
+    const accidentVisible = await page.evaluate(() => {
+      const el = document.getElementById('accident-panel');
+      return el ? !el.classList.contains('hidden') : false;
+    });
+    if (accidentVisible) {
+      const accDesc = await page.evaluate(() => {
+        const el = document.getElementById('acc-desc');
+        return el ? el.textContent : '알 수 없음';
+      });
+      qaFails.push(`완주 실패 — 사고 발생: ${accDesc.slice(0, 60)}`);
+      console.log('  ✗ 사고 패널:', accDesc.slice(0, 60));
+    } else {
+      qaFails.push('완주 패널 미표시 — 게임 흐름 중단');
+      console.log('  ✗ 완주 패널 없음 (게임 중단)');
+    }
+  }
+
+  // ── 9. NPC 이탈 검사 + 최종 ──────────────────────────────
+  console.log('[9/9] NPC 위치 검증...');
+  const npcPositions = await page.evaluate(() => {
+    if (typeof GAME === 'undefined' || !GAME.npcs) return [];
+    return GAME.npcs.map(npc => ({
+      id: npc.id,
+      x:  npc.group ? npc.group.position.x : 0,
+      z:  npc.group ? npc.group.position.z : 0,
+    }));
+  });
+  npcPositions.forEach(n => {
+    const outOfBounds = Math.abs(n.x) > 35 || Math.abs(n.z) > 35;
+    if (outOfBounds) {
+      qaFails.push(`NPC 맵 이탈: ${n.id} (x=${n.x.toFixed(1)}, z=${n.z.toFixed(1)})`);
+      console.log(`  ✗ NPC 이탈: ${n.id} → (${n.x.toFixed(1)}, ${n.z.toFixed(1)})`);
+    } else {
+      console.log(`  ✓ NPC ${n.id}: (${n.x.toFixed(1)}, ${n.z.toFixed(1)})`);
+    }
+  });
+  if (npcPositions.length === 0) {
+    console.log('  ⚠ NPC 정보 없음 (GAME.npcs 접근 불가)');
+  }
 
   await browser.close();
 
@@ -145,18 +238,23 @@ async function runQA() {
   const uniqWarnings = [...new Set(warnings)];
   const uniq404      = [...new Set(failed404)];
 
+  const pass = uniqErrors.length === 0 && uniq404.length === 0 && qaFails.length === 0;
+
   const report = {
     timestamp:     new Date().toISOString(),
     url:           URL,
     consoleErrors:   uniqErrors,
     consoleWarnings: uniqWarnings,
     failed404:       uniq404,
+    gameplayFails:   qaFails,
+    npcPositions:    npcPositions,
     screenshots:     fs.readdirSync(SS_DIR).filter(f => f.endsWith('.png')).sort(),
     summary: {
-      errorCount:   uniqErrors.length,
-      warningCount: uniqWarnings.length,
-      count404:     uniq404.length,
-      status:       (uniqErrors.length === 0 && uniq404.length === 0) ? 'PASS' : 'FAIL',
+      errorCount:    uniqErrors.length,
+      warningCount:  uniqWarnings.length,
+      count404:      uniq404.length,
+      gameplayFails: qaFails.length,
+      status:        pass ? 'PASS' : 'FAIL',
     },
   };
 
@@ -164,10 +262,11 @@ async function runQA() {
 
   console.log('\n──────────────────────────────────────');
   console.log(`  결과: ${report.summary.status}`);
-  console.log(`  콘솔 오류: ${uniqErrors.length}  경고: ${uniqWarnings.length}  404: ${uniq404.length}`);
-  if (uniqErrors.length) { console.log('\n  [콘솔 오류]'); uniqErrors.forEach((e,i) => console.log(`  ${i+1}. ${e}`)); }
-  if (uniq404.length)    { console.log('\n  [404 리소스]'); uniq404.forEach((u,i) => console.log(`  ${i+1}. ${u}`)); }
-  if (uniqWarnings.length) { console.log('\n  [경고]'); uniqWarnings.forEach((w,i) => console.log(`  ${i+1}. ${w}`)); }
+  console.log(`  콘솔 오류: ${uniqErrors.length}  경고: ${uniqWarnings.length}  404: ${uniq404.length}  완주실패: ${qaFails.length}`);
+  if (uniqErrors.length)   { console.log('\n  [콘솔 오류]');   uniqErrors.forEach((e,i)  => console.log(`  ${i+1}. ${e}`)); }
+  if (uniq404.length)      { console.log('\n  [404 리소스]');  uniq404.forEach((u,i)    => console.log(`  ${i+1}. ${u}`)); }
+  if (qaFails.length)      { console.log('\n  [완주 실패]');   qaFails.forEach((f,i)    => console.log(`  ${i+1}. ${f}`)); }
+  if (uniqWarnings.length) { console.log('\n  [경고]');        uniqWarnings.forEach((w,i)=> console.log(`  ${i+1}. ${w}`)); }
   console.log(`\n  리포트: qa/report.json | 스크린샷: ${report.screenshots.length}장`);
   console.log('──────────────────────────────────────\n');
 }
