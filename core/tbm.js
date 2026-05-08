@@ -219,13 +219,15 @@ function _gatherNPCs() {
   });
 }
 
-// ── Auto-show Phase 1 TBM on game start ──────────────────────
+// ── Auto-show Phase 1 TBM after briefing closes ─────────────
 function initTBM() {
-  // Watch for game start then show TBM
   const _check = setInterval(() => {
-    if (GAME.state.gameStarted && !TBM._completed.has(1)) {
-      clearInterval(_check);
-      setTimeout(() => showTBM(1, null), 800); // small delay for scene to settle
-    }
-  }, 200);
+    if (!GAME.state.gameStarted || TBM._completed.has(1)) { clearInterval(_check); return; }
+    const briefing = document.getElementById('briefing-overlay');
+    if (briefing && !briefing.classList.contains('hidden')) return; // wait for briefing
+    const nameOverlay = document.getElementById('name-input-overlay');
+    if (nameOverlay && !nameOverlay.classList.contains('hidden')) return; // wait for name input
+    clearInterval(_check);
+    setTimeout(() => showTBM(1, null), 400);
+  }, 300);
 }

@@ -1036,7 +1036,6 @@
 .eq-item .eq-icon { font-size: 18px; }
 .eq-item span:nth-child(2) { flex: 1; font-size: 14px; }
 .eq-status { font-size: 12px; color: #aaa; }
-.eq-item.done .eq-icon::before { content: '✅'; }
 .eq-item.done .eq-status { color: #22C55E; }
 
 /* Bubble level indicator */
