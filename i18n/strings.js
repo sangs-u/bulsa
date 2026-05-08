@@ -210,7 +210,7 @@ const STRINGS = {
   vi: {
     briefingBadge:        'Lệnh công việc',
     briefingTitle:        'Buộc móc & Nâng tải',
-    briefingContext:      'Theo lệnh của giám sát viên công trường, sáng nay nâng dầm RC (2.500 kg) lên vị trí sàn tầng 3 bằng cần cẩu tháp. Di chuyển khắp công trường và thực hiện các biện pháp an toàn cần thiết.',
+    briefingContext:      'Theo lệnh của giám sát viên công trường, sáng nay nâng dầm RC (3.000 kg) lên vị trí sàn tầng 3 bằng cần cẩu tháp. Di chuyển khắp công trường và thực hiện các biện pháp an toàn cần thiết.',
     briefingStep1:        'Kiểm tra dây đai · Khóa chốt an toàn · Xem thông số · Đo góc',
     briefingStep2:        'Bố trí người ra hiệu · Ra lệnh sơ tán công nhân vùng nguy hiểm',
     briefingStep3:        'Sau tất cả biện pháp → Lên cabin cần cẩu → Bắt đầu nâng',

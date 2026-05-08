@@ -14,10 +14,16 @@ const TBM_DATA = {
   1: {
     titleKo: 'TBM — 작업 전 안전점검',
     titleEn: 'TBM — Pre-Work Safety Briefing',
+    titleVi: 'TBM — Kiểm tra an toàn trước công việc',
+    titleAr: 'TBM — فحص السلامة قبل العمل',
     workKo:  '오늘 작업: RC 보 인양을 위한 현장 사전점검',
     workEn:  "Today's work: Pre-inspection for RC beam lift",
+    workVi:  'Công việc hôm nay: Kiểm tra hiện trường trước khi nâng dầm RC',
+    workAr:  'عمل اليوم: فحص الموقع قبل رفع عارضة RC',
     hazardsKo: ['슬링 손상(킹크) 확인', '안전핀 체결 상태 확인', '신호수 위치 확인', '작업반경 출입통제', '크레인 정격하중 확인'],
     hazardsEn: ['Check sling for kinks/damage', 'Verify safety pin engagement', 'Station signal person', 'Access control in lift zone', 'Verify crane rated capacity'],
+    hazardsVi: ['Kiểm tra dây đai bị gãy xoắn', 'Xác nhận khóa chốt an toàn', 'Bố trí người ra hiệu', 'Kiểm soát ra vào khu vực nâng', 'Kiểm tra tải trọng cho phép của cần cẩu'],
+    hazardsAr: ['فحص حبل الربط من الانثناء والتلف', 'التحقق من تثبيت مسمار الأمان', 'تحديد موقع المُوجِّه', 'التحكم في دخول منطقة الرفع', 'التحقق من الطاقة الاسمية للرافعة'],
     checklistKo: [
       '안전모·안전화·안전대 착용 확인',
       '작업허가서 발급 및 서명 완료',
@@ -32,19 +38,39 @@ const TBM_DATA = {
       'Lift zone exclusion set up',
       'First aid kit location confirmed',
     ],
+    checklistVi: [
+      'Mang đầy đủ PPE (mũ, giày, dây an toàn)',
+      'Cấp và ký giấy phép làm việc',
+      'Kiểm tra liên lạc vô tuyến',
+      'Thiết lập vùng cấm xung quanh khu vực nâng',
+      'Xác nhận vị trí bộ sơ cứu',
+    ],
+    checklistAr: [
+      'ارتداء كامل معدات الوقاية الشخصية (خوذة، حذاء، حزام)',
+      'إصدار تصريح العمل وتوقيعه',
+      'التحقق من الاتصال اللاسلكي',
+      'تحديد منطقة الاستبعاد حول الرفع',
+      'تأكيد موقع حقيبة الإسعافات الأولية',
+    ],
     roles: [
-      { roleKo: '신호수',    roleEn: 'Signal Person', npcId: 'gimc'  },
-      { roleKo: '슬링담당',  roleEn: 'Rigger',        npcId: 'park'  },
-      { roleKo: '안전감시',  roleEn: 'Safety Watcher', npcId: 'lee'  },
+      { roleKo: '신호수',    roleEn: 'Signal Person',  roleVi: 'Người ra hiệu',       roleAr: 'المُوجِّه',       npcId: 'gimc' },
+      { roleKo: '슬링담당',  roleEn: 'Rigger',         roleVi: 'Người buộc dây',      roleAr: 'مُشغِّل الحبال',  npcId: 'park' },
+      { roleKo: '안전감시',  roleEn: 'Safety Watcher', roleVi: 'Người giám sát an toàn', roleAr: 'مراقب السلامة', npcId: 'lee'  },
     ],
   },
   2: {
     titleKo: 'TBM — 인양 작업 시작 전',
     titleEn: 'TBM — Pre-Lift Briefing',
+    titleVi: 'TBM — Trước khi bắt đầu nâng tải',
+    titleAr: 'TBM — قبل بدء عملية الرفع',
     workKo:  '오늘 작업: RC 보 크레인 인양 (설계하중 3,000 kg)',
     workEn:  "Today's work: RC beam crane lift (design load 3,000 kg)",
+    workVi:  'Công việc hôm nay: Nâng dầm RC bằng cần cẩu (tải thiết kế 3.000 kg)',
+    workAr:  'عمل اليوم: رفع عارضة RC بالرافعة (الحمل التصميمي 3,000 كجم)',
     hazardsKo: ['과부하 재확인', '인양각도 최대 60° 준수', '신호수 무선 통신 유지', '인양 중 출입 금지 유지'],
     hazardsEn: ['Re-verify load vs capacity', 'Max sling angle 60°', 'Maintain radio with signal person', 'No entry during active lift'],
+    hazardsVi: ['Kiểm tra lại tải trọng so với sức nâng', 'Góc dây tối đa 60°', 'Duy trì liên lạc vô tuyến với người ra hiệu', 'Cấm vào trong quá trình nâng'],
+    hazardsAr: ['إعادة التحقق من الحمل مقابل الطاقة', 'زاوية حبل الربط لا تتجاوز 60°', 'الحفاظ على التواصل اللاسلكي مع المُوجِّه', 'حظر الدخول أثناء الرفع'],
     checklistKo: [
       '슬링 최종 점검 완료',
       '크레인 정격하중 대비 사용률 확인 (< 85%)',
@@ -59,10 +85,24 @@ const TBM_DATA = {
       'Radio test with signal person done',
       'Agreed on "STOP" signal protocol',
     ],
+    checklistVi: [
+      'Hoàn thành kiểm tra dây đai cuối cùng',
+      'Xác nhận tỷ lệ sử dụng tải (< 85%)',
+      'Xác nhận toàn bộ nhân viên đã rời khỏi khu vực nâng',
+      'Kiểm tra liên lạc vô tuyến với người ra hiệu',
+      'Thống nhất tín hiệu "DỪNG"',
+    ],
+    checklistAr: [
+      'اكتمال الفحص النهائي لحبل الربط',
+      'تأكيد نسبة استخدام الحمل (< 85%)',
+      'التأكد من إخلاء جميع الأفراد من منطقة الرفع',
+      'إجراء اختبار الراديو مع المُوجِّه',
+      'الاتفاق على بروتوكول إشارة "توقف"',
+    ],
     roles: [
-      { roleKo: '크레인기사', roleEn: 'Crane Operator', npcId: null   },
-      { roleKo: '신호수',     roleEn: 'Signal Person',  npcId: 'gimc' },
-      { roleKo: '슬링담당',   roleEn: 'Rigger',         npcId: 'park' },
+      { roleKo: '크레인기사', roleEn: 'Crane Operator', roleVi: 'Tài xế cần cẩu',  roleAr: 'مشغّل الرافعة', npcId: null   },
+      { roleKo: '신호수',     roleEn: 'Signal Person',  roleVi: 'Người ra hiệu',   roleAr: 'المُوجِّه',     npcId: 'gimc' },
+      { roleKo: '슬링담당',   roleEn: 'Rigger',         roleVi: 'Người buộc dây',  roleAr: 'مُشغِّل الحبال', npcId: 'park' },
     ],
   },
 };
@@ -98,20 +138,34 @@ function showTBM(phase, onComplete) {
   }
 
   const data = TBM_DATA[phase] || TBM_DATA[1];
-  const ko   = currentLang !== 'en';
+  // Suffix map: ko→Ko, en→En, vi→Vi, ar→Ar, fallback→Ko
+  const sfx  = { ko: 'Ko', en: 'En', vi: 'Vi', ar: 'Ar' };
+  const L    = sfx[currentLang] || 'Ko';
+  const unassigned = { Ko: '미지정', En: 'Unassigned', Vi: 'Chưa phân công', Ar: 'غير محدد' };
+  const startLabel = { Ko: '작업 시작', En: 'Start Work', Vi: 'Bắt đầu', Ar: 'ابدأ العمل' };
+  const secLabels  = {
+    work:      { Ko: '오늘의 작업',          En: "Today's Work",     Vi: 'Công việc hôm nay', Ar: 'عمل اليوم' },
+    hazards:   { Ko: '주요 위험요소',         En: 'Key Hazards',      Vi: 'Nguy hiểm chính',   Ar: 'المخاطر الرئيسية' },
+    checklist: { Ko: '필수 확인 체크리스트',   En: 'Required Checklist', Vi: 'Danh sách kiểm tra', Ar: 'قائمة التحقق' },
+    roles:     { Ko: '담당자 지정',           En: 'Role Assignments', Vi: 'Phân công vai trò',  Ar: 'تعيينات الأدوار' },
+  };
 
   // Gather NPCs around player
   _gatherNPCs();
 
-  // Title
-  document.getElementById('tbm-title').textContent      = ko ? data.titleKo : data.titleEn;
+  // Title + section labels
+  document.getElementById('tbm-title').textContent      = data['title' + L] || data.titleKo;
   document.getElementById('tbm-phase-label').textContent = `Phase ${phase}`;
-  document.getElementById('tbm-work').textContent        = ko ? data.workKo  : data.workEn;
+  document.getElementById('tbm-work').textContent        = data['work' + L]  || data.workKo;
+  ['work', 'hazards', 'checklist', 'roles'].forEach(k => {
+    const el = document.getElementById('tbm-lbl-' + k);
+    if (el) el.textContent = secLabels[k][L] || secLabels[k].Ko;
+  });
 
   // Hazard list
   const hazList = document.getElementById('tbm-hazards');
   hazList.innerHTML = '';
-  const hazards = ko ? data.hazardsKo : data.hazardsEn;
+  const hazards = data['hazards' + L] || data.hazardsKo;
   hazards.forEach(h => {
     const li = document.createElement('li');
     li.textContent = h;
@@ -121,7 +175,7 @@ function showTBM(phase, onComplete) {
   // Checklist
   const chkList = document.getElementById('tbm-checklist');
   chkList.innerHTML = '';
-  const checks = ko ? data.checklistKo : data.checklistEn;
+  const checks = data['checklist' + L] || data.checklistKo;
   let checkedCount = 0;
 
   function updateProgress() {
@@ -154,15 +208,15 @@ function showTBM(phase, onComplete) {
     const npc = r.npcId ? GAME.npcs.find(n => n.id === r.npcId) : null;
     const row = document.createElement('div');
     row.className = 'tbm-role-row';
-    row.innerHTML = `<span class="tbm-role-name">${ko ? r.roleKo : r.roleEn}</span>
-      <span class="tbm-role-assigned">${npc ? npc.name : (ko ? '미지정' : 'Unassigned')}</span>`;
+    row.innerHTML = `<span class="tbm-role-name">${r['role' + L] || r.roleKo}</span>
+      <span class="tbm-role-assigned">${npc ? npc.name : (unassigned[L] || '미지정')}</span>`;
     roleContainer.appendChild(row);
   });
 
   // Start button
   const startBtn = document.getElementById('tbm-start-btn');
   if (startBtn) {
-    startBtn.textContent = ko ? '작업 시작' : 'Start Work';
+    startBtn.textContent = startLabel[L] || '작업 시작';
     startBtn.onclick = () => completeTBM(phase);
   }
 
@@ -178,9 +232,6 @@ function completeTBM(phase) {
   if (panel) panel.classList.add('hidden');
 
   // Unchecked items become violations
-  const data = TBM_DATA[phase] || TBM_DATA[1];
-  const ko   = currentLang !== 'en';
-  const checks = ko ? data.checklistKo : data.checklistEn;
   const unchecked = document.querySelectorAll('#tbm-checklist .tbm-check-item:not(.checked)').length;
   if (unchecked > 0) {
     applySafetyPenalty(unchecked * 5);
