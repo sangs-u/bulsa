@@ -139,11 +139,15 @@ class NPC {
     this.mesh.position.set(this.position[0], this.position[1] + 1.0, this.position[2]);
     GAME.scene.add(this.mesh);
 
-    // 신호수(gimc)는 직접 행동으로 처리; 나머지는 instruction 팝업
+    // 신호수(gimc): Phase 5 직접 행동 + Phase 6 대화 팝업
     if (this.id === 'gimc') {
       GAME.interactables.push({
         mesh: this.mesh, type: 'action', actionId: 'assign_signal', label: '신호수 위치 지정',
         phase: 5,
+      });
+      GAME.interactables.push({
+        mesh: this.mesh, type: 'npc', npcId: 'gimc', label: '신호수와 대화',
+        phase: 6,
       });
     } else {
       GAME.interactables.push({ mesh: this.mesh, type: 'npc', npcId: this.id, nameKey: null });

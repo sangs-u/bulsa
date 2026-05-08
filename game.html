@@ -92,13 +92,14 @@
 </div>
 
 <!-- Building progress HUD -->
-<div id="building-progress" style="position:absolute;bottom:70px;right:20px;font-size:0.72rem;color:var(--muted);font-family:monospace;pointer-events:none;"></div>
-
 <!-- Minimap -->
 <canvas id="minimap-canvas" style="position:absolute;bottom:18px;right:18px;border-radius:50%;pointer-events:none;z-index:50;"></canvas>
 
-<!-- Game time -->
-<div id="hud-gametime" style="position:absolute;bottom:158px;right:18px;font-size:0.70rem;color:var(--muted,#6A8090);font-family:monospace;pointer-events:none;text-align:center;width:130px;"></div>
+<!-- Game time — above minimap -->
+<div id="hud-gametime" style="position:absolute;bottom:153px;right:18px;font-size:0.70rem;color:var(--muted,#6A8090);font-family:monospace;pointer-events:none;text-align:center;width:130px;"></div>
+
+<!-- Building progress — above gametime -->
+<div id="building-progress" style="position:absolute;bottom:170px;right:18px;font-size:0.72rem;color:var(--muted);font-family:monospace;pointer-events:none;text-align:center;width:130px;"></div>
 
 <!-- Action notification (brief, no feedback) -->
 <div id="hud-action-notif"></div>
