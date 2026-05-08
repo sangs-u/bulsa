@@ -308,14 +308,8 @@ class NPC {
     }
   }
 
-  _checkSpontaneousAccident(delta) {
-    if (GAME.state.phase === 2 && !this._accidentTriggered) {
-      this._accidentTimer += delta;
-      if (this._accidentTimer > 4) {
-        this._accidentTriggered = true;
-        triggerAccident('worker_crush');
-      }
-    }
+  _checkSpontaneousAccident(_delta) {
+    // Disabled: accidents only triggered via evaluateLift() in new 6-phase system
   }
 
   _moveTowardDanger(delta) {

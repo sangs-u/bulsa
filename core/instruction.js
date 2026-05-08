@@ -3,20 +3,32 @@
 
 // ── Instruction database ─────────────────────────────────────
 const INSTRUCTIONS = {
-  1: [  // Phase 1 — 사전점검
-    { id: 'check_sling',   icon: '🔍', labelKo: '슬링 점검해',         labelEn: 'Inspect sling',         targetRole: '슬링작업자', npcId: 'park'  },
-    { id: 'signal_pos',    icon: '📍', labelKo: '신호수 위치 서',       labelEn: 'Take signal position',  targetRole: '신호수',     npcId: 'gimc'  },
-    { id: 'evacuate',      icon: '🚶', labelKo: '작업반경 밖으로 나가', labelEn: 'Leave lift zone',       targetRole: null,         npcId: null     },
-    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해', labelEn: 'Wear helmet & harness', targetRole: null,         npcId: null     },
+  1: [  // Phase 1 — 작업계획서
+    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
+    { id: 'check_weather', icon: '🌤', labelKo: '기상·풍속 확인해',       labelEn: 'Check wind & weather',  targetRole: null, npcId: null  },
   ],
-  2: [  // Phase 2 — 계산검토
-    { id: 'check_spec',    icon: '📋', labelKo: '사양서 확인해',   labelEn: 'Check specifications',  targetRole: '슬링작업자', npcId: 'park'  },
-    { id: 'measure_angle', icon: '📐', labelKo: '각도 측정해',     labelEn: 'Measure sling angle',   targetRole: '슬링작업자', npcId: 'park'  },
+  2: [  // Phase 2 — 안전성 검토
+    { id: 'check_spec',    icon: '📋', labelKo: '사양서 확인해',          labelEn: 'Check specifications',  targetRole: '슬링작업자', npcId: 'park'  },
+    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
   ],
-  3: [  // Phase 3 — 인양실행
-    { id: 'start_lift',    icon: '▶',  labelKo: '인양 시작해',     labelEn: 'Begin lift',            targetRole: '신호수',     npcId: 'gimc'  },
-    { id: 'slow_down',     icon: '⬇',  labelKo: '천천히 내려놔',   labelEn: 'Lower slowly',          targetRole: '신호수',     npcId: 'gimc'  },
-    { id: 'stop',          icon: '✋', labelKo: '멈춰',             labelEn: 'Stop',                  targetRole: null,         npcId: null     },
+  3: [  // Phase 3 — 장비 세팅
+    { id: 'outrigger_check', icon: '🔩', labelKo: '아웃트리거 확인해',   labelEn: 'Check outriggers',      targetRole: null, npcId: null  },
+    { id: 'wear_ppe',        icon: '⛑',  labelKo: '안전모·안전대 착용해', labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
+  ],
+  4: [  // Phase 4 — 줄걸이 점검
+    { id: 'check_sling',   icon: '🔍', labelKo: '슬링 상태 확인해',      labelEn: 'Check sling condition', targetRole: '슬링작업자', npcId: 'park'  },
+    { id: 'secure_pin',    icon: '🔐', labelKo: '안전핀 체결 확인해',    labelEn: 'Confirm pin secured',   targetRole: '슬링작업자', npcId: 'park'  },
+    { id: 'measure_angle', icon: '📐', labelKo: '슬링 각도 측정해',       labelEn: 'Measure sling angle',   targetRole: '슬링작업자', npcId: 'park'  },
+    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
+  ],
+  5: [  // Phase 5 — 현장 세팅
+    { id: 'signal_pos',    icon: '📍', labelKo: '신호수 위치 서',         labelEn: 'Take signal position',  targetRole: '신호수', npcId: 'gimc'  },
+    { id: 'evacuate',      icon: '🚶', labelKo: '작업반경 밖으로 나가',   labelEn: 'Leave lift zone',       targetRole: null, npcId: null  },
+    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
+  ],
+  6: [  // Phase 6 — 인양 실행
+    { id: 'start_lift',    icon: '▶',  labelKo: '인양 시작 준비됐어',    labelEn: 'Ready to begin lift',   targetRole: '신호수', npcId: 'gimc'  },
+    { id: 'stop',          icon: '✋', labelKo: '멈춰',                   labelEn: 'Stop',                  targetRole: null, npcId: null  },
   ],
 };
 
@@ -162,6 +174,15 @@ function giveInstruction(npc, inst) {
     case 'measure_angle':
       npc.setState('WORKING');
       _resolveHazardByNPC('angle_exceeded');
+      break;
+    case 'secure_pin':
+      npc.setState && npc.setState('WORKING');
+      _animateNPCWork(npc, 'inspect');
+      break;
+    case 'outrigger_check':
+    case 'check_weather':
+      npc.setState && npc.setState('WORKING');
+      applySafetyReward(3);
       break;
     case 'start_lift':
       npc.setState('WORKING');
