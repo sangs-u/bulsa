@@ -114,7 +114,7 @@ function performAction(actionId) {
 
     case 'measure_angle': {
       LIFT_STATE.angleMeasured = true;
-      const deg = 68; // 실제 각도 (60° 초과이지만 알려주지 않음)
+      const deg = 58; // 수직에서 58° — KOSHA 기준 60° 이내 준수
       showActionNotif(`슬링 각도 측정 완료 · ${deg}°`, 3200);
       _dimActionMesh('measure_angle');
       break;
