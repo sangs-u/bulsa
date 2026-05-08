@@ -79,209 +79,281 @@ function _addGroundGrid(scene) {
   scene.add(new THREE.LineSegments(geo, mat));
 }
 
-// ── Incomplete concrete building ───────────────────────────
+// ── RC frame building (3-storey, under construction) ──────
 function _buildStructure(scene) {
-  const concMat = new THREE.MeshLambertMaterial({ color: 0xB0AFA8 });
-  const darkMat = new THREE.MeshLambertMaterial({ color: 0x858580 });
+  const concMat  = new THREE.MeshLambertMaterial({ color: 0xC4BEB4 });
+  const concDark = new THREE.MeshLambertMaterial({ color: 0xA09890 });
+  const rebarMat = new THREE.MeshLambertMaterial({ color: 0x585450 });
+  const woodMat  = new THREE.MeshLambertMaterial({ color: 0x9B7A2A });
+  const wallMat  = new THREE.MeshLambertMaterial({ color: 0xCDC8C0 });
+  const beamMat  = new THREE.MeshLambertMaterial({ color: 0xB8B2AA });
 
-  // 4 columns: corners of 10×10 footprint at z≈-15
-  const colGeo = new THREE.BoxGeometry(0.7, 9, 0.7);
-  [[-5, 4.5, -12], [5, 4.5, -12], [-5, 4.5, -22], [5, 4.5, -22]].forEach(pos => {
-    const col = new THREE.Mesh(colGeo, concMat);
-    col.position.set(...pos);
+  const flH = 3.3;  // floor-to-floor height
+  const colH = 9.9; // 3 floors total
+
+  // ── Round Columns (CylinderGeometry, 24 seg) ──────────────
+  const colPositions = [[-5, -12], [5, -12], [-5, -22], [5, -22]];
+
+  colPositions.forEach(([x, z]) => {
+    // Main column shaft
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, colH, 24), concMat);
+    col.position.set(x, colH / 2, z);
     col.castShadow = true;
     col.receiveShadow = true;
     scene.add(col);
+
+    // Column caps at each floor level (beam seating zone)
+    [flH, flH * 2].forEach(fy => {
+      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.30, 0.20, 24), concDark);
+      cap.position.set(x, fy, z);
+      scene.add(cap);
+    });
+
+    // Rebar protruding above top
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const r = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.5, 8), rebarMat);
+      r.position.set(x + Math.cos(a) * 0.16, colH + 0.75, z + Math.sin(a) * 0.16);
+      scene.add(r);
+    }
+
+    // Formwork wrap on top (partial pour in progress)
+    const fw = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.30, 1.0, 24), woodMat);
+    fw.position.set(x, colH + 0.5, z);
+    scene.add(fw);
   });
 
-  // Partial slab at y=9 (half-built)
-  const slabGeo = new THREE.BoxGeometry(10.7, 0.35, 10.7);
-  const slab = new THREE.Mesh(slabGeo, darkMat);
-  slab.position.set(0, 9.17, -17);
-  slab.receiveShadow = true;
-  scene.add(slab);
+  // ── Floor Slabs ──────────────────────────────────────────
+  [0, flH, flH * 2].forEach((y, floorIdx) => {
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(10.7, 0.22, 10.7), concDark);
+    slab.position.set(0, y + 0.11, -17);
+    slab.receiveShadow = true;
+    scene.add(slab);
 
-  // Ground floor slab
-  const gSlab = new THREE.Mesh(new THREE.BoxGeometry(10.7, 0.2, 10.7), darkMat);
-  gSlab.position.set(0, 0.1, -17);
-  scene.add(gSlab);
-
-  // Rebar sticking up (visual detail)
-  const rebarMat = new THREE.MeshLambertMaterial({ color: 0x5A5A55 });
-  const rebarGeo = new THREE.CylinderGeometry(0.05, 0.05, 1.5, 6);
-  [[-4.8, 9.85, -11.8], [4.8, 9.85, -11.8], [-4.8, 9.85, -22.2], [4.8, 9.85, -22.2],
-   [-4.8, 9.85, -17], [4.8, 9.85, -17]].forEach(pos => {
-    const r = new THREE.Mesh(rebarGeo, rebarMat);
-    r.position.set(...pos);
-    scene.add(r);
+    // Formwork boards on upper floor slab edges
+    if (floorIdx >= 1) {
+      [
+        [0, y + 0.33, -11.65, 10.7, 0.28, 0.10],
+        [0, y + 0.33, -22.35, 10.7, 0.28, 0.10],
+        [-5.4, y + 0.33, -17,  0.10, 0.28, 10.7],
+        [ 5.4, y + 0.33, -17,  0.10, 0.28, 10.7],
+      ].forEach(([bx, by, bz, w, h, d]) => {
+        const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), woodMat);
+        b.position.set(bx, by, bz);
+        scene.add(b);
+      });
+    }
   });
 
-  // Formwork boards (brown planks on the slab edges)
-  const woodMat = new THREE.MeshLambertMaterial({ color: 0x8B6914 });
-  [
-    [0, 9.35, -11.5, 10.7, 0.3, 0.1],
-    [0, 9.35, -22.5, 10.7, 0.3, 0.1],
-    [-5.4, 9.35, -17, 0.1, 0.3, 10.7],
-    [5.4, 9.35, -17, 0.1, 0.3, 10.7],
-  ].forEach(([x,y,z,w,h,d]) => {
-    const b = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), woodMat);
-    b.position.set(x,y,z);
-    scene.add(b);
+  // ── Floor Beams (connecting columns at each level) ──────
+  [flH, flH * 2].forEach(y => {
+    // X-direction (front/back span)
+    [[-12], [-22]].forEach(([z]) => {
+      const bm = new THREE.Mesh(new THREE.BoxGeometry(10.7, 0.44, 0.36), beamMat);
+      bm.position.set(0, y + 0.33, z);
+      scene.add(bm);
+    });
+    // Z-direction (side spans)
+    [[-5], [5]].forEach(([x]) => {
+      const bm = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.44, 10.7), beamMat);
+      bm.position.set(x, y + 0.33, -17);
+      scene.add(bm);
+    });
+  });
+
+  // ── Ground-floor exterior walls ──────────────────────────
+  // Front (partial — crane access opening)
+  scene.add(Object.assign(
+    new THREE.Mesh(new THREE.BoxGeometry(10.7, flH * 0.55, 0.20), wallMat),
+    { position: new THREE.Vector3(0, flH * 0.275, -11.9) }
+  ));
+  // Back wall
+  scene.add(Object.assign(
+    new THREE.Mesh(new THREE.BoxGeometry(10.7, flH, 0.20), wallMat),
+    { position: new THREE.Vector3(0, flH * 0.5, -22.1) }
+  ));
+  // Side walls
+  [-5.1, 5.1].forEach(x => {
+    const sw = new THREE.Mesh(new THREE.BoxGeometry(0.20, flH * 0.7, 10.7), wallMat);
+    sw.position.set(x, flH * 0.35, -17);
+    scene.add(sw);
   });
 }
 
 // ── Tower crane ────────────────────────────────────────────
 function _buildCrane(scene) {
-  const yellowMat = new THREE.MeshLambertMaterial({ color: 0xF5C542 });
-  const darkMat   = new THREE.MeshLambertMaterial({ color: 0x444444 });
-  const whiteMat  = new THREE.MeshLambertMaterial({ color: 0xEEEEEE });
+  const yellow = new THREE.MeshLambertMaterial({ color: 0xD4A217 }); // muted crane yellow
+  const dark   = new THREE.MeshLambertMaterial({ color: 0x3A3830 });
+  const cabin  = new THREE.MeshLambertMaterial({ color: 0xD2CEC4 }); // off-white
 
-  // Mast (tower)
-  const mast = new THREE.Mesh(new THREE.BoxGeometry(0.9, 22, 0.9), yellowMat);
+  // ── Mast — round CylinderGeometry ──────────────────────
+  const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.58, 22, 20), yellow);
   mast.position.set(14, 11, -8);
   mast.castShadow = true;
   scene.add(mast);
 
-  // Mast cross-braces
-  const braceGeo = new THREE.BoxGeometry(0.12, 0.12, 1.1);
-  const braceGeo2 = new THREE.BoxGeometry(0.12, 1.1, 0.12);
-  for (let y = 2; y < 21; y += 3) {
-    [-1, 1].forEach(side => {
-      const b = new THREE.Mesh(braceGeo, darkMat);
-      b.position.set(14 + side * 0.45, y, -8);
-      scene.add(b);
-    });
+  // Lattice bracing — thin cylinders at 45° around mast
+  const brace = new THREE.MeshLambertMaterial({ color: 0xC09814 });
+  for (let y = 2; y < 21; y += 2.8) {
+    for (let i = 0; i < 4; i++) {
+      const a  = (i / 4) * Math.PI * 2 + y * 0.2;
+      const br = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.8, 8), brace);
+      br.position.set(14 + Math.cos(a) * 0.52, y, -8 + Math.sin(a) * 0.52);
+      br.rotation.z = 0.38;
+      br.rotation.y = a;
+      scene.add(br);
+    }
   }
 
   // Turntable
-  const turntable = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.5, 12), yellowMat);
-  turntable.position.set(14, 22.25, -8);
-  scene.add(turntable);
+  const tt = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.4, 0.58, 22), yellow);
+  tt.position.set(14, 22.29, -8);
+  scene.add(tt);
 
-  // Jib (main arm) — extends toward beam area
-  const jib = new THREE.Mesh(new THREE.BoxGeometry(16, 0.5, 0.5), yellowMat);
-  jib.position.set(6, 22.5, -8);
+  // Jib (main arm) — chord + web structure
+  const jib = new THREE.Mesh(new THREE.BoxGeometry(16, 0.52, 0.48), yellow);
+  jib.position.set(6, 22.58, -8);
   jib.castShadow = true;
   scene.add(jib);
 
+  // Jib top chord (diagonal stays)
+  const topChord = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 16.2, 10), brace);
+  topChord.position.set(6, 23.35, -8);
+  topChord.rotation.z = Math.PI / 2;
+  scene.add(topChord);
+
   // Counter-jib
-  const cjib = new THREE.Mesh(new THREE.BoxGeometry(6, 0.5, 0.5), yellowMat);
-  cjib.position.set(17, 22.5, -8);
+  const cjib = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.48, 0.44), yellow);
+  cjib.position.set(17, 22.58, -8);
   scene.add(cjib);
 
-  // Counterweight
-  const cw = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1.5), darkMat);
-  cw.position.set(19.5, 22, -8);
+  // Counterweight (realistic concrete block stack)
+  const cw = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.2, 1.6), dark);
+  cw.position.set(19.6, 21.98, -8);
   scene.add(cw);
+  const cw2 = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.6, 1.4), dark);
+  cw2.position.set(19.6, 23.0, -8);
+  scene.add(cw2);
 
-  // A-frame
-  const aframeGeo = new THREE.CylinderGeometry(0.12, 0.12, 6, 6);
-  [-1.5, 1.5].forEach(dx => {
-    const af = new THREE.Mesh(aframeGeo, yellowMat);
-    af.position.set(14 + dx, 25, -8);
-    af.rotation.z = dx < 0 ? 0.3 : -0.3;
+  // A-frame head (CylinderGeometry, round struts)
+  [-1.4, 1.4].forEach(dx => {
+    const af = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 6.2, 12), yellow);
+    af.position.set(14 + dx, 25.1, -8);
+    af.rotation.z = dx < 0 ? 0.30 : -0.30;
     scene.add(af);
   });
 
-  // Hook cable (from jib end ~x=−2, y=22.5 down to hook)
-  const wireMat = new THREE.LineBasicMaterial({ color: 0x333333 });
-  const wirePoints = [
-    new THREE.Vector3(-2, 22.5, -8),
-    new THREE.Vector3(-2, 0.8, -8),
-  ];
-  const wireGeo = new THREE.BufferGeometry().setFromPoints(wirePoints);
-  scene.add(new THREE.Line(wireGeo, wireMat));
+  // Main hoist cable
+  const wireMat = new THREE.LineBasicMaterial({ color: 0x282420 });
+  scene.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-2, 22.58, -8),
+      new THREE.Vector3(-2, 0.88, -8),
+    ]), wireMat
+  ));
 
-  // Hook
-  const hook = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.4, 0.3), darkMat);
-  hook.position.set(-2, 0.8, -8);
-  scene.add(hook);
+  // Hook block (CylinderGeometry) + torus curve
+  const hookBlock = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.22, 0.42, 18), dark);
+  hookBlock.position.set(-2, 0.88, -8);
+  scene.add(hookBlock);
 
-  // Crane control cabin (at mast base)
-  const cabin = new THREE.Mesh(new THREE.BoxGeometry(2, 2.2, 2), whiteMat);
-  cabin.position.set(14, 1.1, -5.5);
-  cabin.castShadow = true;
-  scene.add(cabin);
+  const hookCurve = new THREE.Mesh(
+    new THREE.TorusGeometry(0.16, 0.048, 14, 20, Math.PI * 1.25), dark
+  );
+  hookCurve.position.set(-2, 0.44, -8);
+  hookCurve.rotation.y = Math.PI / 2;
+  scene.add(hookCurve);
 
-  // Cabin windows
-  const winMat = new THREE.MeshLambertMaterial({ color: 0x6BC5F0, transparent: true, opacity: 0.7 });
-  const win = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.8), winMat);
-  win.position.set(14, 1.4, -4.49);
+  // Operator cabin
+  const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.4, 2.2), cabin);
+  cabinMesh.position.set(14, 1.2, -5.4);
+  cabinMesh.castShadow = true;
+  scene.add(cabinMesh);
+
+  // Cabin window
+  const winMat = new THREE.MeshLambertMaterial({ color: 0x7BAABB, transparent: true, opacity: 0.62 });
+  const win = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.0), winMat);
+  win.position.set(14, 1.4, -4.29);
   scene.add(win);
 
-  // Control panel (interactive object — trigger)
-  const panelMat = new THREE.MeshLambertMaterial({ color: 0x333355 });
-  const panel = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1, 0.3), panelMat);
+  // Control panel (interactive trigger)
+  const panelMat = new THREE.MeshLambertMaterial({ color: 0x2A2E3A });
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 0.28), panelMat);
   panel.position.set(14, 1.3, -4.0);
   scene.add(panel);
 
-  // Store reference for interaction
   GAME._cranePanelMesh = panel;
 }
 
 // ── RC Beam (the load) ────────────────────────────────────
 function _buildBeam(scene) {
-  const beamMat = new THREE.MeshLambertMaterial({ color: 0x9A9A95 });
+  const beamMat  = new THREE.MeshLambertMaterial({ color: 0xA8A49C });
+  const plateMat = new THREE.MeshLambertMaterial({ color: 0x585450 });
+  const rebarMat = new THREE.MeshLambertMaterial({ color: 0x5A5652 });
+
   const beam = new THREE.Mesh(new THREE.BoxGeometry(7, 0.55, 0.55), beamMat);
   beam.position.set(-2, 0.28, -8);
   beam.castShadow = true;
   beam.receiveShadow = true;
   scene.add(beam);
 
-  // Beam end plates
-  const plateMat = new THREE.MeshLambertMaterial({ color: 0x5A5A55 });
-  [-3.7, 3.7].forEach(dx => {
-    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.65, 0.65), plateMat);
+  // End plates (steel)
+  [-3.55, 3.55].forEach(dx => {
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.65, 0.65), plateMat);
     plate.position.set(-2 + dx, 0.28, -8);
     scene.add(plate);
   });
 
+  // Exposed rebar ends (4 rods per side)
+  [-3.68, 3.68].forEach(dx => {
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2;
+      const r = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.18, 8), rebarMat);
+      r.position.set(-2 + dx, 0.18 + Math.sin(a) * 0.14, -8 + Math.cos(a) * 0.14);
+      r.rotation.z = Math.PI / 2;
+      scene.add(r);
+    }
+  });
+
   GAME.liftBeam = beam;
 
-  // Sling wires from beam to hook
-  const slingMat = new THREE.LineBasicMaterial({ color: 0x8B8B00 });
-  [[-3, 0.55], [1, 0.55]].forEach(([dx, dy]) => {
+  // Sling wires (steel-gray)
+  const slingMat = new THREE.LineBasicMaterial({ color: 0x686462 });
+  [[-3, 0.56], [1, 0.56]].forEach(([dx]) => {
     const pts = [
-      new THREE.Vector3(-2 + dx, dy, -8),
-      new THREE.Vector3(-2, 0.8, -8),
+      new THREE.Vector3(-2 + dx, 0.56, -8),
+      new THREE.Vector3(-2, 0.88, -8),
     ];
-    const geo = new THREE.BufferGeometry().setFromPoints(pts);
-    scene.add(new THREE.Line(geo, slingMat));
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), slingMat));
   });
 }
 
 // ── Safety barriers ───────────────────────────────────────
 function _buildBarriers(scene) {
-  const stripeMat = new THREE.MeshLambertMaterial({ color: 0xF5C542 });
-  const postMat   = new THREE.MeshLambertMaterial({ color: 0xCC3300 });
+  const postMat  = new THREE.MeshLambertMaterial({ color: 0xBB4010 }); // OSHA orange-red
+  const tapeMat  = new THREE.LineBasicMaterial({ color: 0xD4B018 });   // muted yellow tape
 
-  // Yellow/black barrier tape posts around lift zone
-  const postGeo = new THREE.CylinderGeometry(0.06, 0.06, 1.1, 8);
-  const positions = [
-    [-8, 0.55, -4], [-8, 0.55, -12], [4, 0.55, -4], [4, 0.55, -12],
-    [-8, 0.55, -8], [4, 0.55, -8],
-  ];
-  positions.forEach(p => {
+  const postGeo = new THREE.CylinderGeometry(0.055, 0.055, 1.05, 12);
+  [
+    [-8, 0.525, -4], [-8, 0.525, -8], [-8, 0.525, -12],
+    [ 4, 0.525, -4], [ 4, 0.525, -8], [ 4, 0.525, -12],
+  ].forEach(p => {
     const post = new THREE.Mesh(postGeo, postMat);
     post.position.set(...p);
+    post.castShadow = true;
     scene.add(post);
   });
 
-  // Tape lines
-  const tapeMat = new THREE.LineBasicMaterial({ color: 0xFFCC00 });
-  const tapePoints = [
-    [-8, 0.9, -4], [-8, 0.9, -12],
-    [-8, 0.9, -12], [4, 0.9, -12],
-    [4, 0.9, -12], [4, 0.9, -4],
-    [4, 0.9, -4], [-8, 0.9, -4],
-  ];
-  for (let i = 0; i < tapePoints.length; i += 2) {
-    const geo = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(...tapePoints[i]),
-      new THREE.Vector3(...tapePoints[i + 1]),
-    ]);
+  // Tape lines at two heights
+  [0.5, 0.88].forEach(ty => {
+    const pts = [
+      [-8, ty, -4], [-8, ty, -12], [4, ty, -12], [4, ty, -4], [-8, ty, -4],
+    ];
+    const geo = new THREE.BufferGeometry().setFromPoints(
+      pts.map(p => new THREE.Vector3(...p))
+    );
     scene.add(new THREE.Line(geo, tapeMat));
-  }
+  });
 }
 
 // ── Concrete ground patches (visual variety) ───────────────
@@ -388,37 +460,44 @@ function _buildBackground(scene) {
   });
 }
 
-// ── Site props (hardhat, cones, boxes) ────────────────────
+// ── Site props (cones, boxes, trees) ──────────────────────
 function _buildSiteProps(scene) {
-  const orangeMat = new THREE.MeshLambertMaterial({ color: 0xFF6600 });
-  const yellowMat = new THREE.MeshLambertMaterial({ color: 0xFFCC00 });
+  const coneMat = new THREE.MeshLambertMaterial({ color: 0xBB4810 }); // OSHA orange
+  const boxMat  = new THREE.MeshLambertMaterial({ color: 0x607050 }); // weathered green box
+  const trunkMat   = new THREE.MeshLambertMaterial({ color: 0x5C4A32 });
+  const foliageMat = new THREE.MeshLambertMaterial({ color: 0x4A7040 });
 
-  // Traffic cones
-  const coneGeo = new THREE.ConeGeometry(0.2, 0.6, 8);
-  [[6, 0.3, -3], [6, 0.3, -5], [6, 0.3, -7], [-9, 0.3, -5], [-9, 0.3, -9]].forEach(p => {
-    const cone = new THREE.Mesh(coneGeo, orangeMat);
+  // Traffic cones (ConeGeometry with more segments)
+  const coneGeo = new THREE.ConeGeometry(0.18, 0.58, 16);
+  [[6, 0.29, -3], [6, 0.29, -5], [6, 0.29, -7], [-9, 0.29, -5], [-9, 0.29, -9]].forEach(p => {
+    const cone = new THREE.Mesh(coneGeo, coneMat);
     cone.position.set(...p);
     scene.add(cone);
+    // White reflective band
+    const band = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.19, 0.165, 0.10, 16),
+      new THREE.MeshLambertMaterial({ color: 0xD8D4CC })
+    );
+    band.position.set(p[0], p[1] + 0.18, p[2]);
+    scene.add(band);
   });
 
   // Material storage boxes
-  const boxMat = new THREE.MeshLambertMaterial({ color: 0x6B8E4E });
   [[8, 0.4, -2], [10, 0.4, -2], [8, 1.2, -2]].forEach(([x,y,z]) => {
     const b = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.8, 1.8), boxMat);
     b.position.set(x, y, z);
+    b.castShadow = true;
     scene.add(b);
   });
 
-  // Distant trees (simple cylinders + spheres for atmosphere)
-  const trunkMat  = new THREE.MeshLambertMaterial({ color: 0x5C4A32 });
-  const foliageMat = new THREE.MeshLambertMaterial({ color: 0x3A7D44 });
+  // Trees (more natural — CylinderGeometry trunk + SphereGeometry crown, 16+ seg)
   [[-30, 0, 5], [-32, 0, -5], [28, 0, 8], [30, 0, -3], [-28, 0, -15], [25, 0, -18]].forEach(([x,,z]) => {
     const h = 3.5 + Math.random() * 2;
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, h, 6), trunkMat);
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.28, h, 12), trunkMat);
     trunk.position.set(x, h / 2, z);
     scene.add(trunk);
-    const foliage = new THREE.Mesh(new THREE.SphereGeometry(1.4, 8, 6), foliageMat);
-    foliage.position.set(x, h + 1, z);
-    scene.add(foliage);
+    const crown = new THREE.Mesh(new THREE.SphereGeometry(1.4 + Math.random() * 0.4, 16, 12), foliageMat);
+    crown.position.set(x, h + 1.1, z);
+    scene.add(crown);
   });
 }

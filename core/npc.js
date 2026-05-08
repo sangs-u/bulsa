@@ -41,40 +41,73 @@ class NPC {
 
     const mats = {
       vest:   new THREE.MeshLambertMaterial({ color: this._vestColor }),
-      skin:   new THREE.MeshLambertMaterial({ color: 0xF5D5A0 }),
-      helmet: new THREE.MeshLambertMaterial({ color: 0xFFFF00 }),
-      pant:   new THREE.MeshLambertMaterial({ color: 0x334455 }),
-      boot:   new THREE.MeshLambertMaterial({ color: 0x1a1a1a }),
+      skin:   new THREE.MeshLambertMaterial({ color: 0xC8845A }),
+      helmet: new THREE.MeshLambertMaterial({ color: 0xDEBB14 }),
+      shirt:  new THREE.MeshLambertMaterial({ color: 0x3A5068 }),
+      pant:   new THREE.MeshLambertMaterial({ color: 0x2C3A48 }),
+      boot:   new THREE.MeshLambertMaterial({ color: 0x1C1814 }),
     };
 
-    const make = (geo, mat, x, y, z) => {
+    // Helper: add mesh to group; geometry can be pre-translated for pivot control
+    const add = (geo, mat, x, y, z, rx = 0, rz = 0) => {
       const m = new THREE.Mesh(geo, mat);
       m.position.set(x, y, z);
+      if (rx) m.rotation.x = rx;
+      if (rz) m.rotation.z = rz;
       m.castShadow = true;
       this.group.add(m);
       return m;
     };
 
-    // Body parts
-    this._bodyParts.body   = make(new THREE.BoxGeometry(0.44, 0.82, 0.28), mats.vest, 0, 1.22, 0);
-    this._bodyParts.head   = make(new THREE.SphereGeometry(0.19, 8, 6), mats.skin, 0, 1.86, 0);
-    this._bodyParts.helmet = make(new THREE.SphereGeometry(0.22, 8, 4, 0, Math.PI*2, 0, Math.PI/2), mats.helmet, 0, 1.96, 0);
-    this._bodyParts.armL   = make(new THREE.BoxGeometry(0.18, 0.62, 0.2), mats.vest, -0.31, 1.22, 0);
-    this._bodyParts.armR   = make(new THREE.BoxGeometry(0.18, 0.62, 0.2), mats.vest,  0.31, 1.22, 0);
-    this._bodyParts.legL   = make(new THREE.BoxGeometry(0.17, 0.74, 0.24), mats.pant, -0.13, 0.37, 0);
-    this._bodyParts.legR   = make(new THREE.BoxGeometry(0.17, 0.74, 0.24), mats.pant,  0.13, 0.37, 0);
-    make(new THREE.BoxGeometry(0.19, 0.12, 0.26), mats.boot, -0.13, 0.06, 0.02);
-    make(new THREE.BoxGeometry(0.19, 0.12, 0.26), mats.boot,  0.13, 0.06, 0.02);
+    // Boots
+    add(new THREE.BoxGeometry(0.12, 0.09, 0.24), mats.boot, -0.09, 0.045, 0.04);
+    add(new THREE.BoxGeometry(0.12, 0.09, 0.24), mats.boot,  0.09, 0.045, 0.04);
+
+    // Legs — geometry translated so top = y 0, giving hip-pivot rotation
+    const legGeoL = new THREE.CylinderGeometry(0.068, 0.054, 0.80, 16);
+    legGeoL.translate(0, -0.40, 0);
+    this._bodyParts.legL = add(legGeoL, mats.pant, -0.09, 0.88, 0);
+
+    const legGeoR = new THREE.CylinderGeometry(0.068, 0.054, 0.80, 16);
+    legGeoR.translate(0, -0.40, 0);
+    this._bodyParts.legR = add(legGeoR, mats.pant,  0.09, 0.88, 0);
+
+    // Torso — tapered (wider at shoulders)
+    this._bodyParts.body = add(
+      new THREE.CylinderGeometry(0.158, 0.132, 0.52, 20),
+      mats.vest, 0, 1.08, 0
+    );
+
+    // Neck
+    add(new THREE.CylinderGeometry(0.052, 0.048, 0.09, 14), mats.skin, 0, 1.39, 0);
+
+    // Head
+    this._bodyParts.head = add(new THREE.SphereGeometry(0.115, 28, 20), mats.skin, 0, 1.56, 0);
+
+    // Helmet dome + brim
+    this._bodyParts.helmet = add(
+      new THREE.SphereGeometry(0.132, 28, 16, 0, Math.PI * 2, 0, Math.PI * 0.58),
+      mats.helmet, 0, 1.625, 0
+    );
+    add(new THREE.CylinderGeometry(0.165, 0.148, 0.024, 28), mats.helmet, 0, 1.568, 0);
+
+    // Arms — geometry translated so top = y 0, giving shoulder-pivot rotation
+    const armGeoL = new THREE.CylinderGeometry(0.048, 0.038, 0.64, 14);
+    armGeoL.translate(0, -0.32, 0);
+    this._bodyParts.armL = add(armGeoL, mats.vest, -0.215, 1.32, 0, 0,  0.12);
+
+    const armGeoR = new THREE.CylinderGeometry(0.048, 0.038, 0.64, 14);
+    armGeoR.translate(0, -0.32, 0);
+    this._bodyParts.armR = add(armGeoR, mats.vest,  0.215, 1.32, 0, 0, -0.12);
 
     GAME.scene.add(this.group);
 
     // Invisible interaction trigger
     const triggerMat = new THREE.MeshBasicMaterial({ visible: false });
-    this.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 6), triggerMat);
+    this.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 8), triggerMat);
     this.mesh.position.set(this.position[0], this.position[1] + 1.0, this.position[2]);
     GAME.scene.add(this.mesh);
 
-    // Register as interactable
     GAME.interactables.push({ mesh: this.mesh, type: 'npc', npcId: this.id, nameKey: null });
   }
 
@@ -232,11 +265,11 @@ class NPC {
 
 // ── NPC Definitions ─────────────────────────────────────────
 const NPC_DEFS = [
-  { id: 'gimc',   name: '김철수', role: '신호수',    language: 'ko', skill: 0.90, vestColor: 0xFF6600, position: [7,   0, -6]  },
-  { id: 'park',   name: '박영수', role: '슬링작업자', language: 'ko', skill: 0.75, vestColor: 0xFFFF00, position: [-4,  0, -8]  },
-  { id: 'lee',    name: '이민호', role: '고소작업자', language: 'ko', skill: 0.80, vestColor: 0x00AA55, position: [0,   0, -14] },
-  { id: 'ahmad',  name: '아흐마드', role: '보조작업자', language: 'ar', skill: 0.70, vestColor: 0x3377CC, position: [5,   0, -12] },
-  { id: 'nguyen', name: '응우옌',   role: '보조작업자', language: 'vi', skill: 0.65, vestColor: 0xCC3377, position: [-3,  0, -4]  },
+  { id: 'gimc',   name: '김철수', role: '신호수',     language: 'ko', skill: 0.90, vestColor: 0xCC5018, position: [7,   0, -6]  },
+  { id: 'park',   name: '박영수', role: '슬링작업자', language: 'ko', skill: 0.75, vestColor: 0xD4A217, position: [-4,  0, -8]  },
+  { id: 'lee',    name: '이민호', role: '고소작업자', language: 'ko', skill: 0.80, vestColor: 0xCC5018, position: [0,   0, -14] },
+  { id: 'ahmad',  name: '아흐마드', role: '보조작업자', language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [5,   0, -12] },
+  { id: 'nguyen', name: '응우옌',   role: '보조작업자', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0, -4]  },
 ];
 
 GAME.npcs = [];
