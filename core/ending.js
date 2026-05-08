@@ -92,18 +92,16 @@ function showCertificate() {
 
   const name = GAME.state.playerName || (currentLang === 'en' ? 'Player' : '수강자');
   const si   = GAME.state.safetyIndex;
-  const resolved = GAME.state.hazardsResolved.size;
-  const total    = GAME.hazards.length;
   const violated = GAME.state.violations.size;
   const date     = new Date().toLocaleDateString(currentLang === 'ko' ? 'ko-KR' : 'en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
 
-  // Grade calculation
+  // Grade based on safety index (impacted by TBM completeness + NPC instructions)
   let grade, gradeClass;
-  if (si >= 90 && resolved >= total - 1)       { grade = 'S'; gradeClass = 'grade-s'; }
-  else if (si >= 75 && resolved >= total * 0.7) { grade = 'A'; gradeClass = 'grade-a'; }
-  else                                           { grade = 'B'; gradeClass = 'grade-b'; }
+  if (si >= 90)      { grade = 'S'; gradeClass = 'grade-s'; }
+  else if (si >= 70) { grade = 'A'; gradeClass = 'grade-a'; }
+  else               { grade = 'B'; gradeClass = 'grade-b'; }
 
   const isKo = currentLang !== 'en';
 
@@ -144,8 +142,8 @@ function showCertificate() {
 
       <table class="cert-table" style="margin-top:8px;">
         <tr>
-          <th>${isKo ? '조치한 위험요소' : 'Hazards Fixed'}</th>
-          <td>${resolved}/${total}</td>
+          <th>${isKo ? '안전지수' : 'Safety Index'}</th>
+          <td>${si}/100</td>
           <th>${isKo ? '위반 기록' : 'Violations'}</th>
           <td>${violated}</td>
         </tr>

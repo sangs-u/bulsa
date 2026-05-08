@@ -1,5 +1,5 @@
 // TBM (Tool Box Meeting) — pre-phase safety briefing system
-// Auto-triggers before each phase. Intercepts startLift() for Phase 2.
+// Phase 1: auto-triggers after briefing closes. Phase 2: intercepts evaluateLift().
 
 const TBM = {
   _completed: new Set(),  // set of phase numbers already TBM'd
@@ -67,17 +67,19 @@ const TBM_DATA = {
   },
 };
 
-// ── Intercept startLift ───────────────────────────────────────
-const _origStartLift = typeof startLift === 'function' ? startLift : null;
+// ── Intercept evaluateLift (Phase 6 인양 시작 전 TBM 2) ───────
+const _origEvaluateLift = typeof evaluateLift === 'function' ? evaluateLift : null;
 
-function startLift() {
+function evaluateLift() {
   if (!TBM._completed.has(2)) {
+    // Exit crane cab first so TBM panel isn't behind crane overlay
+    if (typeof exitCraneCab === 'function' && GAME.state.craneBoarded) exitCraneCab();
     showTBM(2, () => {
-      if (_origStartLift) _origStartLift();
+      if (_origEvaluateLift) _origEvaluateLift();
     });
-  } else {
-    if (_origStartLift) _origStartLift();
+    return;
   }
+  if (_origEvaluateLift) _origEvaluateLift();
 }
 
 // ── Show TBM panel ────────────────────────────────────────────
@@ -164,12 +166,14 @@ function showTBM(phase, onComplete) {
     startBtn.onclick = () => completeTBM(phase);
   }
 
+  INTERACTION.popupOpen = true;
   panel.classList.remove('hidden');
   if (document.pointerLockElement) document.exitPointerLock();
 }
 
 function completeTBM(phase) {
   TBM._completed.add(phase);
+  INTERACTION.popupOpen = false;
   const panel = document.getElementById('tbm-panel');
   if (panel) panel.classList.add('hidden');
 

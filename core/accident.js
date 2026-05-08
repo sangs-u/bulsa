@@ -293,5 +293,14 @@ function _shakeCamera(duration) {
   })();
 }
 
-function applySafetyPenalty() {}
-function applySafetyReward()  {}
+function applySafetyPenalty(points) {
+  if (!points) return;
+  GAME.state.safetyIndex = Math.max(0, GAME.state.safetyIndex - points);
+  updateHUD();
+}
+
+function applySafetyReward(points) {
+  if (!points) return;
+  GAME.state.safetyIndex = Math.min(100, GAME.state.safetyIndex + points);
+  updateHUD();
+}
