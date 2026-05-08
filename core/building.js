@@ -214,8 +214,16 @@ function _fadeInStage(stageIdx, onDone) {
 function _updateBuildingHUD() {
   const el = document.getElementById('building-progress');
   if (!el) return;
-  const labels = ['터파기','기초','1층골조','2층골조','3층골조','외벽','준공'];
-  el.textContent = `건물 공정 ${BUILDING.stage + 1}/7 · ${labels[BUILDING.stage] || ''}`;
+  const labelMap = {
+    ko: ['터파기','기초','1층골조','2층골조','3층골조','외벽','준공'],
+    en: ['Excavation','Foundation','1F Frame','2F Frame','3F Frame','Walls','Complete'],
+    vi: ['Đào móng','Móng','Khung T1','Khung T2','Khung T3','Tường ngoài','Hoàn công'],
+    ar: ['الحفر','الأساس','هيكل ط1','هيكل ط2','هيكل ط3','الجدران','اكتمل'],
+  };
+  const prefixes = { ko: '건물 공정', en: 'Build', vi: 'Tiến độ', ar: 'البناء' };
+  const labels = labelMap[currentLang] || labelMap.ko;
+  const prefix = prefixes[currentLang] || prefixes.ko;
+  el.textContent = `${prefix} ${BUILDING.stage + 1}/7 · ${labels[BUILDING.stage] || ''}`;
 }
 
 // ── Camera zoom out briefly on stage complete ─────────────────
