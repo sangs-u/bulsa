@@ -1,5 +1,20 @@
 const STRINGS = {
   ko: {
+    // Briefing overlay
+    briefingBadge:   '작업 지시서',
+    briefingTitle:   '줄걸이 · 인양 작업',
+    briefingContext: '현장 감독관 지시에 따라 금일 오전, RC 보(2,500 kg)를 타워크레인으로 3층 슬래브 거치 위치에 인양합니다. 작업 전 현장 안전 상태를 직접 점검하세요.',
+    briefingStep1:   '현장을 이동하며 위험요소(⚠) 6개를 확인·조치',
+    briefingStep2:   'TBM(작업 전 안전회의) 참여 및 체크리스트 완료',
+    briefingStep3:   '크레인 제어판에서 인양 지시 후 안전 완료',
+    briefingKosha:   'KOSHA GUIDE G-133-2020 · 산안규칙 제163~167조',
+    briefingBtn:     '현장 투입 →',
+    briefingLabelContext: '작업 배경',
+    briefingLabelSteps:   '오늘의 목표',
+    // Camera mode
+    camFps:   '1인칭 [V]',
+    camTps:   '3인칭 [V]',
+    camFixed: '고정 [C]',
     // Index hub
     tagline: '당신이 무시한 그 위험이, 오늘 사고가 됩니다.',
     scenarioReady: '시작하기',
@@ -78,6 +93,19 @@ const STRINGS = {
     hazardsIgnored: '방치',
   },
   en: {
+    briefingBadge:   'Work Order',
+    briefingTitle:   'Rigging & Lifting',
+    briefingContext: 'Per site supervisor instructions, an RC beam (2,500 kg) will be lifted to the 3rd floor slab position using the tower crane. Inspect the site for hazards before commencing.',
+    briefingStep1:   'Walk the site and address 6 hazards (⚠)',
+    briefingStep2:   'Complete the TBM (pre-work safety meeting) checklist',
+    briefingStep3:   'Issue lift command at crane control panel',
+    briefingKosha:   'KOSHA GUIDE G-133-2020 · OSH Act Article 163–167',
+    briefingBtn:     'Enter Site →',
+    briefingLabelContext: 'Background',
+    briefingLabelSteps:   'Today\'s Goals',
+    camFps:   'FPS [V]',
+    camTps:   'TPS [V]',
+    camFixed: 'Fixed [C]',
     tagline: 'The hazard you ignored becomes today\'s accident.',
     scenarioReady: 'Play',
     scenarioSoon: 'Coming Soon',

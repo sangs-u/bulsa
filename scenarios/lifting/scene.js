@@ -4,35 +4,42 @@ function buildLiftingScene() {
   const scene = GAME.scene;
 
   // ── Sky + Fog ──────────────────────────────────────────
-  scene.background = new THREE.Color(0x7EC8E3);
-  scene.fog = new THREE.FogExp2(0x7EC8E3, 0.007);
+  scene.background = new THREE.Color(0x7AA8C8);
+  scene.fog = new THREE.FogExp2(0x7AA8C8, 0.005);
 
   // ── Lighting ───────────────────────────────────────────
-  const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+  // Hemisphere: sky-blue above, warm ground below
+  const hemi = new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.6);
+  scene.add(hemi);
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.3);
   scene.add(ambient);
 
-  const sun = new THREE.DirectionalLight(0xfff8e7, 1.1);
-  sun.position.set(25, 40, 20);
+  const sun = new THREE.DirectionalLight(0xFFEDD0, 1.5);
+  sun.position.set(30, 35, 15);  // lower angle → longer shadows
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.left   = -40;
-  sun.shadow.camera.right  =  40;
-  sun.shadow.camera.top    =  40;
-  sun.shadow.camera.bottom = -40;
-  sun.shadow.camera.far    = 120;
+  sun.shadow.camera.left   = -45;
+  sun.shadow.camera.right  =  45;
+  sun.shadow.camera.top    =  45;
+  sun.shadow.camera.bottom = -45;
+  sun.shadow.camera.far    = 130;
+  sun.shadow.bias = -0.0005;
   scene.add(sun);
 
-  const fill = new THREE.DirectionalLight(0xadc8e0, 0.3);
-  fill.position.set(-15, 10, -10);
+  const fill = new THREE.DirectionalLight(0x9EC4E8, 0.35);
+  fill.position.set(-20, 12, -8);
   scene.add(fill);
 
   // ── Ground ─────────────────────────────────────────────
-  const groundMat = new THREE.MeshLambertMaterial({ color: 0x8A8A80 });
+  const groundMat = new THREE.MeshLambertMaterial({ color: 0x6E6E66 });
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), groundMat);
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   scene.add(ground);
 
+  // Concrete patch variation
+  _addGroundPatches(scene);
   // Ground grid (thin lines for depth perception)
   _addGroundGrid(scene);
 
@@ -50,6 +57,12 @@ function buildLiftingScene() {
 
   // ── Misc site props ────────────────────────────────────
   _buildSiteProps(scene);
+
+  // ── Work zone danger ring ──────────────────────────────
+  _buildDangerZone(scene);
+
+  // ── Background buildings ───────────────────────────────
+  _buildBackground(scene);
 }
 
 // ── Ground grid ────────────────────────────────────────────
@@ -269,6 +282,110 @@ function _buildBarriers(scene) {
     ]);
     scene.add(new THREE.Line(geo, tapeMat));
   }
+}
+
+// ── Concrete ground patches (visual variety) ───────────────
+function _addGroundPatches(scene) {
+  const patches = [
+    [0x787870, -8, -5, 12, 10],
+    [0x7A7A72, 5,  -14, 8,  8 ],
+    [0x706E68, -12, -16, 10, 7],
+    [0x747472, 10, -2,  6,  5 ],
+    [0x6A6A64, -3, -22, 9,  6 ],
+  ];
+  patches.forEach(([color, x, z, w, d]) => {
+    const mat  = new THREE.MeshLambertMaterial({ color });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, d), mat);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.set(x, 0.003, z);
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+  });
+}
+
+// ── Work zone danger ring ──────────────────────────────────
+function _buildDangerZone(scene) {
+  const cx = -2, cz = -8; // beam center
+
+  // Red ring border
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0xFF2200, side: THREE.DoubleSide, transparent: true, opacity: 0.7,
+  });
+  const ring = new THREE.Mesh(new THREE.RingGeometry(7.7, 8.1, 48), ringMat);
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.set(cx, 0.018, cz);
+  scene.add(ring);
+
+  // Translucent danger fill
+  const areaMat = new THREE.MeshBasicMaterial({
+    color: 0xFF4400, side: THREE.DoubleSide, transparent: true, opacity: 0.07,
+  });
+  const area = new THREE.Mesh(new THREE.CircleGeometry(7.7, 48), areaMat);
+  area.rotation.x = -Math.PI / 2;
+  area.position.set(cx, 0.016, cz);
+  scene.add(area);
+
+  // Yellow corner markers at cardinal points
+  const warnMat = new THREE.MeshBasicMaterial({ color: 0xFFCC00, side: THREE.DoubleSide });
+  [[0,8],[8,0],[0,-8],[-8,0]].forEach(([dx, dz]) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.7), warnMat);
+    m.rotation.x = -Math.PI / 2;
+    m.position.set(cx + dx, 0.022, cz + dz);
+    scene.add(m);
+  });
+
+  // Dashed radial lines (4 lines inward)
+  const dashMat = new THREE.LineBasicMaterial({
+    color: 0xFF5500, transparent: true, opacity: 0.45,
+  });
+  [[0,7.5],[7.5,0],[0,-7.5],[-7.5,0]].forEach(([dx,dz]) => {
+    const pts = [
+      new THREE.Vector3(cx, 0.02, cz),
+      new THREE.Vector3(cx + dx, 0.02, cz + dz),
+    ];
+    scene.add(new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(pts), dashMat
+    ));
+  });
+}
+
+// ── Background buildings (distant skyline) ─────────────────
+function _buildBackground(scene) {
+  const bldgData = [
+    [0x808890, -30, -30, 5,  18, 4],
+    [0x6B737C, -25, -37, 7,  12, 5],
+    [0x8A9098, -18, -40, 5,  14, 4],
+    [0x757D85,  27, -28, 4,  22, 4],
+    [0x6E767E,  32, -20, 3,  15, 3],
+    [0x818990,  24, -38, 6,  10, 5],
+    [0x737B83,  16, -40, 4,   8, 3],
+  ];
+
+  bldgData.forEach(([color, x, , z, w, h, d]) => {
+    const mat  = new THREE.MeshLambertMaterial({ color });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    mesh.position.set(x, h / 2, z);
+    mesh.receiveShadow = true;
+    scene.add(mesh);
+
+    // Simple window rows (dark planes on front face)
+    const winMat = new THREE.MeshBasicMaterial({
+      color: 0x7BB8D4, transparent: true, opacity: 0.65,
+    });
+    const cols = Math.max(1, Math.floor(w / 1.6));
+    const rows = Math.max(1, Math.floor(h / 2.5));
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const win = new THREE.Mesh(new THREE.PlaneGeometry(0.65, 0.9), winMat);
+        win.position.set(
+          x - w / 2 + (c + 0.5) * (w / cols),
+          r * 2.5 + 1.5,
+          z - d / 2 - 0.02
+        );
+        scene.add(win);
+      }
+    }
+  });
 }
 
 // ── Site props (hardhat, cones, boxes) ────────────────────

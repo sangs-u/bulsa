@@ -1,5 +1,135 @@
 /* BULSA Extensions — NPC, Instruction, TBM, Signboard, Ending */
 
+/* ── WORK BRIEFING OVERLAY ──────────────────────────────── */
+#briefing-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 110;
+  backdrop-filter: blur(4px);
+}
+#briefing-overlay.hidden { display: none; }
+
+.briefing-box {
+  background: var(--panel);
+  border: 1px solid rgba(44,111,172,0.5);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  max-width: 500px;
+  width: 92vw;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+
+.briefing-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.briefing-badge {
+  background: var(--amber);
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.briefing-scenario {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.briefing-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+.briefing-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.briefing-section-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: monospace;
+}
+.briefing-text {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.7;
+}
+.briefing-steps {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.briefing-steps li {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.6;
+}
+.briefing-steps li::marker { color: var(--teal); font-weight: 700; }
+.briefing-kosha {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-family: monospace;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 10px;
+}
+.briefing-btn {
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-ko);
+  transition: background 0.2s;
+  margin-top: 2px;
+}
+.briefing-btn:hover { background: #008F7E; }
+
+/* ── CAMERA MODE BUTTONS (HUD) ──────────────────────────── */
+#hud-cambtns {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+}
+#hud-cambtns button {
+  background: rgba(13,27,42,0.75);
+  border: 1px solid rgba(44,111,172,0.35);
+  color: var(--muted);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  cursor: pointer;
+  font-family: var(--font-ko);
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+#hud-cambtns button:hover { border-color: var(--teal); color: var(--text); }
+#hud-cambtns button.cam-active {
+  background: rgba(0,168,150,0.18);
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
 /* ── INSTRUCTION POPUP ─────────────────────────────────── */
 #instruction-popup {
   position: fixed;

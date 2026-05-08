@@ -26,6 +26,10 @@
   <div id="hud-crosshair"></div>
   <div id="hud-interact"></div>
   <div id="hud-mission"></div>
+  <div id="hud-cambtns">
+    <button id="cam-fps-btn"   onclick="toggleCamMode()" title="V키"></button>
+    <button id="cam-fixed-btn" onclick="cycleFixedCam()"  title="C키"></button>
+  </div>
 </div>
 
 <!-- Pointer Lock Blocker -->
@@ -165,6 +169,27 @@
   </div>
 </div>
 
+<!-- Work Briefing Overlay -->
+<div id="briefing-overlay" class="hidden">
+  <div class="briefing-box">
+    <div class="briefing-header">
+      <span class="briefing-badge" id="briefing-badge"></span>
+      <span class="briefing-scenario" id="briefing-scenario"></span>
+    </div>
+    <div class="briefing-divider"></div>
+    <div class="briefing-section">
+      <div class="briefing-section-label" id="briefing-lbl-ctx"></div>
+      <p class="briefing-text" id="briefing-context"></p>
+    </div>
+    <div class="briefing-section">
+      <div class="briefing-section-label" id="briefing-lbl-steps"></div>
+      <ol class="briefing-steps" id="briefing-steps"></ol>
+    </div>
+    <div class="briefing-kosha" id="briefing-kosha"></div>
+    <button class="briefing-btn" id="briefing-btn" onclick="closeBriefing()"></button>
+  </div>
+</div>
+
 <!-- Signboard inventory bar -->
 <div id="signboard-bar" class="hidden"></div>
 <button class="inv-toggle-btn" id="inv-toggle-btn" onclick="toggleSignboardMode()" title="안전표지 설치">
@@ -230,15 +255,55 @@
   function startGame() {
     document.getElementById('blocker').style.display = 'none';
     GAME.state.gameStarted = true;
-    // Init extension systems now that game is started
     initInstructions();
     initBuilding();
     initSignboard();
     initEnding();
     initTBM();
+    _openBriefing();
+  }
+
+  // ── Work briefing ─────────────────────────────────────────
+  function _openBriefing() {
+    const ov = document.getElementById('briefing-overlay');
+    if (!ov) return;
+    document.getElementById('briefing-badge').textContent    = t('briefingBadge');
+    document.getElementById('briefing-scenario').textContent = t('briefingTitle');
+    document.getElementById('briefing-lbl-ctx').textContent  = t('briefingLabelContext');
+    document.getElementById('briefing-context').textContent  = t('briefingContext');
+    document.getElementById('briefing-lbl-steps').textContent = t('briefingLabelSteps');
+    const ol = document.getElementById('briefing-steps');
+    ol.innerHTML = '';
+    ['briefingStep1','briefingStep2','briefingStep3'].forEach(k => {
+      const li = document.createElement('li'); li.textContent = t(k); ol.appendChild(li);
+    });
+    document.getElementById('briefing-kosha').textContent = t('briefingKosha');
+    document.getElementById('briefing-btn').textContent   = t('briefingBtn');
+    ov.classList.remove('hidden');
+  }
+
+  function closeBriefing() {
+    document.getElementById('briefing-overlay').classList.add('hidden');
     if (window.matchMedia('(pointer: fine)').matches) {
       GAME.renderer.domElement.requestPointerLock();
     }
+    _updateCamBtns();
+  }
+
+  // ── Camera mode (delegated to player.js) ─────────────────
+  function toggleCamMode() { if (typeof _toggleCamFpsTps === 'function') _toggleCamFpsTps(); }
+  function cycleFixedCam()  { if (typeof _cycleFixedCam  === 'function') _cycleFixedCam();  }
+  function _updateCamBtns() {
+    const b1 = document.getElementById('cam-fps-btn');
+    const b2 = document.getElementById('cam-fixed-btn');
+    if (!b1 || !b2 || typeof PLAYER === 'undefined') return;
+    const modeLabels = { fps: t('camFps'), tps: t('camTps'), fixed: t('camFixed') };
+    b1.textContent = modeLabels[PLAYER.camMode] || t('camFps');
+    b2.textContent = PLAYER.camMode === 'fixed'
+      ? `고정 ${PLAYER.fixedCamIdx + 1}/${PLAYER._fixedCamCount || 4}`
+      : t('camFixed');
+    b1.classList.toggle('cam-active', PLAYER.camMode !== 'fps');
+    b2.classList.toggle('cam-active', PLAYER.camMode === 'fixed');
   }
 
   function retryGame() { window.location.reload(); }
