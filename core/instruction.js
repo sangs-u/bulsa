@@ -90,11 +90,13 @@ function openInstructionPopup(item) {
     bubble.classList.add('hidden');
   }
 
-  // Lang switch
+  // Lang switch and close button
   const langSwitch = document.getElementById('inst-lang-switch');
   if (langSwitch) {
     langSwitch.textContent = instructionLang === 'ko' ? 'EN으로 지시' : 'KO로 지시';
   }
+  const closeBtn = document.getElementById('inst-close-btn');
+  if (closeBtn) closeBtn.textContent = t('close');
 
   // Instruction list
   const list = document.getElementById('inst-list');

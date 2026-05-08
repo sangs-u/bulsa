@@ -102,6 +102,7 @@ const STRINGS = {
     hazardsFixed:    '조치 완료',
     hazardsIgnored:  '방치',
     accidentSituation: '사고 상황',
+    close:             '닫기',
   },
 
   en: {
@@ -207,6 +208,7 @@ const STRINGS = {
     hazardsFixed:   'Fixed',
     hazardsIgnored: 'Ignored',
     accidentSituation: 'Accident Situation',
+    close:             'Close',
   },
 
   vi: {
@@ -312,6 +314,7 @@ const STRINGS = {
     hazardsFixed:   'Đã xử lý',
     hazardsIgnored: 'Bỏ qua',
     accidentSituation: 'Tình huống tai nạn',
+    close:             'Đóng',
   },
 
   ar: {
@@ -417,6 +420,7 @@ const STRINGS = {
     hazardsFixed:   'تمت المعالجة',
     hazardsIgnored: 'مُهمَل',
     accidentSituation: 'وصف الحادث',
+    close:             'إغلاق',
   },
 };
 
