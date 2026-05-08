@@ -25,7 +25,7 @@ const LIFT_CHECKS = [
 function evaluateLift() {
   if (GAME.state.liftStarted || GAME.state.gameOver) return;
   GAME.state.liftStarted = true;
-  GAME.state.phase = 2;
+  // Do NOT overwrite phase here — phase is managed by getCurrentPhase()
   updateHUD();
 
   exitCraneCab();

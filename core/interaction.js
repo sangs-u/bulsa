@@ -27,7 +27,14 @@ function initInteraction() {
     if (e.code === 'Escape') {
       if (INTERACTION.specOpen) { closeSpecPopup(); return; }
       if (GAME.state.craneBoarded) { exitCraneCab(); return; }
-      if (INTERACTION.popupOpen) closePopup();
+      if (INTERACTION.popupOpen) {
+        // Close whichever phase panel is open
+        ['plan-panel','safety-panel','equipment-panel'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el && !el.classList.contains('hidden')) _closePanel(id);
+        });
+        closePopup();
+      }
     }
   });
   document.addEventListener('keyup', e => {
@@ -55,15 +62,23 @@ function updateInteraction() {
 
   let closest = null;
 
+  // Filter interactables by phase: items with a `phase` field are only
+  // active when the current game phase matches. Items without a phase
+  // field are always eligible.
+  const currentPhase = GAME.state.phase || 1;
+  const eligible = GAME.interactables.filter(
+    i => i.phase === undefined || i.phase === currentPhase
+  );
+
   if (hits.length > 0 && hits[0].distance < 4.0) {
-    closest = GAME.interactables.find(i => i.mesh === hits[0].object);
+    closest = eligible.find(i => i.mesh === hits[0].object);
   }
 
   // Proximity fallback for large/invisible triggers
   if (!closest) {
     const cam = GAME.camera.position;
     let minD  = 2.8;
-    GAME.interactables.forEach(item => {
+    eligible.forEach(item => {
       if (!item.mesh) return;
       const d = cam.distanceTo(item.mesh.position);
       if (d < minD) { minD = d; closest = item; }
@@ -255,38 +270,43 @@ function _moveSignalNPC() {
 }
 
 // ── Phase 1: Plan Panel ───────────────────────────────────────
+function _closePanel(panelId) {
+  const p = document.getElementById(panelId);
+  if (p) p.classList.add('hidden');
+  INTERACTION.popupOpen = false;
+  if (GAME.state.gameStarted && !GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
+    document.getElementById('gameCanvas').requestPointerLock();
+  }
+}
+
 function openPlanPanel() {
   document.exitPointerLock();
   INTERACTION.popupOpen = true;
   const panel = document.getElementById('plan-panel');
   panel.classList.remove('hidden');
 
-  const checks = panel.querySelectorAll('.plan-check');
-  const updateProgress = () => {
-    const done = [...checks].filter(c => c.checked).length;
-    document.getElementById('plan-progress-text').textContent = `${done} / ${checks.length} 항목 완료`;
-    document.getElementById('plan-btn-sign').disabled = done < checks.length;
-  };
-  // Re-attach to avoid duplicate listeners on repeated open
-  checks.forEach(c => {
-    const clone = c.cloneNode(true);
-    c.parentNode.replaceChild(clone, c);
+  // Clone to drop old listeners, then re-query fresh nodes
+  panel.querySelectorAll('.plan-check').forEach(c => {
+    c.parentNode.replaceChild(c.cloneNode(true), c);
   });
-  panel.querySelectorAll('.plan-check').forEach(c => c.addEventListener('change', updateProgress));
+  const freshChecks = panel.querySelectorAll('.plan-check');
+
+  const updateProgress = () => {
+    const done = [...freshChecks].filter(c => c.checked).length;
+    document.getElementById('plan-progress-text').textContent = `${done} / ${freshChecks.length} 항목 완료`;
+    document.getElementById('plan-btn-sign').disabled = done < freshChecks.length;
+  };
+  freshChecks.forEach(c => c.addEventListener('change', updateProgress));
   updateProgress();
 
-  const signBtn = document.getElementById('plan-btn-sign');
-  signBtn.onclick = () => {
-    panel.classList.add('hidden');
-    INTERACTION.popupOpen = false;
+  document.getElementById('plan-btn-sign').onclick = () => {
     LIFT_STATE.planWritten = true;
     GAME.state.phase = getCurrentPhase();
     updateHUD();
     showActionNotif('✅ 작업계획서 제출 완료');
-    if (GAME.state.gameStarted && !GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
-      document.getElementById('gameCanvas').requestPointerLock();
-    }
+    _closePanel('plan-panel');
   };
+  document.getElementById('plan-btn-cancel').onclick = () => _closePanel('plan-panel');
 }
 
 // ── Phase 2: Safety Panel ─────────────────────────────────────
@@ -329,16 +349,13 @@ function openSafetyPanel() {
   };
 
   document.getElementById('safety-btn-confirm').onclick = () => {
-    panel.classList.add('hidden');
-    INTERACTION.popupOpen = false;
     LIFT_STATE.safetyChecked = true;
     GAME.state.phase = getCurrentPhase();
     updateHUD();
     showActionNotif('✅ 안전성 검토 완료');
-    if (GAME.state.gameStarted && !GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
-      document.getElementById('gameCanvas').requestPointerLock();
-    }
+    _closePanel('safety-panel');
   };
+  document.getElementById('safety-btn-cancel').onclick = () => _closePanel('safety-panel');
 }
 
 // ── Phase 3: Equipment Panel ──────────────────────────────────
@@ -369,7 +386,11 @@ function openEquipmentPanel() {
 
   _animateOutriggers(() => {
     const eqOut = document.getElementById('eq-outrigger');
-    if (eqOut) { eqOut.classList.add('done'); eqOut.querySelector('.eq-status').textContent = '완료'; }
+    if (eqOut) {
+      eqOut.classList.add('done');
+      eqOut.querySelector('.eq-icon').textContent = '✅';
+      eqOut.querySelector('.eq-status').textContent = '완료';
+    }
     outriggerDone = true;
     document.getElementById('level-indicator').classList.remove('hidden');
     updateEquipment();
@@ -377,13 +398,21 @@ function openEquipmentPanel() {
 
   document.getElementById('level-confirm-btn').onclick = () => {
     const eqLvl = document.getElementById('eq-level');
-    if (eqLvl) { eqLvl.classList.add('done'); eqLvl.querySelector('.eq-status').textContent = '완료'; }
+    if (eqLvl) {
+      eqLvl.classList.add('done');
+      eqLvl.querySelector('.eq-icon').textContent = '✅';
+      eqLvl.querySelector('.eq-status').textContent = '완료';
+    }
     document.getElementById('level-indicator').classList.add('hidden');
     levelDone = true;
 
     setTimeout(() => {
       const eqOl = document.getElementById('eq-overload');
-      if (eqOl) { eqOl.classList.add('done'); eqOl.querySelector('.eq-status').textContent = '완료'; }
+      if (eqOl) {
+        eqOl.classList.add('done');
+        eqOl.querySelector('.eq-icon').textContent = '✅';
+        eqOl.querySelector('.eq-status').textContent = '완료';
+      }
       overloadDone = true;
       updateEquipment();
     }, 1500);
@@ -392,16 +421,13 @@ function openEquipmentPanel() {
   };
 
   document.getElementById('equipment-btn-confirm').onclick = () => {
-    panel.classList.add('hidden');
-    INTERACTION.popupOpen = false;
     LIFT_STATE.outriggerExtended = true;
     GAME.state.phase = getCurrentPhase();
     updateHUD();
     showActionNotif('✅ 장비 세팅 완료 — 줄걸이 작업을 시작하세요');
-    if (GAME.state.gameStarted && !GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
-      document.getElementById('gameCanvas').requestPointerLock();
-    }
+    _closePanel('equipment-panel');
   };
+  document.getElementById('equipment-btn-cancel').onclick = () => _closePanel('equipment-panel');
 }
 
 function _animateOutriggers(onComplete) {
@@ -428,6 +454,10 @@ function _animateOutriggers(onComplete) {
 
 // ── Spec sheet popup ──────────────────────────────────────────
 function openSpecPopup() {
+  if (!LIFT_STATE.outriggerExtended) {
+    showActionNotif('먼저 장비 세팅(Phase 3)을 완료하세요');
+    return;
+  }
   LIFT_STATE.specChecked = true;
   INTERACTION.specOpen   = true;
   INTERACTION.popupOpen  = true;
@@ -458,6 +488,10 @@ function closeSpecPopup() {
 // ── Crane cab ─────────────────────────────────────────────────
 function boardCrane() {
   if (GAME.state.craneBoarded) return;
+  if (!LIFT_STATE.signalAssigned || !LIFT_STATE.workerEvacuated) {
+    showActionNotif('신호수 배치 및 작업반경 대피를 먼저 완료하세요');
+    return;
+  }
   GAME.state.craneBoarded = true;
   INTERACTION.popupOpen   = true;
   if (document.pointerLockElement) document.exitPointerLock();
