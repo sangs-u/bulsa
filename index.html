@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,16 +10,62 @@
   <style>
     body { overflow-y: auto; }
     .hub-body { min-height: 100vh; }
+
+    /* v1.0 progress bar */
+    .v1-progress {
+      width: 100%;
+      max-width: 480px;
+      margin: 18px auto 0;
+      padding: 0 16px;
+    }
+    .v1-progress-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .v1-progress-track {
+      height: 4px;
+      background: rgba(44,111,172,0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .v1-progress-fill {
+      height: 100%;
+      width: 20%; /* 1/5 scenarios */
+      background: linear-gradient(90deg, var(--teal), var(--steel));
+      border-radius: 2px;
+      transition: width 0.6s ease;
+    }
+
+    /* Arabic RTL adjustments */
+    [dir="rtl"] .hub-lang { flex-direction: row-reverse; }
+    [dir="rtl"] .scenario-grid { direction: rtl; }
+    [dir="rtl"] .card-badge { margin-right: 0; margin-left: auto; }
   </style>
 </head>
 <body class="hub-body">
 
   <header class="hub-header">
     <div class="hub-logo">BULSA</div>
-    <p class="hub-tagline" id="tagline">당신이 무시한 그 위험이, 오늘 사고가 됩니다.</p>
-    <div class="hub-lang">
+    <p class="hub-tagline" id="tagline"></p>
+
+    <div class="v1-progress">
+      <div class="v1-progress-label">
+        <span id="v1-label"></span>
+        <span>1 / 5</span>
+      </div>
+      <div class="v1-progress-track">
+        <div class="v1-progress-fill"></div>
+      </div>
+    </div>
+
+    <div class="hub-lang" style="margin-top:18px;">
       <button onclick="switchLang('ko')" id="lang-ko" class="active">한국어</button>
       <button onclick="switchLang('en')" id="lang-en">English</button>
+      <button onclick="switchLang('vi')" id="lang-vi">Tiếng Việt</button>
+      <button onclick="switchLang('ar')" id="lang-ar">العربية</button>
     </div>
   </header>
 
@@ -28,44 +74,34 @@
   <script src="i18n/strings.js"></script>
   <script>
     const SCENARIOS = [
-      {
-        id: 's01',
-        num: 'S-01',
-        titleKey: 's01Title',
-        descKey: 's01Desc',
-        koshaKey: 's01Kosha',
-        ready: true,
-        url: 'game.html?s=lifting',
-      },
-      { id: 's02', num: 'S-02', title: '고소작업 (비계/사다리)', desc: 'KOSHA GUIDE C-29', ready: false },
-      { id: 's03', num: 'S-03', title: '밀폐공간 작업', desc: 'KOSHA GUIDE E-G-18-2026', ready: false },
-      { id: 's04', num: 'S-04', title: '전기작업 (LOTO)', desc: '산안규칙 제319조~321조', ready: false },
-      { id: 's05', num: 'S-05', title: '화재/폭발 (용접)', desc: 'KOSHA GUIDE P-2009-53', ready: false },
-      { id: 's06', num: 'S-06', title: '차량계 건설기계', desc: '산안규칙 제98조~101조', ready: false },
+      { id: 's01', num: 'S-01', titleKey: 's01Title', descKey: 's01Desc', koshaKey: 's01Kosha', ready: true,  url: 'game.html?s=lifting' },
+      { id: 's02', num: 'S-02', titleKey: 's02Title', descKey: 's02Desc', koshaKey: 's02Kosha', ready: false },
+      { id: 's03', num: 'S-03', titleKey: 's03Title', descKey: 's03Desc', koshaKey: 's03Kosha', ready: false },
+      { id: 's04', num: 'S-04', titleKey: 's04Title', descKey: 's04Desc', koshaKey: 's04Kosha', ready: false },
+      { id: 's05', num: 'S-05', titleKey: 's05Title', descKey: 's05Desc', koshaKey: 's05Kosha', ready: false },
+      { id: 's06', num: 'S-06', titleKey: 's06Title', descKey: 's06Desc', koshaKey: 's06Kosha', ready: false },
     ];
 
     function renderGrid() {
       const grid = document.getElementById('grid');
       grid.innerHTML = '';
-      document.getElementById('tagline').textContent = t('tagline');
+      document.getElementById('tagline').textContent  = t('tagline');
+      document.getElementById('v1-label').textContent = t('v1Progress');
 
       SCENARIOS.forEach(s => {
-        const card = document.createElement('div');
+        const card  = document.createElement('div');
         card.className = 'scenario-card ' + (s.ready ? 'ready' : 'soon');
-
-        const title = s.titleKey ? t(s.titleKey) : s.title;
-        const desc  = s.descKey  ? t(s.descKey)  : s.desc;
-        const kosha = s.koshaKey ? t(s.koshaKey) : '';
+        if (s.ready) card.onclick = () => startScenario(s.url);
 
         card.innerHTML = `
           <span class="card-badge ${s.ready ? 'badge-ready' : 'badge-soon'}">
             ${s.ready ? t('scenarioReady') : t('scenarioSoon')}
           </span>
           <span class="card-num">${s.num}</span>
-          <div class="card-title">${title}</div>
-          <div class="card-desc">${desc}</div>
-          ${kosha ? `<div class="card-kosha">${kosha}</div>` : ''}
-          ${s.ready ? `<button class="card-btn" onclick="startScenario('${s.url}')">${t('scenarioReady')}</button>` : ''}
+          <div class="card-title">${t(s.titleKey)}</div>
+          <div class="card-desc">${t(s.descKey)}</div>
+          <div class="card-kosha">${t(s.koshaKey)}</div>
+          ${s.ready ? `<button class="card-btn" onclick="event.stopPropagation();startScenario('${s.url}')">${t('scenarioReady')}</button>` : ''}
         `;
         grid.appendChild(card);
       });
@@ -77,8 +113,10 @@
 
     function switchLang(lang) {
       setLang(lang);
-      document.getElementById('lang-ko').classList.toggle('active', lang === 'ko');
-      document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+      ['ko','en','vi','ar'].forEach(l => {
+        const btn = document.getElementById('lang-' + l);
+        if (btn) btn.classList.toggle('active', l === lang);
+      });
       renderGrid();
     }
 
