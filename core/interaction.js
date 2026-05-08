@@ -531,7 +531,7 @@ function closeSpecPopup() {
 
 // ── Crane cab ─────────────────────────────────────────────────
 function boardCrane() {
-  if (GAME.state.craneBoarded) return;
+  if (GAME.state.craneBoarded || GAME.state.liftStarted) return;
   if (!LIFT_STATE.signalAssigned || !LIFT_STATE.workerEvacuated) {
     showActionNotif('신호수 배치 및 작업반경 대피를 먼저 완료하세요');
     return;
