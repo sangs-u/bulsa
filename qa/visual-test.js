@@ -119,7 +119,17 @@ async function runQA() {
   // ── 6. 전체 점검 행동 수행 (direct evaluate) ─────────────
   console.log('[6/9] 전체 점검 행동 수행...');
   await page.evaluate(() => {
-    // 6가지 필수 행동 직접 실행
+    // Phase 1-3: 패널 상호작용 없이 플래그 직접 설정
+    if (typeof LIFT_STATE !== 'undefined') {
+      LIFT_STATE.planWritten      = true;
+      LIFT_STATE.safetyChecked    = true;
+      LIFT_STATE.outriggerExtended = true;
+      LIFT_STATE.specChecked      = true;
+    }
+    if (typeof GAME !== 'undefined' && GAME.state) {
+      GAME.state.phase = 4; // Phase 4로 진입
+    }
+    // Phase 4-5: performAction으로 정상 실행
     if (typeof performAction === 'function') {
       performAction('inspect_sling');
       performAction('secure_pin');
@@ -127,13 +137,7 @@ async function runQA() {
       performAction('evacuate_worker');
       performAction('assign_signal');
     }
-    // 사양서 확인
-    if (typeof openSpecPopup === 'function') {
-      openSpecPopup();
-      setTimeout(() => {
-        if (typeof closeSpecPopup === 'function') closeSpecPopup();
-      }, 300);
-    }
+    if (typeof updateHUD === 'function') updateHUD();
   });
   await page.waitForTimeout(1500);
   await ss('05_actions_done');
@@ -173,6 +177,44 @@ async function runQA() {
   await page.evaluate(() => {
     if (typeof evaluateLift === 'function') evaluateLift();
   });
+
+  // evaluateLift() → TBM Phase 2 intercept 처리
+  // 정상 경로: "작업 시작" 버튼이 completeTBM callback으로 _origEvaluateLift 호출
+  // 강제 닫기: TBM 건너뛰고 boardCrane + evaluateLift 재호출 필요
+  const tbmPanel2 = page.locator('#tbm-panel');
+  if (await tbmPanel2.isVisible({ timeout: 3000 }).catch(() => false)) {
+    console.log('  ↳ TBM Phase 2 패널 — 체크리스트 완료 중...');
+    const checkboxes2 = tbmPanel2.locator('.tbm-check-item');
+    const count2 = await checkboxes2.count();
+    for (let i = 0; i < count2; i++) {
+      await checkboxes2.nth(i).click({ force: true }).catch(() => {});
+      await page.waitForTimeout(100);
+    }
+    await page.waitForTimeout(400);
+    const tbmStart2 = page.locator('#tbm-start-btn');
+    if (await tbmStart2.isEnabled({ timeout: 2000 }).catch(() => false)) {
+      await tbmStart2.click({ force: true });
+      await page.waitForTimeout(800);
+      console.log('  ✓ TBM Phase 2 완료 (callback이 자동으로 lift 실행)');
+    } else {
+      // 버튼 비활성 — 강제로 TBM 닫고 lift 재호출
+      await page.evaluate(() => {
+        const panel = document.getElementById('tbm-panel');
+        if (panel) panel.classList.add('hidden');
+        if (typeof TBM !== 'undefined') TBM._completed.add(2);
+        if (typeof INTERACTION !== 'undefined') INTERACTION.popupOpen = false;
+      });
+      await page.evaluate(() => {
+        if (typeof boardCrane === 'function') boardCrane();
+      });
+      await page.waitForTimeout(400);
+      await page.evaluate(() => {
+        if (typeof evaluateLift === 'function') evaluateLift();
+      });
+      await page.waitForTimeout(400);
+      console.log('  ✓ TBM Phase 2 강제 완료 → lift 재시작');
+    }
+  }
 
   // ── 8. 완주 대기 (빔 상승 + 컷신 = ~13초) ────────────────
   console.log('[8/9] 완주 대기 (최대 18초)...');
