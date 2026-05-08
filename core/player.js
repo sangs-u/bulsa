@@ -16,6 +16,8 @@ const PLAYER = {
   joyY: 0,
   lookDX: 0,
   lookDY: 0,
+  // Collision
+  _collisionRay: null, // reused Raycaster instance
 };
 
 // Fixed camera presets — populated in initPlayer after Three.js is ready
@@ -24,6 +26,7 @@ let FIXED_CAMS;
 function initPlayer() {
   PLAYER.euler   = new THREE.Euler(0, 0, 0, 'YXZ');
   PLAYER.worldPos = new THREE.Vector3(0, 0, 12);
+  PLAYER._collisionRay = new THREE.Raycaster();
 
   FIXED_CAMS = [
     { pos: new THREE.Vector3(18,  9,  5),  target: new THREE.Vector3(0,  3, -10) }, // 전체 조망
@@ -130,6 +133,27 @@ function updatePlayer(delta) {
 
     if (move.lengthSq() > 0) {
       move.normalize().multiplyScalar(speed * delta);
+
+      // ── Collision detection (raycaster-based wall slide) ──
+      const colliders = GAME.colliders;
+      if (colliders && colliders.length > 0) {
+        const origin  = new THREE.Vector3(PLAYER.worldPos.x, 1.0, PLAYER.worldPos.z);
+        const moveDir = move.clone().normalize();
+        PLAYER._collisionRay.set(origin, moveDir);
+        PLAYER._collisionRay.near = 0;
+        PLAYER._collisionRay.far  = 0.55;
+        const hits = PLAYER._collisionRay.intersectObjects(colliders, true);
+        if (hits.length > 0) {
+          const faceNormal = hits[0].face ? hits[0].face.normal.clone() : moveDir.clone().negate();
+          const normal = faceNormal.transformDirection(hits[0].object.matrixWorld);
+          normal.y = 0;
+          normal.normalize();
+          const dot = move.dot(normal);
+          if (dot < 0) move.addScaledVector(normal, -dot); // slide along wall
+        }
+      }
+      // ─────────────────────────────────────────────────────
+
       PLAYER.worldPos.add(move);
       PLAYER.worldPos.x = Math.max(-38, Math.min(38, PLAYER.worldPos.x));
       PLAYER.worldPos.z = Math.max(-38, Math.min(38, PLAYER.worldPos.z));

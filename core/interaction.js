@@ -266,7 +266,32 @@ function animateLift() {
 
   (function rise() {
     if (GAME.state.gameOver) return;
-    beam.position.y += speed * 0.016;
+    const dy = speed * 0.016;
+
+    // Move beam
+    beam.position.y += dy;
+
+    // Move hook block + curve together with beam
+    const h = GAME._craneHook;
+    if (h) {
+      if (h.block) h.block.position.y += dy;
+      if (h.curve) h.curve.position.y += dy;
+
+      // Shorten hoist cable: keep top point fixed, lower point tracks hook block
+      if (h.hoistCable) {
+        const pos = h.hoistCable.geometry.attributes.position;
+        // index 1 = bottom endpoint (hook end)
+        pos.setY(1, pos.getY(1) + dy);
+        pos.needsUpdate = true;
+      }
+    }
+
+    // Move sling wires with the beam (both endpoints shift equally)
+    const slArr = GAME._slingLines;
+    if (slArr) {
+      slArr.forEach(sl => { sl.position.y += dy; });
+    }
+
     if (beam.position.y < target) {
       requestAnimationFrame(rise);
     } else {

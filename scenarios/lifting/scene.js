@@ -2,6 +2,7 @@
 
 function buildLiftingScene() {
   const scene = GAME.scene;
+  GAME.colliders = [];
 
   // ── Sky + Fog ──────────────────────────────────────────
   scene.background = new THREE.Color(0x7AA8C8);
@@ -107,6 +108,7 @@ function _buildStructure(scene) {
     col.castShadow = true;
     col.receiveShadow = true;
     scene.add(col);
+    GAME.colliders.push(col);
 
     // Column caps at each floor level (beam seating zone)
     [flH, flH * 2].forEach(fy => {
@@ -171,15 +173,18 @@ function _buildStructure(scene) {
   const frontWall = new THREE.Mesh(new THREE.BoxGeometry(10.7, flH * 0.55, 0.20), wallMat);
   frontWall.position.set(0, flH * 0.275, -11.9);
   scene.add(frontWall);
+  GAME.colliders.push(frontWall);
 
   const backWall = new THREE.Mesh(new THREE.BoxGeometry(10.7, flH, 0.20), wallMat);
   backWall.position.set(0, flH * 0.5, -22.1);
   scene.add(backWall);
+  GAME.colliders.push(backWall);
   // Side walls
   [-5.1, 5.1].forEach(x => {
     const sw = new THREE.Mesh(new THREE.BoxGeometry(0.20, flH * 0.7, 10.7), wallMat);
     sw.position.set(x, flH * 0.35, -17);
     scene.add(sw);
+    GAME.colliders.push(sw);
   });
 }
 
@@ -194,6 +199,7 @@ function _buildCrane(scene) {
   mast.position.set(14, 11, -8);
   mast.castShadow = true;
   scene.add(mast);
+  GAME.colliders.push(mast);
 
   // Lattice bracing — thin cylinders at 45° around mast
   const brace = new THREE.MeshLambertMaterial({ color: 0xC09814 });
@@ -248,12 +254,12 @@ function _buildCrane(scene) {
 
   // Main hoist cable
   const wireMat = new THREE.LineBasicMaterial({ color: 0x282420 });
-  scene.add(new THREE.Line(
-    new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-2, 22.58, -8),
-      new THREE.Vector3(-2, 0.88, -8),
-    ]), wireMat
-  ));
+  const hoistCableGeo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-2, 22.58, -8),
+    new THREE.Vector3(-2, 0.88, -8),
+  ]);
+  const hoistCable = new THREE.Line(hoistCableGeo, wireMat);
+  scene.add(hoistCable);
 
   // Hook block (CylinderGeometry) + torus curve
   const hookBlock = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.22, 0.42, 18), dark);
@@ -267,11 +273,18 @@ function _buildCrane(scene) {
   hookCurve.rotation.y = Math.PI / 2;
   scene.add(hookCurve);
 
+  GAME._craneHook = {
+    block:      hookBlock,
+    curve:      hookCurve,
+    hoistCable: hoistCable,
+  };
+
   // Operator cabin
   const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.4, 2.2), cabin);
   cabinMesh.position.set(14, 1.2, -5.4);
   cabinMesh.castShadow = true;
   scene.add(cabinMesh);
+  GAME.colliders.push(cabinMesh);
 
   // Cabin window
   const winMat = new THREE.MeshLambertMaterial({ color: 0x7BAABB, transparent: true, opacity: 0.62 });
@@ -322,13 +335,17 @@ function _buildBeam(scene) {
 
   // Sling wires (steel-gray)
   const slingMat = new THREE.LineBasicMaterial({ color: 0x686462 });
+  const slingLines = [];
   [[-3, 0.56], [1, 0.56]].forEach(([dx]) => {
     const pts = [
       new THREE.Vector3(-2 + dx, 0.56, -8),
       new THREE.Vector3(-2, 0.88, -8),
     ];
-    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), slingMat));
+    const sl = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), slingMat);
+    scene.add(sl);
+    slingLines.push(sl);
   });
+  GAME._slingLines = slingLines;
 }
 
 // ── Safety barriers ───────────────────────────────────────
