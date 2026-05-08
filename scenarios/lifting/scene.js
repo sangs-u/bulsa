@@ -162,16 +162,13 @@ function _buildStructure(scene) {
   });
 
   // ── Ground-floor exterior walls ──────────────────────────
-  // Front (partial — crane access opening)
-  scene.add(Object.assign(
-    new THREE.Mesh(new THREE.BoxGeometry(10.7, flH * 0.55, 0.20), wallMat),
-    { position: new THREE.Vector3(0, flH * 0.275, -11.9) }
-  ));
-  // Back wall
-  scene.add(Object.assign(
-    new THREE.Mesh(new THREE.BoxGeometry(10.7, flH, 0.20), wallMat),
-    { position: new THREE.Vector3(0, flH * 0.5, -22.1) }
-  ));
+  const frontWall = new THREE.Mesh(new THREE.BoxGeometry(10.7, flH * 0.55, 0.20), wallMat);
+  frontWall.position.set(0, flH * 0.275, -11.9);
+  scene.add(frontWall);
+
+  const backWall = new THREE.Mesh(new THREE.BoxGeometry(10.7, flH, 0.20), wallMat);
+  backWall.position.set(0, flH * 0.5, -22.1);
+  scene.add(backWall);
   // Side walls
   [-5.1, 5.1].forEach(x => {
     const sw = new THREE.Mesh(new THREE.BoxGeometry(0.20, flH * 0.7, 10.7), wallMat);
