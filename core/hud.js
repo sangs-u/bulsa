@@ -6,7 +6,7 @@ const PHASE_MISSIONS = {
   3: { ko: '🏗 크레인 옆으로 이동해 아웃트리거를 확장하세요 (E키)', en: '🏗 Go to crane and extend outriggers (E)', vi: '🏗 Đến cần cẩu và mở rộng chân chống (E)', ar: '🏗 اذهب إلى الرافعة ومدد أرجل الدعم (E)' },
   4: { ko: '🔧 슬링 점검·안전핀 체결·슬링 각도를 직접 확인하세요 (E키)', en: '🔧 Inspect sling, secure pin, and measure sling angle (E)', vi: '🔧 Kiểm tra dây cáp, chốt an toàn và đo góc dây (E)', ar: '🔧 افحص الحبال وأحكم البين وقِس زاوية الحبل (E)' },
   5: { ko: '🦺 신호수 배치 및 작업반경 대피를 확인하세요', en: '🦺 Assign signalman and evacuate work zone', vi: '🦺 Bố trí người ra hiệu và sơ tán khu vực làm việc', ar: '🦺 عيّن المُوجِّه وأخلِ منطقة العمل' },
-  6: { ko: '🏋 크레인 운전석에서 인양을 시작하세요', en: '🏋 Start lifting from crane cab', vi: '🏋 Bắt đầu nâng tải từ cabin cần cẩu', ar: '🏋 ابدأ الرفع من مقصورة الرافعة' },
+  6: { ko: '🏋 사양서 확인(E) → 운전석 탑승(E) → 인양 시작', en: '🏋 Check spec sheet (E) → Board cab (E) → Start lift', vi: '🏋 Xem tài liệu (E) → Vào cabin (E) → Bắt đầu nâng', ar: '🏋 تحقق من المواصفات (E) → اركب المقصورة (E) → ابدأ الرفع' },
 };
 
 const PHASE_NAMES = {

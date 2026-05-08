@@ -16,6 +16,7 @@ const LIFT_STATE = {
 // Evaluated in priority order: first failure = accident
 const LIFT_CHECKS = [
   { key: 'workerEvacuated', accidentId: 'worker_crush', prob: 0.95 },
+  { key: 'specChecked',     accidentId: 'overload',     prob: 0.45 },
   { key: 'slingInspected',  accidentId: 'sling_snap',   prob: 0.85 },
   { key: 'pinSecured',      accidentId: 'pin_drop',     prob: 0.82 },
   { key: 'angleMeasured',   accidentId: 'angle_break',  prob: 0.70 },

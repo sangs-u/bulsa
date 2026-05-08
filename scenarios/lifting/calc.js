@@ -77,7 +77,7 @@ function calcRigging(params) {
 // ── S01 시나리오 리깅 파라미터 ──────────────────────────────
 const S01_PARAMS = {
   load: {
-    weight:  2500,   // RC 보 실중량 (kg)
+    weight:  3000,   // RC 보 실중량 (kg)
     dynK:    1.2,    // 동적하중계수 (일반 크레인)
     rigging: 320,    // 달기구 자중 (kg)
   },

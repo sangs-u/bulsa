@@ -2,7 +2,7 @@ const STRINGS = {
   ko: {
     briefingBadge:        '작업 지시서',
     briefingTitle:        '줄걸이 · 인양 작업',
-    briefingContext:      '현장 감독관 지시에 따라 금일 오전, RC 보(2,500 kg)를 타워크레인으로 3층 슬래브 거치 위치에 인양합니다. 현장을 직접 이동하며 필요한 조치를 수행하세요.',
+    briefingContext:      '현장 감독관 지시에 따라 금일 오전, RC 보(3,000 kg)를 타워크레인으로 3층 슬래브 거치 위치에 인양합니다. 현장을 직접 이동하며 필요한 조치를 수행하세요.',
     briefingStep1:        '슬링 점검 · 안전핀 체결 · 사양서 확인 · 각도 측정',
     briefingStep2:        '신호수 위치 지정 · 위험구역 근로자 대피 지시',
     briefingStep3:        '모든 조치 후 크레인 운전석 탑승 → 인양 시작',
@@ -106,7 +106,7 @@ const STRINGS = {
   en: {
     briefingBadge:        'Work Order',
     briefingTitle:        'Rigging & Lifting',
-    briefingContext:      'Per site supervisor instructions, an RC beam (2,500 kg) will be lifted to the 3rd floor slab position using the tower crane. Walk the site and perform required safety actions before lifting.',
+    briefingContext:      'Per site supervisor instructions, an RC beam (3,000 kg) will be lifted to the 3rd floor slab position using the tower crane. Walk the site and perform required safety actions before lifting.',
     briefingStep1:        'Sling inspection · Safety pin · Spec review · Angle check',
     briefingStep2:        'Position signal person · Evacuate worker from danger zone',
     briefingStep3:        'After all actions → Board crane cab → Start lift',
@@ -314,7 +314,7 @@ const STRINGS = {
   ar: {
     briefingBadge:        'أمر العمل',
     briefingTitle:        'ربط الأحمال والرفع',
-    briefingContext:      'وفقاً لتعليمات مشرف الموقع، سيتم رفع عارضة RC (2,500 كجم) إلى موقع البلاطة في الطابق الثالث بواسطة الرافعة البرجية. تجول في الموقع ونفذ إجراءات السلامة اللازمة.',
+    briefingContext:      'وفقاً لتعليمات مشرف الموقع، سيتم رفع عارضة RC (3,000 كجم) إلى موقع البلاطة في الطابق الثالث بواسطة الرافعة البرجية. تجول في الموقع ونفذ إجراءات السلامة اللازمة.',
     briefingStep1:        'فحص حبل الربط · تثبيت مسمار الأمان · مراجعة المواصفات · قياس الزاوية',
     briefingStep2:        'تحديد موقع المُوجِّه · إخلاء العمال من منطقة الخطر',
     briefingStep3:        'بعد كل الإجراءات ← ركوب مقصورة الرافعة ← بدء الرفع',

@@ -58,6 +58,12 @@ function _triggerAccidentVFX(accidentId) {
       _animBeamFall();
       break;
 
+    case 'overload':
+      // 붐 파손 — 빔 낙하 + 슬링 작업자 래그돌
+      _animBeamFall();
+      _ragdollNPC('park', Math.PI * 0.3);
+      break;
+
     case 'no_signal':
       // 신호수 래그돌
       _ragdollNPC('gimc', Math.PI);

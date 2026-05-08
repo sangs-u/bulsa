@@ -199,7 +199,7 @@ function _checkPhase5Done() {
   GAME.state.phase = getCurrentPhase();
   updateHUD();
   if (LIFT_STATE.signalAssigned && LIFT_STATE.workerEvacuated) {
-    showActionNotif('✅ 현장 세팅 완료 → 크레인 운전석 탑승 후 인양 시작 (E키)', 3500);
+    showActionNotif('✅ 현장 세팅 완료 → 크레인 앞 사양서 확인 후 운전석 탑승 (E키)', 3500);
     _showPhasePopup(6, '인양 실행');
   } else {
     const remain = [
@@ -363,7 +363,7 @@ function openSafetyPanel() {
   document.getElementById('safety-btn-confirm').classList.add('hidden');
 
   document.getElementById('safety-btn-calc').onclick = () => {
-    const W        = 3.2;  // ton
+    const W        = 3.0;  // ton
     const alpha    = 58;   // degrees
     const betaRad  = (alpha / 2) * Math.PI / 180;
     const K        = 1 / Math.cos(betaRad);
@@ -534,6 +534,10 @@ function boardCrane() {
   if (GAME.state.craneBoarded) return;
   if (!LIFT_STATE.signalAssigned || !LIFT_STATE.workerEvacuated) {
     showActionNotif('신호수 배치 및 작업반경 대피를 먼저 완료하세요');
+    return;
+  }
+  if (!LIFT_STATE.specChecked) {
+    showActionNotif('⚠ 사양서 미확인 — 운전석 앞 사양서를 먼저 확인하세요 (E키)', 3000);
     return;
   }
   GAME.state.craneBoarded = true;
