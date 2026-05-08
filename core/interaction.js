@@ -128,7 +128,7 @@ function performAction(actionId) {
 
     case 'write_plan':
       if (LIFT_STATE.planWritten) {
-        showActionNotif('이미 작성된 계획서입니다');
+        showActionNotif(t('notifPlanAlready'));
         break;
       }
       openPlanPanel();
@@ -136,11 +136,11 @@ function performAction(actionId) {
 
     case 'safety_review':
       if (!LIFT_STATE.planWritten) {
-        showActionNotif('먼저 작업계획서를 작성하세요');
+        showActionNotif(t('notifWritePlanFirst'));
         break;
       }
       if (LIFT_STATE.safetyChecked) {
-        showActionNotif('안전성 검토가 완료되었습니다');
+        showActionNotif(t('notifSafetyAlready'));
         break;
       }
       openSafetyPanel();
@@ -148,11 +148,11 @@ function performAction(actionId) {
 
     case 'extend_outrigger':
       if (!LIFT_STATE.safetyChecked) {
-        showActionNotif('먼저 안전성 검토를 완료하세요');
+        showActionNotif(t('notifSafetyFirst'));
         break;
       }
       if (LIFT_STATE.outriggerExtended) {
-        showActionNotif('아웃트리거가 이미 확장되었습니다');
+        showActionNotif(t('notifOutriggerAlready'));
         break;
       }
       openEquipmentPanel();
@@ -161,19 +161,19 @@ function performAction(actionId) {
     case 'inspect_sling':
       LIFT_STATE.slingInspected = true;
       _dimActionMesh('inspect_sling');
-      _checkPhase4Done('슬링 점검');
+      _checkPhase4Done('itemSling');
       break;
 
     case 'secure_pin':
       LIFT_STATE.pinSecured = true;
       _dimActionMesh('secure_pin');
-      _checkPhase4Done('안전핀 체결');
+      _checkPhase4Done('itemPin');
       break;
 
     case 'measure_angle':
       LIFT_STATE.angleMeasured = true;
       _dimActionMesh('measure_angle');
-      _checkPhase4Done('슬링 각도 58° 측정');
+      _checkPhase4Done('itemAngle');
       break;
 
     case 'evacuate_worker':
@@ -199,33 +199,33 @@ function _checkPhase5Done() {
   GAME.state.phase = getCurrentPhase();
   updateHUD();
   if (LIFT_STATE.signalAssigned && LIFT_STATE.workerEvacuated) {
-    showActionNotif('✅ 현장 세팅 완료 → 크레인 앞 사양서 확인 후 운전석 탑승 (E키)', 3500);
-    _showPhasePopup(6, '인양 실행');
+    showActionNotif(t('notifSiteDone'), 3500);
+    _showPhasePopup(6, PHASE_NAMES[6][currentLang] || PHASE_NAMES[6].ko);
   } else {
     const remain = [
-      !LIFT_STATE.signalAssigned   && '신호수 배치',
-      !LIFT_STATE.workerEvacuated  && '반경 대피',
+      !LIFT_STATE.signalAssigned  && t('itemSignal'),
+      !LIFT_STATE.workerEvacuated && t('itemEvacuate'),
     ].filter(Boolean);
-    if (remain.length > 0) showActionNotif(`✅ 완료. 남은 항목: ${remain.join(' · ')}`);
+    if (remain.length > 0) showActionNotif(`✅ ${t('notifRemain')}: ${remain.join(' · ')}`);
   }
 }
 
 // Phase 4 완료 확인: 3개 모두 완료 시 Phase 5 진행
-function _checkPhase4Done(itemLabel) {
+function _checkPhase4Done(itemKey) {
   GAME.state.phase = getCurrentPhase();
   updateHUD();
   const done = LIFT_STATE.slingInspected && LIFT_STATE.pinSecured && LIFT_STATE.angleMeasured;
   if (done && GAME.state.phase === 5) {
-    showActionNotif('✅ 줄걸이 점검 완료 → 신호수 배치·반경 대피 진행 (E키)', 3500);
-    _showPhasePopup(5, '현장 세팅');
+    showActionNotif(t('notifRiggingDone'), 3500);
+    _showPhasePopup(5, PHASE_NAMES[5][currentLang] || PHASE_NAMES[5].ko);
   } else {
     const remain = [
-      !LIFT_STATE.slingInspected && '슬링 점검',
-      !LIFT_STATE.pinSecured     && '안전핀 체결',
-      !LIFT_STATE.angleMeasured  && '각도 측정',
+      !LIFT_STATE.slingInspected && t('itemSling'),
+      !LIFT_STATE.pinSecured     && t('itemPin'),
+      !LIFT_STATE.angleMeasured  && t('itemAngle'),
     ].filter(Boolean);
-    const label = itemLabel ? `✅ ${itemLabel} 완료` : '✅ 완료';
-    const msg   = remain.length > 0 ? `${label}  남은: ${remain.join(' · ')}` : label;
+    const label = itemKey ? `✅ ${t(itemKey)}` : '✅';
+    const msg   = remain.length > 0 ? `${label}  ${t('notifRemain')}: ${remain.join(' · ')}` : label;
     showActionNotif(msg, 3000);
   }
 }
@@ -334,7 +334,7 @@ function openPlanPanel() {
 
   const updateProgress = () => {
     const done = [...freshChecks].filter(c => c.checked).length;
-    document.getElementById('plan-progress-text').textContent = `${done} / ${freshChecks.length} 항목 완료`;
+    document.getElementById('plan-progress-text').textContent = `${done} / ${freshChecks.length} ${t('itemsComplete')}`;
     document.getElementById('plan-btn-sign').disabled = done < freshChecks.length;
   };
   freshChecks.forEach(c => c.addEventListener('change', updateProgress));
@@ -344,8 +344,8 @@ function openPlanPanel() {
     LIFT_STATE.planWritten = true;
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 작업계획서 완료 → 같은 책상에서 E키로 안전성 검토 진행', 3500);
-    _showPhasePopup(2, '안전성 검토');
+    showActionNotif(t('notifPlanDone'), 3500);
+    _showPhasePopup(2, PHASE_NAMES[2][currentLang] || PHASE_NAMES[2].ko);
     _closePanel('plan-panel');
   };
   document.getElementById('plan-btn-cancel').onclick = () => _closePanel('plan-panel');
@@ -382,11 +382,14 @@ function openSafetyPanel() {
 
     if (sr <= 1.0) {
       resultEl.classList.add('ok');
-      resultEl.textContent = '✅ 안전 — 사용률 ' + (sr * 100).toFixed(1) + '% (기준: 100% 이하)';
+      const safeMsg = { ko: '✅ 안전 — 사용률 ', en: '✅ Safe — Usage ratio ', vi: '✅ An toàn — Tỷ lệ tải ', ar: '✅ آمن — نسبة التحميل ' };
+      const safeRef = { ko: '% (기준: 100% 이하)', en: '% (limit: ≤100%)', vi: '% (giới hạn: ≤100%)', ar: '% (الحد: ≤100%)' };
+      resultEl.textContent = (safeMsg[currentLang] || safeMsg.ko) + (sr * 100).toFixed(1) + (safeRef[currentLang] || safeRef.ko);
       document.getElementById('safety-btn-confirm').classList.remove('hidden');
     } else {
       resultEl.classList.add('ng');
-      resultEl.textContent = '❌ 위험 — 슬링 규격 상향 필요';
+      const ngMsg = { ko: '❌ 위험 — 슬링 규격 상향 필요', en: '❌ Unsafe — Upgrade sling rating', vi: '❌ Không an toàn — Nâng cấp dây đai', ar: '❌ غير آمن — يجب ترقية معدل الحبل' };
+      resultEl.textContent = ngMsg[currentLang] || ngMsg.ko;
     }
   };
 
@@ -394,8 +397,8 @@ function openSafetyPanel() {
     LIFT_STATE.safetyChecked = true;
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 안전성 검토 완료 → 크레인 쪽으로 이동해 아웃트리거 확장 (E키)', 3500);
-    _showPhasePopup(3, '장비 세팅');
+    showActionNotif(t('notifSafetyDone'), 3500);
+    _showPhasePopup(3, PHASE_NAMES[3][currentLang] || PHASE_NAMES[3].ko);
     _closePanel('safety-panel');
   };
   document.getElementById('safety-btn-cancel').onclick = () => _closePanel('safety-panel');
@@ -413,7 +416,7 @@ function openEquipmentPanel() {
     const el = document.getElementById(id);
     if (el) {
       el.classList.remove('done');
-      el.querySelector('.eq-status').textContent = '대기';
+      el.querySelector('.eq-status').textContent = t('statusWaiting');
     }
   });
   document.getElementById('level-indicator').classList.add('hidden');
@@ -432,7 +435,7 @@ function openEquipmentPanel() {
     if (eqOut) {
       eqOut.classList.add('done');
       eqOut.querySelector('.eq-icon').textContent = '✅';
-      eqOut.querySelector('.eq-status').textContent = '완료';
+      eqOut.querySelector('.eq-status').textContent = t('statusDone');
     }
     outriggerDone = true;
     document.getElementById('level-indicator').classList.remove('hidden');
@@ -444,7 +447,7 @@ function openEquipmentPanel() {
     if (eqLvl) {
       eqLvl.classList.add('done');
       eqLvl.querySelector('.eq-icon').textContent = '✅';
-      eqLvl.querySelector('.eq-status').textContent = '완료';
+      eqLvl.querySelector('.eq-status').textContent = t('statusDone');
     }
     document.getElementById('level-indicator').classList.add('hidden');
     levelDone = true;
@@ -454,7 +457,7 @@ function openEquipmentPanel() {
       if (eqOl) {
         eqOl.classList.add('done');
         eqOl.querySelector('.eq-icon').textContent = '✅';
-        eqOl.querySelector('.eq-status').textContent = '완료';
+        eqOl.querySelector('.eq-status').textContent = t('statusDone');
       }
       overloadDone = true;
       updateEquipment();
@@ -467,8 +470,8 @@ function openEquipmentPanel() {
     LIFT_STATE.outriggerExtended = true;
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 장비 세팅 완료 → 보 근처로 이동해 슬링·안전핀·각도 점검 (E키)', 3500);
-    _showPhasePopup(4, '줄걸이 점검');
+    showActionNotif(t('notifEquipDone'), 3500);
+    _showPhasePopup(4, PHASE_NAMES[4][currentLang] || PHASE_NAMES[4].ko);
     _closePanel('equipment-panel');
   };
   document.getElementById('equipment-btn-cancel').onclick = () => _closePanel('equipment-panel');
@@ -499,7 +502,7 @@ function _animateOutriggers(onComplete) {
 // ── Spec sheet popup ──────────────────────────────────────────
 function openSpecPopup() {
   if (!LIFT_STATE.outriggerExtended) {
-    showActionNotif('먼저 장비 세팅(Phase 3)을 완료하세요');
+    showActionNotif(t('notifEquipFirst'));
     return;
   }
   LIFT_STATE.specChecked = true;
@@ -533,11 +536,11 @@ function closeSpecPopup() {
 function boardCrane() {
   if (GAME.state.craneBoarded || GAME.state.liftStarted) return;
   if (!LIFT_STATE.signalAssigned || !LIFT_STATE.workerEvacuated) {
-    showActionNotif('신호수 배치 및 작업반경 대피를 먼저 완료하세요');
+    showActionNotif(t('notifSignalEvacFirst'));
     return;
   }
   if (!LIFT_STATE.specChecked) {
-    showActionNotif('⚠ 사양서 미확인 — 운전석 앞 사양서를 먼저 확인하세요 (E키)', 3000);
+    showActionNotif(t('notifSpecFirst'), 3000);
     return;
   }
   GAME.state.craneBoarded = true;
