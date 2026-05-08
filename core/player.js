@@ -133,6 +133,8 @@ function updatePlayer(delta) {
       PLAYER.worldPos.add(move);
       PLAYER.worldPos.x = Math.max(-38, Math.min(38, PLAYER.worldPos.x));
       PLAYER.worldPos.z = Math.max(-38, Math.min(38, PLAYER.worldPos.z));
+      PLAYER._stepTimer = (PLAYER._stepTimer || 0) + delta;
+      if (PLAYER._stepTimer > 0.38) { PLAYER._stepTimer = 0; if (typeof SOUND !== 'undefined') SOUND.footstep(); }
     }
   }
 

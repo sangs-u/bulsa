@@ -1,4 +1,21 @@
-/* BULSA Extensions — NPC, Instruction, TBM, Signboard, Ending */
+/* BULSA Extensions — NPC, Interaction, Minimap, Ending */
+
+/* ── MINIMAP ─────────────────────────────────────────────── */
+#minimap-canvas {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.55);
+  opacity: 0.88;
+}
+
+/* ── GAME TIME ────────────────────────────────────────────── */
+#hud-gametime {
+  font-family: monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  color: var(--muted, #6A8090);
+}
 
 /* ── ACTION NOTIFICATION ─────────────────────────────────── */
 #hud-action-notif {

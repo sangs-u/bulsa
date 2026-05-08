@@ -9,8 +9,18 @@ function triggerAccident(accidentId) {
 
   if (document.pointerLockElement) document.exitPointerLock();
 
+  if (accidentId === 'sling_snap') {
+    _animBeamFall();
+  }
+
+  if (typeof SOUND !== 'undefined') {
+    SOUND.impact();
+    setTimeout(() => SOUND.siren(), 600);
+  }
+
   _doFlash();
-  setTimeout(() => showAccidentPanel(accidentId), 1400);
+  _shakeCamera(0.6);
+  setTimeout(() => showAccidentPanel(accidentId), 1800);
 }
 
 function _doFlash() {
@@ -92,6 +102,92 @@ function showCompletePanel() {
   document.getElementById('complete-panel').classList.remove('hidden');
 }
 
-// 이하 함수는 구 시스템 호환용 — 새 시스템에서 미사용
+// ── Beam fall animation ────────────────────────────────────────
+function _animBeamFall() {
+  const beam = GAME.liftBeam;
+  if (!beam) return;
+  let vy = 0;
+  (function fall() {
+    if (beam.position.y > -0.5) {
+      vy += 0.016 * 9.8 * 0.016;
+      beam.position.y -= vy;
+      beam.rotation.z += 0.018;
+      requestAnimationFrame(fall);
+    } else {
+      _spawnDebris(beam.position.clone());
+    }
+  })();
+}
+
+// ── Debris (InstancedMesh) ─────────────────────────────────────
+function _spawnDebris(origin) {
+  const count = 28;
+  const mat  = new THREE.MeshLambertMaterial({ color: 0x888080 });
+  const geo  = new THREE.BoxGeometry(0.14, 0.10, 0.14);
+  const mesh = new THREE.InstancedMesh(geo, mat, count);
+  GAME.scene.add(mesh);
+
+  const dummy = new THREE.Object3D();
+  const vels  = [];
+  for (let i = 0; i < count; i++) {
+    dummy.position.set(
+      origin.x + (Math.random()-0.5)*2,
+      origin.y + 0.3,
+      origin.z + (Math.random()-0.5)*2
+    );
+    dummy.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+    vels.push(new THREE.Vector3(
+      (Math.random()-0.5)*4,
+      Math.random()*5 + 2,
+      (Math.random()-0.5)*4
+    ));
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+
+  let t = 0;
+  const positions = Array.from({length: count}, (_, i) => {
+    const m = new THREE.Matrix4(); mesh.getMatrixAt(i, m);
+    return new THREE.Vector3().setFromMatrixPosition(m);
+  });
+
+  (function animDebris() {
+    if (t > 2.0) { GAME.scene.remove(mesh); return; }
+    t += 0.016;
+    for (let i = 0; i < count; i++) {
+      vels[i].y -= 9.8 * 0.016;
+      positions[i].addScaledVector(vels[i], 0.016);
+      if (positions[i].y < 0) { positions[i].y = 0; vels[i].y *= -0.3; }
+      dummy.position.copy(positions[i]);
+      dummy.rotation.set(t+i, t*1.3+i, t*0.7+i);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    requestAnimationFrame(animDebris);
+  })();
+}
+
+// ── Camera shake ──────────────────────────────────────────────
+function _shakeCamera(duration) {
+  const cam = GAME.camera;
+  if (!cam) return;
+  const origin = cam.position.clone();
+  let t = 0;
+  const intensity = 0.18;
+  (function shake() {
+    if (t > duration) { cam.position.copy(origin); return; }
+    t += 0.016;
+    const decay = 1 - t / duration;
+    cam.position.set(
+      origin.x + (Math.random()-0.5) * intensity * decay,
+      origin.y + (Math.random()-0.5) * intensity * decay,
+      origin.z + (Math.random()-0.5) * intensity * decay
+    );
+    requestAnimationFrame(shake);
+  })();
+}
+
 function applySafetyPenalty() {}
 function applySafetyReward()  {}

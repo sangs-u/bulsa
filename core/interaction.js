@@ -235,6 +235,7 @@ function boardCrane() {
 
   document.getElementById('crane-cab-overlay').classList.remove('hidden');
   hideInteractPrompt();
+  if (typeof SOUND !== 'undefined') SOUND.craneFadeIn();
 }
 
 function exitCraneCab() {
@@ -247,6 +248,7 @@ function exitCraneCab() {
   GAME.camera.position.set(PLAYER.worldPos.x, 1.7, PLAYER.worldPos.z);
 
   document.getElementById('crane-cab-overlay').classList.add('hidden');
+  if (typeof SOUND !== 'undefined') SOUND.craneFadeOut();
 
   if (!GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
     GAME.renderer.domElement.requestPointerLock();

@@ -89,6 +89,12 @@
 <!-- Building progress HUD -->
 <div id="building-progress" style="position:absolute;bottom:70px;right:20px;font-size:0.72rem;color:var(--muted);font-family:monospace;pointer-events:none;"></div>
 
+<!-- Minimap -->
+<canvas id="minimap-canvas" style="position:absolute;bottom:18px;right:18px;border-radius:50%;pointer-events:none;z-index:50;"></canvas>
+
+<!-- Game time -->
+<div id="hud-gametime" style="position:absolute;bottom:158px;right:18px;font-size:0.70rem;color:var(--muted,#6A8090);font-family:monospace;pointer-events:none;text-align:center;width:130px;"></div>
+
 <!-- Action notification (brief, no feedback) -->
 <div id="hud-action-notif"></div>
 
@@ -262,6 +268,7 @@
 <div id="mobile-look"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/yuka@0.7.8/build/yuka.min.js"></script>
 <script src="i18n/strings.js"></script>
 <script src="scenarios/lifting/data.js"></script>
 <script src="scenarios/lifting/calc.js"></script>
@@ -276,6 +283,9 @@
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 <script src="core/character.js"></script>
+<script src="core/sound.js"></script>
+<script src="core/minimap.js"></script>
+<script src="core/weather.js"></script>
 <script src="core/npc.js"></script>
 <script src="core/instruction.js"></script>
 <script src="core/signboard.js"></script>
@@ -297,6 +307,7 @@
   function startGame() {
     document.getElementById('blocker').style.display = 'none';
     GAME.state.gameStarted = true;
+    initNPCs();
     initInstructions();
     initBuilding();
     initSignboard();
@@ -350,6 +361,12 @@
 
   function retryGame() { window.location.reload(); }
   function goHub()     { window.location.href = 'index.html'; }
+
+  // Late init — after all scripts loaded
+  window.addEventListener('load', () => {
+    if (typeof MINIMAP !== 'undefined') MINIMAP.init();
+    if (typeof WEATHER !== 'undefined' && GAME._sun) WEATHER.init(GAME._sun);
+  });
 </script>
 
 </body>

@@ -8,15 +8,14 @@ function buildLiftingScene() {
   scene.fog = new THREE.FogExp2(0x7AA8C8, 0.005);
 
   // ── Lighting ───────────────────────────────────────────
-  // Hemisphere: sky-blue above, warm ground below
-  const hemi = new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.6);
+  const hemi = new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.55);
   scene.add(hemi);
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+  const ambient = new THREE.AmbientLight(0xffffff, 0.15);
   scene.add(ambient);
 
-  const sun = new THREE.DirectionalLight(0xFFEDD0, 1.5);
-  sun.position.set(30, 35, 15);  // lower angle → longer shadows
+  const sun = new THREE.DirectionalLight(0xFFE4B5, 1.4);
+  sun.position.set(20, 22, 15);  // 45° afternoon angle
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
   sun.shadow.camera.left   = -45;
@@ -24,10 +23,11 @@ function buildLiftingScene() {
   sun.shadow.camera.top    =  45;
   sun.shadow.camera.bottom = -45;
   sun.shadow.camera.far    = 130;
-  sun.shadow.bias = -0.0005;
+  sun.shadow.bias = -0.0003;
   scene.add(sun);
+  GAME._sun = sun;
 
-  const fill = new THREE.DirectionalLight(0x9EC4E8, 0.35);
+  const fill = new THREE.DirectionalLight(0x9EC4E8, 0.28);
   fill.position.set(-20, 12, -8);
   scene.add(fill);
 
@@ -63,6 +63,12 @@ function buildLiftingScene() {
 
   // ── Background buildings ───────────────────────────────
   _buildBackground(scene);
+
+  // ── Perimeter + environment ────────────────────────────
+  _buildHoarding(scene);
+  _buildContainerOffice(scene);
+  _buildForklift(scene);
+  _buildMaterialPiles(scene);
 }
 
 // ── Ground grid ────────────────────────────────────────────
@@ -454,6 +460,105 @@ function _buildBackground(scene) {
         scene.add(win);
       }
     }
+  });
+}
+
+// ── Perimeter hoarding ─────────────────────────────────────────
+function _buildHoarding(scene) {
+  const board = new THREE.MeshLambertMaterial({ color: 0x3A6840 });
+  const stripe= new THREE.MeshLambertMaterial({ color: 0xC8AA14 });
+  const postM = new THREE.MeshLambertMaterial({ color: 0x3A3028 });
+
+  const segments = [
+    [-22,10,10,0],[-22,0,10,0],[-22,-10,10,0],
+    [20,10,10,0],[20,0,10,0],[20,-10,10,0],
+    [-10,14,10,Math.PI/2],[0,14,10,Math.PI/2],[10,14,10,Math.PI/2],
+    [-10,-26,10,Math.PI/2],[0,-26,10,Math.PI/2],[10,-26,10,Math.PI/2],
+  ];
+  segments.forEach(([x,z,w,ry]) => {
+    const p = new THREE.Mesh(new THREE.BoxGeometry(w,2.2,0.12), board);
+    p.position.set(x,1.1,z); p.rotation.y = ry; p.castShadow = true;
+    scene.add(p);
+    const s = new THREE.Mesh(new THREE.BoxGeometry(w,0.22,0.14), stripe);
+    s.position.set(x,1.94,z); s.rotation.y = ry;
+    scene.add(s);
+  });
+  [[-22,14],[20,14],[20,-26],[-22,-26]].forEach(([x,z]) => {
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,2.4,10), postM);
+    post.position.set(x,1.2,z); scene.add(post);
+  });
+}
+
+// ── Site container office ──────────────────────────────────────
+function _buildContainerOffice(scene) {
+  const body  = new THREE.MeshLambertMaterial({ color: 0x3A6A8A });
+  const roof  = new THREE.MeshLambertMaterial({ color: 0x2C5070 });
+  const winM  = new THREE.MeshLambertMaterial({ color: 0x7BAABB, transparent:true, opacity:0.7 });
+  const doorM = new THREE.MeshLambertMaterial({ color: 0x2A4A60 });
+  const white = new THREE.MeshLambertMaterial({ color: 0xCCD8D0 });
+  const grey  = new THREE.MeshLambertMaterial({ color: 0x888880 });
+
+  const box = new THREE.Mesh(new THREE.BoxGeometry(6.0,2.6,2.4), body);
+  box.position.set(-16,1.3,8); box.castShadow = true; box.receiveShadow = true;
+  scene.add(box);
+  const rofMesh = new THREE.Mesh(new THREE.BoxGeometry(6.2,0.12,2.6), roof);
+  rofMesh.position.set(-16,2.66,8); scene.add(rofMesh);
+  const door = new THREE.Mesh(new THREE.BoxGeometry(0.9,2.0,0.06), doorM);
+  door.position.set(-14.5,1.0,6.73); scene.add(door);
+  [-17.5,-15.8].forEach(x => {
+    const w = new THREE.Mesh(new THREE.BoxGeometry(0.9,0.7,0.05), winM);
+    w.position.set(x,1.7,6.74); scene.add(w);
+  });
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(2.5,0.5,0.06), white);
+  sign.position.set(-16,2.2,6.74); scene.add(sign);
+  const step = new THREE.Mesh(new THREE.BoxGeometry(1.0,0.25,0.5), grey);
+  step.position.set(-14.5,0.125,6.5); scene.add(step);
+}
+
+// ── Forklift (parked) ──────────────────────────────────────────
+function _buildForklift(scene) {
+  const yel  = new THREE.MeshLambertMaterial({ color: 0xDDA018 });
+  const dark = new THREE.MeshLambertMaterial({ color: 0x2A2420 });
+  const grey = new THREE.MeshLambertMaterial({ color: 0x7A7870 });
+
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.6,1.3,2.6), yel);
+  body.position.set(18,0.65,4); body.castShadow = true; scene.add(body);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(1.4,0.12,2.2), dark);
+  top.position.set(18,1.32,4); scene.add(top);
+
+  [[0.9,2.8],[0.9,5.3],[-0.9,2.8],[-0.9,5.3]].forEach(([dx,z]) => {
+    const w = new THREE.Mesh(new THREE.CylinderGeometry(0.38,0.38,0.32,16), dark);
+    w.rotation.z = Math.PI/2; w.position.set(18+dx,0.38,z); scene.add(w);
+  });
+  [-0.3,0.3].forEach(dx => {
+    const f = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.08,1.4), grey);
+    f.position.set(18+dx,0.35,2.0); scene.add(f);
+  });
+  [-0.4,0.4].forEach(dx => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.1,2.2,0.1), grey);
+    m.position.set(18+dx,1.1,2.6); scene.add(m);
+  });
+}
+
+// ── Material piles ─────────────────────────────────────────────
+function _buildMaterialPiles(scene) {
+  const rebarM = new THREE.MeshLambertMaterial({ color: 0x585450 });
+  for (let i = 0; i < 6; i++) {
+    const r = new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.028,3.2,8), rebarM);
+    r.rotation.z = Math.PI/2;
+    r.position.set(7+(i%3)*0.07, 0.25+Math.floor(i/3)*0.07, 4+(i%3)*0.12);
+    scene.add(r);
+  }
+  const plyM = new THREE.MeshLambertMaterial({ color: 0xA8803A });
+  for (let i = 0; i < 4; i++) {
+    const p = new THREE.Mesh(new THREE.BoxGeometry(1.8,0.04,0.9), plyM);
+    p.position.set(9.5, 0.02+i*0.05, 6+(Math.random()-0.5)*0.05);
+    scene.add(p);
+  }
+  const bagM = new THREE.MeshLambertMaterial({ color: 0x9C8A5A });
+  [[11,0.2,5],[11,0.6,5],[11.4,0.2,5.3],[10.6,0.2,5.3]].forEach(([x,y,z]) => {
+    const b = new THREE.Mesh(new THREE.SphereGeometry(0.28,10,7), bagM);
+    b.scale.set(1,0.72,1.3); b.position.set(x,y,z); scene.add(b);
   });
 }
 

@@ -327,23 +327,108 @@ const NPC_DEFS = [
 
 GAME.npcs = [];
 
+// ── Yuka entity manager (optional) ───────────────────────────
+let _yukaManager = null;
+const _yukaVehicles = new Map(); // npc.id → YUKA.Vehicle
+
+function _initYuka() {
+  if (typeof YUKA === 'undefined') return;
+  _yukaManager = new YUKA.EntityManager();
+}
+
 function initNPCs() {
+  _initYuka();
   NPC_DEFS.forEach(def => {
     const npc = new NPC(def);
     npc.build();
     GAME.npcs.push(npc);
+    _addYukaVehicle(npc);
   });
 }
 
-// ── Animation loop ───────────────────────────────────────────
-let _npcLastTime = 0;
-(function npcLoop(now) {
-  requestAnimationFrame(npcLoop);
-  const delta = Math.min((now - _npcLastTime) / 1000, 0.05);
-  _npcLastTime = now;
-  if (!GAME.state || !GAME.state.gameStarted) return;
-  GAME.npcs.forEach(npc => npc.tick(delta, now / 1000));
-})(0);
+function _addYukaVehicle(npc) {
+  if (!_yukaManager) return;
+  const v = new YUKA.Vehicle();
+  v.position.set(npc.position[0], 0, npc.position[2]);
+  v.maxSpeed = 1.0;
+  v.maxForce = 2.5;
+  v.mass     = 1;
+  const wander = new YUKA.WanderBehavior();
+  wander.jitter   = 0.8;
+  wander.radius   = 1.2;
+  wander.distance = 2.5;
+  v.steering.add(wander);
+  _yukaManager.add(v);
+  _yukaVehicles.set(npc.id, { vehicle: v, home: new YUKA.Vector3(npc.position[0], 0, npc.position[2]) });
+}
+
+// ── Exported tick (called from engine._loop) ─────────────────
+let _npcPrevTime = 0;
+function tickAllNPCs(delta, elapsed) {
+  if (!GAME.state.gameStarted) return;
+
+  // Update Yuka manager
+  if (_yukaManager) {
+    _yukaManager.update(delta);
+
+    // Sync Yuka → NPC group (IDLE only)
+    GAME.npcs.forEach(npc => {
+      if (!npc.group || npc.state !== NPC_STATES.IDLE || npc._targetPos) return;
+      const entry = _yukaVehicles.get(npc.id);
+      if (!entry) return;
+      const v    = entry.vehicle;
+      const home = entry.home;
+
+      // Home radius constraint: if >5m away, nudge back
+      const dx = v.position.x - home.x;
+      const dz = v.position.z - home.z;
+      const dist = Math.sqrt(dx*dx + dz*dz);
+      if (dist > 5) {
+        v.position.x = home.x + dx / dist * 4.8;
+        v.position.z = home.z + dz / dist * 4.8;
+        v.velocity.x *= -0.5; v.velocity.z *= -0.5;
+      }
+
+      // Boundary clamp
+      v.position.x = Math.max(-32, Math.min(32, v.position.x));
+      v.position.z = Math.max(-28, Math.min(12, v.position.z));
+
+      npc.group.position.x = v.position.x;
+      npc.group.position.z = v.position.z;
+      const spd = Math.sqrt(v.velocity.x**2 + v.velocity.z**2);
+      if (spd > 0.05) {
+        npc.group.rotation.y = Math.atan2(v.velocity.x, v.velocity.z);
+      }
+    });
+  }
+
+  GAME.npcs.forEach(npc => npc.tick(delta, elapsed));
+}
+
+// ── Label update (called from engine._loop) ──────────────────
+function updateNPCLabels() {
+  if (!GAME.state.gameStarted || GAME.state.gameOver) return;
+  GAME.npcs.forEach(npc => {
+    if (!npc.group) return;
+    let el = document.getElementById(`npc-label-${npc.id}`);
+    if (!el) {
+      el = document.createElement('div');
+      el.id = `npc-label-${npc.id}`;
+      el.className = 'npc-label';
+      document.body.appendChild(el);
+    }
+    const sp = npcScreenPos(npc);
+    if (!sp) { el.style.opacity = '0'; return; }
+    const d = GAME.camera.position.distanceTo(npc.group.position);
+    if (d > 12) { el.style.opacity = '0'; return; }
+    const danger = npc.state === NPC_STATES.UNSAFE || npc.state === NPC_STATES.DANGER;
+    el.className   = danger ? 'npc-danger-badge' : 'npc-label';
+    el.textContent = danger ? `⚠ ${npc.name}` : `${npc.name} · ${npc.role}`;
+    el.style.left  = sp.x + 'px';
+    el.style.top   = sp.y + 'px';
+    el.style.opacity = Math.min(1, (12-d)/4).toString();
+  });
+}
 
 // ── Screen-space labels ──────────────────────────────────────
 function npcScreenPos(npc) {
@@ -357,32 +442,3 @@ function npcScreenPos(npc) {
   };
 }
 
-function updateNPCLabels() {
-  GAME.npcs.forEach(npc => {
-    if (!npc.group) return;
-    let labelEl = document.getElementById(`npc-label-${npc.id}`);
-    if (!labelEl) {
-      labelEl = document.createElement('div');
-      labelEl.id = `npc-label-${npc.id}`;
-      labelEl.className = 'npc-label';
-      document.body.appendChild(labelEl);
-    }
-    const sp = npcScreenPos(npc);
-    if (!sp || GAME.state.gameOver || !GAME.state.gameStarted) {
-      labelEl.style.opacity = '0'; return;
-    }
-    const d = GAME.camera.position.distanceTo(npc.group.position);
-    if (d > 12) { labelEl.style.opacity = '0'; return; }
-    const isDanger = npc.state === NPC_STATES.UNSAFE || npc.state === NPC_STATES.DANGER;
-    labelEl.className = isDanger ? 'npc-danger-badge' : 'npc-label';
-    labelEl.textContent = isDanger ? `⚠ ${npc.name}` : `${npc.name} · ${npc.role}`;
-    labelEl.style.left   = sp.x + 'px';
-    labelEl.style.top    = sp.y + 'px';
-    labelEl.style.opacity = Math.min(1, (12 - d) / 4).toString();
-  });
-}
-
-(function labelLoop() {
-  requestAnimationFrame(labelLoop);
-  if (GAME.state && GAME.state.gameStarted && !GAME.state.gameOver) updateNPCLabels();
-})();

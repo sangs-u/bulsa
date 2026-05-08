@@ -81,11 +81,13 @@ function _loop() {
   const elapsed = GAME.clock.elapsedTime;
 
   if (GAME.state.gameStarted && !GAME.state.gameOver) {
-    if (!GAME.state.craneBoarded) {
-      updatePlayer(delta);
-    }
+    if (!GAME.state.craneBoarded) updatePlayer(delta);
     updateInteraction();
     updateHUD();
+    if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
+    if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
+    if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();
+    if (typeof MINIMAP !== 'undefined')          MINIMAP.update();
   }
 
   GAME.renderer.render(GAME.scene, GAME.camera);
