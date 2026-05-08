@@ -1,0 +1,20 @@
+{
+  "name": "BULSA Dev",
+  "image": "mcr.microsoft.com/devcontainers/node:18",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ritwickdey.LiveServer",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "BULSA Game",
+      "onAutoForward": "openBrowser"
+    }
+  }
+}

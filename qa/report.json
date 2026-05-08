@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-05-08T12:25:16.425Z",
+  "url": "https://sangs-u.github.io/bulsa/game.html?s=lifting",
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 ()"
+  ],
+  "consoleWarnings": [
+    "[character.js] GLB load failed — geometry fallback active ProgressEvent"
+  ],
+  "failed404": [
+    "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier/Soldier.glb"
+  ],
+  "screenshots": [
+    "01_load.png",
+    "02_name.png",
+    "02_name_enter.png",
+    "03_game_entered.png",
+    "03_game_start.png",
+    "04_move_forward.png",
+    "05_move_strafe.png",
+    "06_after10s.png",
+    "07_interact_e.png",
+    "08_final.png"
+  ],
+  "summary": {
+    "errorCount": 1,
+    "warningCount": 1,
+    "count404": 1,
+    "status": "FAIL"
+  }
+}
