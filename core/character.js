@@ -2,7 +2,7 @@
 // worker.glb: Idle / Walk / Run 클립 포함 단일 파일
 // URL을 WORKER_GLB_URL 상수만 바꾸면 전체 NPC에 적용됨
 
-const WORKER_GLB_URL = 'assets/worker.glb'; // ← GLB 준비되면 이 경로만 교체
+const WORKER_GLB_URL = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier.glb'; // 테스트용 — Meshy 완성 후 교체
 
 let _workerGLB   = null;   // 로드된 GLTF 객체 (캐시)
 let _loadPending = [];     // 로드 완료 전 대기 콜백
