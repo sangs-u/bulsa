@@ -40,18 +40,8 @@
   <button class="start-btn" id="blocker-btn" onclick="startGame()">클릭하여 시작</button>
 </div>
 
-<!-- Hazard Interaction Popup -->
-<div id="hazard-popup" class="hidden">
-  <div class="popup-box">
-    <span class="popup-icon">⚠</span>
-    <div class="popup-title" id="popup-title"></div>
-    <div class="popup-desc" id="popup-desc"></div>
-    <div class="popup-btns">
-      <button class="btn-action" id="popup-btn-action"></button>
-      <button class="btn-ignore" id="popup-btn-ignore"></button>
-    </div>
-  </div>
-</div>
+<!-- Hazard Interaction Popup (instruction.js 호환용, 숨김 유지) -->
+<div id="hazard-popup" class="hidden"></div>
 
 <!-- Accident Panel -->
 <div id="accident-panel" class="hidden">
@@ -87,28 +77,76 @@
 <div id="complete-panel" class="hidden">
   <div class="complete-box">
     <div class="complete-title"><span>✓</span><span id="cmp-title">작업 완료</span></div>
-    <p id="cmp-msg" style="font-size:0.88rem; color:var(--muted); line-height:1.6;"></p>
-    <div class="complete-stat">
-      <span id="cmp-lbl-si">안전지수</span>
-      <span class="stat-val stat-good" id="cmp-si">100</span>
-    </div>
-    <div class="complete-stat">
-      <span id="cmp-lbl-fixed">조치 완료</span>
-      <span class="stat-val stat-good" id="cmp-fixed">0</span>
-    </div>
-    <div class="complete-stat">
-      <span id="cmp-lbl-ignored">방치</span>
-      <span class="stat-val stat-bad" id="cmp-ignored">0</span>
-    </div>
+    <p id="cmp-msg" style="font-size:0.86rem; color:var(--muted); line-height:1.6; margin:10px 0;"></p>
+    <div id="cmp-checklist" style="margin:12px 0 16px;"></div>
     <div class="accident-btns">
       <button class="btn-retry" id="cmp-btn-retry" onclick="retryGame()">다시 시도</button>
-      <button class="btn-hub" id="cmp-btn-hub" onclick="goHub()">허브로</button>
+      <button class="btn-hub"   id="cmp-btn-hub"   onclick="goHub()">허브로</button>
     </div>
   </div>
 </div>
 
 <!-- Building progress HUD -->
 <div id="building-progress" style="position:absolute;bottom:70px;right:20px;font-size:0.72rem;color:var(--muted);font-family:monospace;pointer-events:none;"></div>
+
+<!-- Action notification (brief, no feedback) -->
+<div id="hud-action-notif"></div>
+
+<!-- Crane Cab Overlay -->
+<div id="crane-cab-overlay" class="hidden">
+  <div class="cab-panel">
+    <div class="cab-header">
+      <span class="cab-title">타워크레인 운전석</span>
+      <button class="cab-exit-btn" onclick="exitCraneCab()">[E] 하차</button>
+    </div>
+    <div class="cab-gauges">
+      <div class="cab-gauge-block">
+        <div class="cab-gauge-lbl">정격하중</div>
+        <div class="cab-gauge-val">5,000 kg</div>
+      </div>
+      <div class="cab-gauge-block">
+        <div class="cab-gauge-lbl">인양물</div>
+        <div class="cab-gauge-val">RC 보 · 2,500 kg</div>
+      </div>
+      <div class="cab-gauge-block">
+        <div class="cab-gauge-lbl">작업반경</div>
+        <div class="cab-gauge-val">16 m</div>
+      </div>
+    </div>
+    <div class="cab-levers">
+      <div class="cab-lever-item">
+        <div class="cab-lever-lbl">권상</div>
+        <div class="cab-lever-track"><div class="cab-lever-knob"></div></div>
+      </div>
+      <div class="cab-lever-item">
+        <div class="cab-lever-lbl">선회</div>
+        <div class="cab-lever-track"><div class="cab-lever-knob"></div></div>
+      </div>
+      <div class="cab-lever-item">
+        <div class="cab-lever-lbl">기복</div>
+        <div class="cab-lever-track"><div class="cab-lever-knob"></div></div>
+      </div>
+    </div>
+    <button class="cab-lift-btn" onclick="evaluateLift()">인양 시작</button>
+  </div>
+</div>
+
+<!-- Spec Sheet Popup -->
+<div id="spec-popup" class="hidden">
+  <div class="spec-box">
+    <div class="spec-title">크레인 작업 사양서</div>
+    <table class="spec-table">
+      <tr><td>크레인 종류</td><td>타워크레인 (T-type)</td></tr>
+      <tr><td>정격하중</td><td>5,000 kg</td></tr>
+      <tr><td>현재 인양물</td><td>RC 보 (2,500 kg)</td></tr>
+      <tr><td>인양 작업반경</td><td>16 m</td></tr>
+      <tr><td>최대 슬링각도</td><td>60°</td></tr>
+      <tr><td>신호수 배치</td><td>산안규칙 제163조 (필수)</td></tr>
+      <tr><td>안전핀 체결</td><td>인양 전 반드시 확인</td></tr>
+    </table>
+    <button class="spec-close-btn" onclick="closeSpecPopup()">확인</button>
+  </div>
+</div>
 
 <!-- Red flash overlay -->
 <div id="flash-overlay"></div>
@@ -231,6 +269,7 @@
 <script src="scenarios/lifting/hazards.js"></script>
 <script src="core/hud.js"></script>
 <script src="core/accident.js"></script>
+<script src="scenarios/lifting/actions.js"></script>
 <script src="core/interaction.js"></script>
 <script src="core/player.js"></script>
 <script src="core/engine.js"></script>

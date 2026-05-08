@@ -66,6 +66,22 @@ class NPC {
     });
   }
 
+  // _targetPos 지원: tick에서 목표 위치로 이동
+  _moveToTarget(delta) {
+    if (!this._targetPos || !this.group) return false;
+    const dir = new THREE.Vector3().subVectors(this._targetPos, this.group.position);
+    if (dir.length() > 0.25) {
+      dir.normalize().multiplyScalar(delta * 1.2);
+      this.group.position.add(dir);
+      this.group.rotation.y = Math.atan2(dir.x, dir.z);
+      return true;
+    }
+    this.group.position.copy(this._targetPos);
+    this._targetPos = null;
+    this.setState(NPC_STATES.IDLE);
+    return false;
+  }
+
   // ── Geometry fallback ────────────────────────────────────────
   _buildGeometry() {
     this.group = new THREE.Group();
@@ -122,7 +138,15 @@ class NPC {
     this.mesh = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 8), triggerMat);
     this.mesh.position.set(this.position[0], this.position[1] + 1.0, this.position[2]);
     GAME.scene.add(this.mesh);
-    GAME.interactables.push({ mesh: this.mesh, type: 'npc', npcId: this.id, nameKey: null });
+
+    // 신호수(gimc)는 직접 행동으로 처리; 나머지는 instruction 팝업
+    if (this.id === 'gimc') {
+      GAME.interactables.push({
+        mesh: this.mesh, type: 'action', actionId: 'assign_signal', label: '신호수 위치 지정',
+      });
+    } else {
+      GAME.interactables.push({ mesh: this.mesh, type: 'npc', npcId: this.id, nameKey: null });
+    }
   }
 
   // ── Animation (GLB) ──────────────────────────────────────────
@@ -171,26 +195,17 @@ class NPC {
 
     this.fatigue = Math.min(100, this.fatigue + delta * 0.8);
 
-    switch (this.state) {
-      case NPC_STATES.IDLE:
-        if (!this.hasInstruction && GAME.state.phase >= 2) this.setState(NPC_STATES.UNSAFE);
-        break;
-      case NPC_STATES.UNSAFE:
-        this._moveTowardDanger(delta);
-        this._checkSpontaneousAccident(delta);
-        break;
-      case NPC_STATES.WORKING:
-        this._checkMistake(delta);
-        break;
-      case NPC_STATES.DANGER:
-        this._accidentTimer += delta;
-        if (this._accidentTimer > 1.5 && !this._accidentTriggered) {
-          this._accidentTriggered = true;
-          triggerAccident('worker_crush');
-        }
-        break;
-      case NPC_STATES.ACCIDENT:
-        break;
+    // _targetPos 이동 처리
+    const moving = this._moveToTarget(delta);
+
+    if (!moving) {
+      switch (this.state) {
+        case NPC_STATES.WORKING:
+          // 새 시스템: 실수 체크 비활성 (사고는 evaluateLift에서만 발생)
+          break;
+        case NPC_STATES.ACCIDENT:
+          break;
+      }
     }
 
     if (this._char) {

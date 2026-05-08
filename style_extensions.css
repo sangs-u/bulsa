@@ -1,5 +1,182 @@
 /* BULSA Extensions — NPC, Instruction, TBM, Signboard, Ending */
 
+/* ── ACTION NOTIFICATION ─────────────────────────────────── */
+#hud-action-notif {
+  position: absolute;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(8,12,18,0.88);
+  color: #D8D4CC;
+  font-size: 0.92rem;
+  padding: 9px 22px;
+  border-radius: 4px;
+  border-left: 3px solid var(--teal, #2C8A78);
+  opacity: 0;
+  transition: opacity 0.28s;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 60;
+  letter-spacing: 0.02em;
+}
+#hud-action-notif.visible { opacity: 1; }
+
+/* ── CRANE CAB OVERLAY ───────────────────────────────────── */
+#crane-cab-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 520px;
+  max-width: 96vw;
+  background: rgba(8,12,18,0.97);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  z-index: 90;
+}
+#crane-cab-overlay.hidden { display: none; }
+
+.cab-panel { width: 100%; }
+
+.cab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.cab-title {
+  font-size: 0.78rem;
+  color: var(--muted, #6A8090);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.cab-exit-btn {
+  font-size: 0.72rem;
+  color: var(--muted, #6A8090);
+  background: none;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 3px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+.cab-exit-btn:hover { color: var(--text, #D4CCB8); }
+
+.cab-gauges {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.cab-gauge-block {
+  flex: 1;
+  text-align: center;
+  padding: 12px 6px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+.cab-gauge-block:last-child { border-right: none; }
+.cab-gauge-lbl { font-size: 0.64rem; color: var(--muted, #6A8090); margin-bottom: 4px; }
+.cab-gauge-val { font-size: 0.9rem; color: var(--text, #D4CCB8); font-weight: 600; font-family: monospace; }
+
+.cab-levers {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.cab-lever-item { text-align: center; }
+.cab-lever-lbl { font-size: 0.64rem; color: var(--muted, #6A8090); margin-bottom: 6px; }
+.cab-lever-track {
+  width: 10px; height: 52px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 5px;
+  margin: 0 auto;
+  position: relative;
+}
+.cab-lever-knob {
+  width: 18px; height: 18px;
+  background: rgba(200,190,170,0.55);
+  border-radius: 50%;
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.cab-lift-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 14px 16px;
+  padding: 13px;
+  background: #A02020;
+  color: #F0EAE0;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+}
+.cab-lift-btn:hover { background: #B82828; }
+
+/* ── SPEC SHEET POPUP ────────────────────────────────────── */
+#spec-popup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  max-width: 94vw;
+  background: rgba(8,12,18,0.98);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 20px 22px;
+  z-index: 120;
+}
+#spec-popup.hidden { display: none; }
+
+.spec-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text, #D4CCB8);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.09);
+}
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.80rem;
+  margin-bottom: 16px;
+}
+.spec-table td {
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.spec-table td:first-child { color: var(--muted, #6A8090); width: 42%; }
+.spec-table td:last-child   { color: var(--text, #D4CCB8); font-weight: 500; }
+.spec-close-btn {
+  display: block; width: 100%;
+  padding: 9px;
+  background: rgba(255,255,255,0.07);
+  color: var(--text, #D4CCB8);
+  border: none; border-radius: 4px;
+  cursor: pointer; font-size: 0.86rem;
+}
+.spec-close-btn:hover { background: rgba(255,255,255,0.12); }
+
+/* ── COMPLETE PANEL CHECKLIST ────────────────────────────── */
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  font-size: 0.83rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.check-done   { color: #4DB8A0; }
+.check-missed { color: #D05050; }
+
 /* ── WORK BRIEFING OVERLAY ──────────────────────────────── */
 #briefing-overlay {
   position: fixed;
