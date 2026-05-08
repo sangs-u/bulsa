@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BULSA</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 3D Canvas -->
+<canvas id="gameCanvas"></canvas>
+
+<!-- HUD -->
+<div id="hud">
+  <div id="hud-tl">
+    <span class="hud-logo-text">BULSA</span>
+    <span class="hud-phase" id="hud-phase-text">PHASE 1 · 점검</span>
+  </div>
+  <div id="hud-tr">
+    <span class="hud-si-label" id="hud-si-label">안전지수</span>
+    <div class="hud-si-bar-outer"><div id="hud-si-bar"></div></div>
+    <span id="hud-si-num">100</span>
+  </div>
+  <div id="hud-crosshair"></div>
+  <div id="hud-interact"></div>
+  <div id="hud-mission" id="hud-mission-text"></div>
+</div>
+
+<!-- Pointer Lock Blocker -->
+<div id="blocker">
+  <h2>BULSA</h2>
+  <p id="blocker-scenario">줄걸이 · 인양 작업</p>
+  <p id="blocker-controls">WASD 이동 · 마우스 시점 · E 상호작용</p>
+  <button class="start-btn" id="blocker-btn" onclick="startGame()">클릭하여 시작</button>
+</div>
+
+<!-- Hazard Interaction Popup -->
+<div id="hazard-popup" class="hidden">
+  <div class="popup-box">
+    <span class="popup-icon">⚠</span>
+    <div class="popup-title" id="popup-title"></div>
+    <div class="popup-desc" id="popup-desc"></div>
+    <div class="popup-btns">
+      <button class="btn-action" id="popup-btn-action"></button>
+      <button class="btn-ignore" id="popup-btn-ignore"></button>
+    </div>
+  </div>
+</div>
+
+<!-- Accident Panel -->
+<div id="accident-panel" class="hidden">
+  <div class="accident-box">
+    <div class="accident-title">
+      <span>⚠</span>
+      <span id="acc-title">사고 발생</span>
+    </div>
+    <div class="accident-section">
+      <h4 id="acc-lbl-desc">사고 상황</h4>
+      <p id="acc-desc"></p>
+    </div>
+    <div class="accident-section">
+      <h4 id="acc-lbl-cause">사고 원인</h4>
+      <p id="acc-cause"></p>
+    </div>
+    <div class="accident-section">
+      <h4 id="acc-lbl-law">관련 법령</h4>
+      <p class="accident-law" id="acc-law"></p>
+    </div>
+    <div class="accident-section">
+      <h4 id="acc-lbl-proc">올바른 절차</h4>
+      <ol id="acc-procedure"></ol>
+    </div>
+    <div class="accident-btns">
+      <button class="btn-retry" id="acc-btn-retry" onclick="retryGame()">다시 시도</button>
+      <button class="btn-hub" id="acc-btn-hub" onclick="goHub()">허브로</button>
+    </div>
+  </div>
+</div>
+
+<!-- Complete Panel -->
+<div id="complete-panel" class="hidden">
+  <div class="complete-box">
+    <div class="complete-title"><span>✓</span><span id="cmp-title">작업 완료</span></div>
+    <p id="cmp-msg" style="font-size:0.88rem; color:var(--muted); line-height:1.6;"></p>
+    <div class="complete-stat">
+      <span id="cmp-lbl-si">안전지수</span>
+      <span class="stat-val stat-good" id="cmp-si">100</span>
+    </div>
+    <div class="complete-stat">
+      <span id="cmp-lbl-fixed">조치 완료</span>
+      <span class="stat-val stat-good" id="cmp-fixed">0</span>
+    </div>
+    <div class="complete-stat">
+      <span id="cmp-lbl-ignored">방치</span>
+      <span class="stat-val stat-bad" id="cmp-ignored">0</span>
+    </div>
+    <div class="accident-btns">
+      <button class="btn-retry" id="cmp-btn-retry" onclick="retryGame()">다시 시도</button>
+      <button class="btn-hub" id="cmp-btn-hub" onclick="goHub()">허브로</button>
+    </div>
+  </div>
+</div>
+
+<!-- Red flash overlay -->
+<div id="flash-overlay"></div>
+
+<!-- Mobile joystick -->
+<div id="joystick-wrap">
+  <div id="joystick-base">
+    <div id="joystick-knob"></div>
+  </div>
+</div>
+<!-- Mobile look area (right side swipe) -->
+<div id="mobile-look"></div>
+
+<!-- Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.min.js"></script>
+
+<!-- BULSA modules — order matters -->
+<script src="i18n/strings.js"></script>
+<script src="scenarios/lifting/data.js"></script>
+<script src="core/hud.js"></script>
+<script src="core/accident.js"></script>
+<script src="core/interaction.js"></script>
+<script src="scenarios/lifting/scene.js"></script>
+<script src="scenarios/lifting/hazards.js"></script>
+<script src="core/player.js"></script>
+<script src="core/engine.js"></script>
+
+<script>
+  function startGame() {
+    const blocker = document.getElementById('blocker');
+    blocker.style.display = 'none';
+    GAME.state.gameStarted = true;
+    // Request pointer lock on desktop
+    if (window.matchMedia('(pointer: fine)').matches) {
+      GAME.renderer.domElement.requestPointerLock();
+    }
+  }
+
+  function retryGame() { window.location.reload(); }
+  function goHub()     { window.location.href = 'index.html'; }
+</script>
+
+</body>
+</html>

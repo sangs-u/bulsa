@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BULSA — 산업안전 시뮬레이션</title>
+  <meta name="description" content="브라우저에서 실행되는 1인칭 3D 산업안전 교육 시뮬레이션 게임">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { overflow-y: auto; }
+    .hub-body { min-height: 100vh; }
+  </style>
+</head>
+<body class="hub-body">
+
+  <header class="hub-header">
+    <div class="hub-logo">BULSA</div>
+    <p class="hub-tagline" id="tagline">당신이 무시한 그 위험이, 오늘 사고가 됩니다.</p>
+    <div class="hub-lang">
+      <button onclick="switchLang('ko')" id="lang-ko" class="active">한국어</button>
+      <button onclick="switchLang('en')" id="lang-en">English</button>
+    </div>
+  </header>
+
+  <main class="scenario-grid" id="grid"></main>
+
+  <script src="i18n/strings.js"></script>
+  <script>
+    const SCENARIOS = [
+      {
+        id: 's01',
+        num: 'S-01',
+        titleKey: 's01Title',
+        descKey: 's01Desc',
+        koshaKey: 's01Kosha',
+        ready: true,
+        url: 'game.html?s=lifting',
+      },
+      { id: 's02', num: 'S-02', title: '고소작업 (비계/사다리)', desc: 'KOSHA GUIDE C-29', ready: false },
+      { id: 's03', num: 'S-03', title: '밀폐공간 작업', desc: 'KOSHA GUIDE E-G-18-2026', ready: false },
+      { id: 's04', num: 'S-04', title: '전기작업 (LOTO)', desc: '산안규칙 제319조~321조', ready: false },
+      { id: 's05', num: 'S-05', title: '화재/폭발 (용접)', desc: 'KOSHA GUIDE P-2009-53', ready: false },
+      { id: 's06', num: 'S-06', title: '차량계 건설기계', desc: '산안규칙 제98조~101조', ready: false },
+    ];
+
+    function renderGrid() {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      document.getElementById('tagline').textContent = t('tagline');
+
+      SCENARIOS.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'scenario-card ' + (s.ready ? 'ready' : 'soon');
+
+        const title = s.titleKey ? t(s.titleKey) : s.title;
+        const desc  = s.descKey  ? t(s.descKey)  : s.desc;
+        const kosha = s.koshaKey ? t(s.koshaKey) : '';
+
+        card.innerHTML = `
+          <span class="card-badge ${s.ready ? 'badge-ready' : 'badge-soon'}">
+            ${s.ready ? t('scenarioReady') : t('scenarioSoon')}
+          </span>
+          <span class="card-num">${s.num}</span>
+          <div class="card-title">${title}</div>
+          <div class="card-desc">${desc}</div>
+          ${kosha ? `<div class="card-kosha">${kosha}</div>` : ''}
+          ${s.ready ? `<button class="card-btn" onclick="startScenario('${s.url}')">${t('scenarioReady')}</button>` : ''}
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function startScenario(url) {
+      window.location.href = url;
+    }
+
+    function switchLang(lang) {
+      setLang(lang);
+      document.getElementById('lang-ko').classList.toggle('active', lang === 'ko');
+      document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+      renderGrid();
+    }
+
+    renderGrid();
+  </script>
+</body>
+</html>
