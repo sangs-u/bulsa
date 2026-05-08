@@ -293,13 +293,21 @@ function _evacuateWorker() {
   })();
 }
 
-// 신호수 NPC 위치 이동
+// 신호수 NPC 위치 이동 (Yuka home도 업데이트해서 원위치 복귀 방지)
 function _moveSignalNPC() {
   if (!GAME.npcs) return;
   const gimc = GAME.npcs.find(n => n.id === 'gimc');
   if (!gimc || !gimc.group) return;
-  gimc._targetPos = new THREE.Vector3(3, 0, -6);
+  const dest = new THREE.Vector3(3, 0, -6);
+  gimc._targetPos = dest;
   gimc.setState(NPC_STATES.WORKING);
+  // Update Yuka fixed-home so tickAllNPCs doesn't snap gimc back after arrival
+  if (typeof _yukaVehicles !== 'undefined') {
+    const entry = _yukaVehicles.get('gimc');
+    if (entry && typeof YUKA !== 'undefined') {
+      entry.home = new YUKA.Vector3(dest.x, 0, dest.z);
+    }
+  }
 }
 
 // ── Phase 1: Plan Panel ───────────────────────────────────────
