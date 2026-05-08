@@ -104,8 +104,25 @@ function openPopup(item) {
     const haz = GAME.hazards.find(h => h.id === item.hazardId);
     if (!haz || haz.resolved || haz.ignored) { closePopup(); return; }
 
-    titleEl.textContent  = t(haz.nameKey);
-    descEl.textContent   = t(haz.descKey);
+    titleEl.textContent = t(haz.nameKey);
+
+    // Main description
+    descEl.innerHTML = '';
+    const descP = document.createElement('p');
+    descP.textContent = t(haz.descKey);
+    descEl.appendChild(descP);
+
+    // Calculation note from calc.js (if available)
+    if (typeof getHazardCalcNote === 'function') {
+      const note = getHazardCalcNote(haz.id, currentLang);
+      if (note) {
+        const calcBox = document.createElement('pre');
+        calcBox.style.cssText = 'margin-top:10px;padding:10px 12px;background:rgba(0,0,0,0.35);border-radius:6px;font-size:0.74rem;line-height:1.6;color:#8BA3BA;white-space:pre-wrap;font-family:monospace;';
+        calcBox.textContent = note;
+        descEl.appendChild(calcBox);
+      }
+    }
+
     btnAct.textContent   = t(haz.actionKey);
     btnIgn.textContent   = t(haz.ignoreKey);
 
