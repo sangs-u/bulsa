@@ -231,7 +231,8 @@ class NPC {
     const parts = this._bodyParts;
     switch (this.state) {
       case NPC_STATES.IDLE:
-        if (parts.body) this.group.rotation.y += 0.0005;
+        // Skip constant y-rotation when Yuka is providing movement direction
+        if (parts.body && !this._yukaMoving) this.group.rotation.y += 0.0005;
         if (parts.body) parts.body.rotation.z = Math.sin(t * 0.8) * 0.02;
         break;
       case NPC_STATES.WORKING:
@@ -363,45 +364,59 @@ function _addYukaVehicle(npc) {
 }
 
 // ── Exported tick (called from engine._loop) ─────────────────
-let _npcPrevTime = 0;
 function tickAllNPCs(delta, elapsed) {
   if (!GAME.state.gameStarted) return;
 
-  // Update Yuka manager
+  // 1. Update Yuka manager first
   if (_yukaManager) {
     _yukaManager.update(delta);
-
-    // Sync Yuka → NPC group (IDLE only)
-    GAME.npcs.forEach(npc => {
-      if (!npc.group || npc.state !== NPC_STATES.IDLE || npc._targetPos) return;
-      const entry = _yukaVehicles.get(npc.id);
-      if (!entry) return;
-      const v    = entry.vehicle;
-      const home = entry.home;
-
-      // Home radius constraint: if >5m away, nudge back
-      const dx = v.position.x - home.x;
-      const dz = v.position.z - home.z;
-      const dist = Math.sqrt(dx*dx + dz*dz);
-      if (dist > 5) {
-        v.position.x = home.x + dx / dist * 4.8;
-        v.position.z = home.z + dz / dist * 4.8;
-        v.velocity.x *= -0.5; v.velocity.z *= -0.5;
-      }
-
-      // Boundary clamp
-      v.position.x = Math.max(-32, Math.min(32, v.position.x));
-      v.position.z = Math.max(-28, Math.min(12, v.position.z));
-
-      npc.group.position.x = v.position.x;
-      npc.group.position.z = v.position.z;
-      const spd = Math.sqrt(v.velocity.x**2 + v.velocity.z**2);
-      if (spd > 0.05) {
-        npc.group.rotation.y = Math.atan2(v.velocity.x, v.velocity.z);
-      }
-    });
   }
 
+  // 2. Sync every Yuka vehicle → Three.js group (unconditionally each frame)
+  _yukaVehicles.forEach((entry, npcId) => {
+    const npc = GAME.npcs.find(n => n.id === npcId);
+    if (!npc || !npc.group) return;
+
+    // Only wander when IDLE and not moving to a target
+    if (npc.state !== NPC_STATES.IDLE || npc._targetPos) return;
+
+    const v    = entry.vehicle;
+    const home = entry.home;
+
+    // Home radius constraint
+    const dx   = v.position.x - home.x;
+    const dz   = v.position.z - home.z;
+    const dist = Math.sqrt(dx*dx + dz*dz);
+    if (dist > 5) {
+      v.position.x = home.x + (dx / dist) * 4.8;
+      v.position.z = home.z + (dz / dist) * 4.8;
+      v.velocity.x *= -0.5;
+      v.velocity.z *= -0.5;
+    }
+
+    // World boundary clamp
+    v.position.x = Math.max(-32, Math.min(32, v.position.x));
+    v.position.z = Math.max(-28, Math.min(12, v.position.z));
+
+    // ── Three.js sync ────────────────────────────────────────
+    npc.group.position.x = v.position.x;
+    npc.group.position.z = v.position.z;
+    npc.group.position.y = 0;
+
+    const spd = Math.sqrt(v.velocity.x * v.velocity.x + v.velocity.z * v.velocity.z);
+    if (spd > 0.08) {
+      npc.group.rotation.y = Math.atan2(v.velocity.x, v.velocity.z);
+      // Switch to Walk anim when moving
+      if (npc._char) npc._playAnim('Walk');
+    } else {
+      // Switch to Idle anim when stopped
+      if (npc._char) npc._playAnim('Idle');
+    }
+    // Flag so geometry animation skips constant y-rotation
+    npc._yukaMoving = spd > 0.08;
+  });
+
+  // 3. Tick each NPC (mixer update, geometry anim, trigger sync)
   GAME.npcs.forEach(npc => npc.tick(delta, elapsed));
 }
 

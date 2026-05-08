@@ -1,10 +1,16 @@
-// Weather & time — 1 real second = 1 game minute (60x)
+// Weather & time — 1 real second = 10 game seconds (6x)
+// 08:00 start → 18:00 end-of-workday (1 real hour)
 
 const WEATHER = (() => {
-  let _minutes = 8 * 60;   // start at 08:00
-  let _sun     = null;
+  // Track in seconds for precision; display as HH:MM
+  let _seconds  = 8 * 3600;        // 08:00:00
+  let _sun      = null;
   let _windTimer = 50 + Math.random() * 40;
-  const WIND_MSGS = ['바람이 강해집니다', '돌풍 주의 — 슬링 흔들림', '바람 잠시 약해짐'];
+  let _eodNotified = false;         // 18:00 알림 중복 방지
+
+  const GAME_SPEED   = 10;          // 1 real second = 10 game seconds
+  const EOD_SECONDS  = 18 * 3600;   // 18:00
+  const WIND_MSGS    = ['바람이 강해집니다', '돌풍 주의 — 슬링 흔들림', '바람 잠시 약해짐'];
 
   function init(sunLight) {
     _sun = sunLight;
@@ -13,9 +19,18 @@ const WEATHER = (() => {
 
   function tick(realDelta) {
     if (!GAME.state.gameStarted || GAME.state.gameOver) return;
-    _minutes += realDelta * 60;
-    if (_minutes >= 1440) _minutes -= 1440;
 
+    _seconds += realDelta * GAME_SPEED;
+    if (_seconds >= 24 * 3600) _seconds -= 24 * 3600;
+
+    // 18:00 작업 종료 알림 (1회)
+    if (!_eodNotified && _seconds >= EOD_SECONDS) {
+      _eodNotified = true;
+      if (typeof showActionNotif === 'function')
+        showActionNotif('18:00 — 오늘 작업 종료 시간입니다', 3500);
+    }
+
+    // 바람 이벤트
     _windTimer -= realDelta;
     if (_windTimer <= 0) {
       _windTimer = 55 + Math.random() * 70;
@@ -29,9 +44,9 @@ const WEATHER = (() => {
 
   function _apply() {
     if (!_sun) return;
-    const h = _minutes / 60;
+    const h = _seconds / 3600;
     // elevation: 0 at 6am, peak at noon, 0 at 6pm
-    const ang = ((h - 6) / 12) * Math.PI;
+    const ang  = ((h - 6) / 12) * Math.PI;
     const elev = Math.sin(Math.max(0, Math.min(Math.PI, ang)));
     const az   = (h - 12) / 12 * Math.PI;
 
@@ -56,8 +71,9 @@ const WEATHER = (() => {
   }
 
   function getTimeString() {
-    const h = Math.floor(_minutes / 60) % 24;
-    const m = Math.floor(_minutes % 60);
+    const totalMin = Math.floor(_seconds / 60);
+    const h = Math.floor(totalMin / 60) % 24;
+    const m = totalMin % 60;
     return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
   }
 

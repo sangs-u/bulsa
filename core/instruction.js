@@ -232,8 +232,6 @@ function toggleInstructionLang() {
 
 // ── Init ──────────────────────────────────────────────────────
 function initInstructions() {
-  initNPCs();
-
   // Keyboard shortcut: Tab to toggle instruction language
   document.addEventListener('keydown', e => {
     if (e.code === 'Tab' && !INTERACTION.popupOpen) {

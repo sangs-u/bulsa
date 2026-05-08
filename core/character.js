@@ -2,7 +2,7 @@
 // Model: Three.js Soldier (MIT, https://threejs.org/examples/models/gltf/Soldier/Soldier.glb)
 // Animations: Idle · Walk · Run · TPose
 
-const _CHAR_URL = 'https://threejs.org/examples/models/gltf/Soldier/Soldier.glb';
+const _CHAR_URL = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/models/gltf/Soldier/Soldier.glb';
 
 let _template = null;
 let _clips    = [];
