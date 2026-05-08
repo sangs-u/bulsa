@@ -55,6 +55,8 @@ function openInstructionPopup(item) {
   const popup = document.getElementById('instruction-popup');
   if (!popup) { INTERACTION.popupOpen = false; return; }
 
+  _currentPanelNpcId = npc.id;
+
   // NPC header
   document.getElementById('inst-name').textContent = npc.name;
   document.getElementById('inst-role').textContent = `· ${npc.role}`;
@@ -110,6 +112,7 @@ function openInstructionPopup(item) {
 
 function closeInstructionPopup() {
   INTERACTION.popupOpen = false;
+  _currentPanelNpcId = null;
   const popup = document.getElementById('instruction-popup');
   if (popup) popup.classList.add('hidden');
   if (GAME.state.gameStarted && !GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
@@ -224,8 +227,60 @@ function _showWorldBubble(npc, text) {
 }
 
 // ── Language toggle ───────────────────────────────────────────
+// Track the NPC currently displayed in the panel
+let _currentPanelNpcId = null;
+
 function toggleInstructionLang() {
   instructionLang = instructionLang === 'ko' ? 'en' : 'ko';
+
+  // Re-render panel contents immediately if popup is open
+  if (INTERACTION.popupOpen && _currentPanelNpcId) {
+    const npc = GAME.npcs.find(n => n.id === _currentPanelNpcId);
+    if (npc) {
+      // Update language badge
+      const langBadge = document.getElementById('inst-lang-badge');
+      const langNames = { ko: '🇰🇷 한국어', en: '🌐 English', ar: '🇸🇦 عربي', vi: '🇻🇳 Tiếng Việt' };
+      const match = npc.language === instructionLang || instructionLang === 'en';
+      langBadge.textContent = langNames[npc.language] || npc.language;
+      langBadge.className   = 'inst-lang-badge ' + (match ? 'lang-ok' : 'lang-warn');
+
+      // Update speech bubble
+      const bubble = document.getElementById('inst-speech-bubble');
+      if (!match) {
+        const responses = MISMATCH_RESPONSES[npc.language] || ['????'];
+        bubble.textContent = `"${responses[Math.floor(Math.random() * responses.length)]}"`;
+        bubble.classList.remove('hidden');
+      } else {
+        bubble.classList.add('hidden');
+      }
+
+      // Update lang switch button text
+      const btn = document.getElementById('inst-lang-switch');
+      if (btn) btn.textContent = instructionLang === 'ko' ? 'EN으로 지시' : 'KO로 지시';
+
+      // Re-render instruction list with new language
+      const list = document.getElementById('inst-list');
+      list.innerHTML = '';
+      const phase = GAME.state.phase;
+      const items = INSTRUCTIONS[phase] || INSTRUCTIONS[1];
+      items.forEach(inst => {
+        if (inst.npcId && inst.npcId !== npc.id) return;
+        const btn2 = document.createElement('div');
+        btn2.className = 'inst-item' + (_givenInstructions.has(`${npc.id}_${inst.id}`) ? ' given' : '');
+        btn2.innerHTML = `<span class="inst-icon">${inst.icon}</span>
+          <span>${instructionLang === 'en' ? inst.labelEn : inst.labelKo}</span>`;
+        btn2.onclick = () => {
+          if (_givenInstructions.has(`${npc.id}_${inst.id}`)) return;
+          giveInstruction(npc, inst);
+          closeInstructionPopup();
+        };
+        list.appendChild(btn2);
+      });
+      return;
+    }
+  }
+
+  // Popup not open — just update the button if visible
   const btn = document.getElementById('inst-lang-switch');
   if (btn) btn.textContent = instructionLang === 'ko' ? 'EN으로 지시' : 'KO로 지시';
 }

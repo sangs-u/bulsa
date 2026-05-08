@@ -7,6 +7,13 @@ const WORKER_GLB_URL = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/example
 let _workerGLB   = null;   // 로드된 GLTF 객체 (캐시)
 let _loadPending = [];     // 로드 완료 전 대기 콜백
 
+function _setGlbLoadingVisible(visible) {
+  const el = document.getElementById('glb-loading');
+  if (!el) return;
+  if (visible) el.classList.remove('hidden');
+  else         el.classList.add('hidden');
+}
+
 function preloadCharacter(onReady) {
   // 이미 로드됨
   if (_workerGLB) { onReady(_workerGLB); return; }
@@ -22,10 +29,13 @@ function preloadCharacter(onReady) {
     onReady(null); return;
   }
 
+  _setGlbLoadingVisible(true);
+
   const loader = new THREE.GLTFLoader();
   loader.load(
     WORKER_GLB_URL,
     (gltf) => {
+      _setGlbLoadingVisible(false);
       _workerGLB = gltf;
       const pending = _loadPending.slice();
       _loadPending  = [];
@@ -33,6 +43,7 @@ function preloadCharacter(onReady) {
     },
     undefined,
     (err) => {
+      _setGlbLoadingVisible(false);
       console.warn('[character] GLB 로드 실패 — 기하학 폴백 사용:', err.message || err);
       const pending = _loadPending.slice();
       _loadPending  = [];

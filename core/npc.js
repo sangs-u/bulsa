@@ -387,15 +387,48 @@ function initNPCs() {
 
 function _addYukaVehicle(npc) {
   if (!_yukaManager) return;
+
+  // gimc (신호수): fixed position, no wander — handled separately in tickAllNPCs
+  if (npc.id === 'gimc') {
+    // Store as fixed entry (no YUKA.Vehicle needed)
+    _yukaVehicles.set(npc.id, { fixed: true, home: new YUKA.Vector3(npc.position[0], 0, npc.position[2]) });
+    return;
+  }
+
   const v = new YUKA.Vehicle();
   v.position.set(npc.position[0], 0, npc.position[2]);
-  v.maxSpeed = 1.0;
   v.maxForce = 2.5;
   v.mass     = 1;
+
   const wander = new YUKA.WanderBehavior();
-  wander.jitter   = 0.8;
-  wander.radius   = 1.2;
-  wander.distance = 2.5;
+
+  switch (npc.id) {
+    case 'park':   // 슬링작업자: 인양 빔 근처 소반경, 보통 속도
+      v.maxSpeed       = 0.6;
+      wander.jitter    = 0.8;
+      wander.radius    = 1.0;
+      wander.distance  = 1.5;
+      break;
+    case 'lee':    // 고소작업자: 거의 고정, 최소 이동
+      v.maxSpeed       = 0.3;
+      wander.jitter    = 0.3;
+      wander.radius    = 0.4;
+      wander.distance  = 0.5;
+      break;
+    case 'ahmad':  // 보조작업자: 느린 속도, 소반경
+    case 'nguyen':
+      v.maxSpeed       = 0.4;
+      wander.jitter    = 0.6;
+      wander.radius    = 1.2;
+      wander.distance  = 2.0;
+      break;
+    default:
+      v.maxSpeed       = 1.0;
+      wander.jitter    = 0.8;
+      wander.radius    = 1.2;
+      wander.distance  = 2.5;
+  }
+
   v.steering.add(wander);
   _yukaManager.add(v);
   _yukaVehicles.set(npc.id, { vehicle: v, home: new YUKA.Vector3(npc.position[0], 0, npc.position[2]) });
@@ -415,19 +448,35 @@ function tickAllNPCs(delta, elapsed) {
     const npc = GAME.npcs.find(n => n.id === npcId);
     if (!npc || !npc.group) return;
 
+    // ── gimc (신호수): 고정 위치, 크레인 방향 고정 ──────────────
+    if (entry.fixed) {
+      // Only enforce position/rotation when not being moved via _targetPos
+      if (!npc._targetPos) {
+        npc.group.position.set(entry.home.x, 0, entry.home.z);
+        // 크레인 방향(-Z): atan2(7 - 0, -6 - (-14)) = atan2(7, 8) ≈ Math.PI (뒤를 바라봄)
+        // 크레인은 씬 -Z 방향에 있으므로 rotation.y = Math.PI
+        npc.group.rotation.y = npc._char ? 0 : Math.PI;
+        npc._yukaMoving = false;
+        if (npc._char) npc._playAnim('Idle');
+      }
+      return;
+    }
+
     // Only wander when IDLE and not moving to a target
     if (npc.state !== NPC_STATES.IDLE || npc._targetPos) return;
 
     const v    = entry.vehicle;
     const home = entry.home;
 
-    // Home radius constraint
+    // Home radius constraint (per-role max wander distance)
+    const _homeRadius = { park: 2, lee: 1, ahmad: 3, nguyen: 3 };
+    const maxR = _homeRadius[npcId] || 5;
     const dx   = v.position.x - home.x;
     const dz   = v.position.z - home.z;
     const dist = Math.sqrt(dx*dx + dz*dz);
-    if (dist > 5) {
-      v.position.x = home.x + (dx / dist) * 4.8;
-      v.position.z = home.z + (dz / dist) * 4.8;
+    if (dist > maxR) {
+      v.position.x = home.x + (dx / dist) * (maxR * 0.96);
+      v.position.z = home.z + (dz / dist) * (maxR * 0.96);
       v.velocity.x *= -0.5;
       v.velocity.z *= -0.5;
     }

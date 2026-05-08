@@ -194,6 +194,34 @@
 .check-done   { color: #4DB8A0; }
 .check-missed { color: #D05050; }
 
+/* ── ACCIDENT MISSED-ITEMS ──────────────────────────────── */
+#acc-missed-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.missed-item,
+.done-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.80rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.missed-item {
+  background: rgba(208, 80, 80, 0.15);
+  color: #E07070;
+  border: 1px solid rgba(208, 80, 80, 0.35);
+}
+.done-item {
+  background: rgba(77, 184, 160, 0.12);
+  color: #4DB8A0;
+  border: 1px solid rgba(77, 184, 160, 0.30);
+}
+
 /* ── WORK BRIEFING OVERLAY ──────────────────────────────── */
 #briefing-overlay {
   position: fixed;

@@ -3,6 +3,25 @@
 function initAccident() {}
 function updateAccident() {}
 
+// ── 사고 유형별 관련 LIFT_STATE 항목 ─────────────────────────
+const ACCIDENT_REQUIRED = {
+  sling_snap:   ['slingInspected'],
+  angle_break:  ['angleMeasured'],
+  pin_drop:     ['pinSecured'],
+  worker_crush: ['workerEvacuated'],
+  no_signal:    ['signalAssigned'],
+  overload:     ['specChecked', 'slingInspected'],
+};
+
+const LIFT_STATE_LABELS = {
+  slingInspected:  '슬링 점검',
+  pinSecured:      '안전핀 체결',
+  specChecked:     '사양서 확인',
+  angleMeasured:   '슬링 각도 측정',
+  signalAssigned:  '신호수 위치 지정',
+  workerEvacuated: '작업반경 대피 지시',
+};
+
 function triggerAccident(accidentId) {
   if (GAME.state.gameOver) return;
   GAME.state.gameOver = true;
@@ -113,6 +132,27 @@ function showAccidentPanel(accidentId) {
     ol.appendChild(li);
   });
 
+  // ── 미이행 항목 섹션 ─────────────────────────────────────
+  const missedWrap = document.getElementById('acc-missed-wrap');
+  const missedList = document.getElementById('acc-missed-list');
+  if (missedWrap && missedList) {
+    const required = ACCIDENT_REQUIRED[accidentId] || [];
+    missedList.innerHTML = '';
+    if (required.length > 0 && typeof LIFT_STATE !== 'undefined') {
+      required.forEach(key => {
+        const done  = !!LIFT_STATE[key];
+        const label = LIFT_STATE_LABELS[key] || key;
+        const span  = document.createElement('span');
+        span.className   = done ? 'done-item' : 'missed-item';
+        span.textContent = done ? ('✓ ' + label) : ('⚠ ' + label);
+        missedList.appendChild(span);
+      });
+      missedWrap.classList.remove('hidden');
+    } else {
+      missedWrap.classList.add('hidden');
+    }
+  }
+
   document.getElementById('accident-panel').classList.remove('hidden');
 }
 
@@ -153,6 +193,11 @@ function showCompletePanel() {
   }
 
   document.getElementById('complete-panel').classList.remove('hidden');
+
+  // 모두 완료 시 2초 후 수료증 자동 표시
+  if (allDone && typeof showCertificate === 'function') {
+    setTimeout(() => showCertificate(), 2000);
+  }
 }
 
 // ── Beam fall animation ────────────────────────────────────────
