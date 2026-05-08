@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BULSA</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style_extensions.css">
 </head>
 <body>
 
@@ -102,8 +103,91 @@
   </div>
 </div>
 
+<!-- Building progress HUD -->
+<div id="building-progress" style="position:absolute;bottom:70px;right:20px;font-size:0.72rem;color:var(--muted);font-family:monospace;pointer-events:none;"></div>
+
 <!-- Red flash overlay -->
 <div id="flash-overlay"></div>
+
+<!-- Cutscene overlay -->
+<div id="cutscene-overlay" class="hidden">
+  <div class="cutscene-caption" id="cutscene-caption"></div>
+</div>
+
+<!-- Instruction popup (NPC orders) -->
+<div id="instruction-popup" class="hidden">
+  <div class="inst-box">
+    <div class="inst-header">
+      <div class="inst-avatar">👷</div>
+      <div>
+        <div class="inst-npc-name" id="inst-name"></div>
+        <div class="inst-npc-role" id="inst-role"></div>
+      </div>
+      <div class="inst-lang-badge lang-ok" id="inst-lang-badge">🇰🇷 한국어</div>
+    </div>
+    <div class="inst-speech-bubble hidden" id="inst-speech-bubble"></div>
+    <div class="inst-list" id="inst-list"></div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button class="inst-close-btn" style="flex:1;" id="inst-lang-switch" onclick="toggleInstructionLang()">EN으로 지시</button>
+      <button class="inst-close-btn" style="flex:1;" onclick="closeInstructionPopup()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- TBM Panel -->
+<div id="tbm-panel" class="hidden">
+  <div class="tbm-box">
+    <div class="tbm-header">
+      <span class="tbm-badge">TBM</span>
+      <span class="tbm-title" id="tbm-title">작업 전 안전점검</span>
+      <span class="tbm-phase-label" id="tbm-phase-label">Phase 1</span>
+    </div>
+    <div class="tbm-section">
+      <div class="tbm-section-title">오늘의 작업</div>
+      <p style="font-size:0.86rem;color:var(--text);" id="tbm-work"></p>
+    </div>
+    <div class="tbm-section">
+      <div class="tbm-section-title">주요 위험요소</div>
+      <ul id="tbm-hazards" style="padding-left:18px;font-size:0.84rem;color:var(--muted);line-height:1.8;"></ul>
+    </div>
+    <div class="tbm-section">
+      <div class="tbm-section-title">필수 확인 체크리스트</div>
+      <div class="tbm-checklist" id="tbm-checklist"></div>
+      <div class="tbm-progress-bar" style="margin-top:8px;">
+        <div class="tbm-progress-fill" id="tbm-progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="tbm-section">
+      <div class="tbm-section-title">담당자 지정</div>
+      <div class="tbm-role-assign" id="tbm-roles"></div>
+    </div>
+    <button class="tbm-start-btn" id="tbm-start-btn" disabled>작업 시작</button>
+  </div>
+</div>
+
+<!-- Signboard inventory bar -->
+<div id="signboard-bar" class="hidden"></div>
+<button class="inv-toggle-btn" id="inv-toggle-btn" onclick="toggleSignboardMode()" title="안전표지 설치">
+  🪧 표지 설치
+</button>
+
+<!-- Certificate overlay -->
+<div id="certificate-overlay" class="hidden">
+  <div id="certificate"></div>
+  <div class="cert-btns" style="margin-top:12px;">
+    <button class="cert-print-btn" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
+    <button class="cert-hub-btn" onclick="goHub()">허브로</button>
+  </div>
+</div>
+
+<!-- Player name input (shown before game start) -->
+<div id="name-input-overlay">
+  <div class="name-input-title">BULSA</div>
+  <p class="name-input-sub">줄걸이 · 인양 작업 시나리오</p>
+  <input type="text" id="player-name-input" placeholder="이름을 입력하세요" maxlength="20"
+    onkeydown="if(event.key==='Enter') submitPlayerName()">
+  <button class="name-submit-btn" onclick="submitPlayerName()">시작</button>
+</div>
 
 <!-- Mobile joystick -->
 <div id="joystick-wrap">
@@ -129,12 +213,34 @@
 <script src="core/player.js"></script>
 <script src="core/engine.js"></script>
 
+<!-- Extensions — load AFTER engine.js so GAME is initialized -->
+<script src="core/npc.js"></script>
+<script src="core/instruction.js"></script>
+<script src="core/building.js"></script>
+<script src="core/tbm.js"></script>
+<script src="core/signboard.js"></script>
+<script src="core/ending.js"></script>
+
 <script>
+  // ── Player name flow ──────────────────────────────────────
+  function submitPlayerName() {
+    const input = document.getElementById('player-name-input');
+    const name  = (input ? input.value.trim() : '') || (currentLang === 'en' ? 'Player' : '수강자');
+    GAME.state.playerName = name;
+    document.getElementById('name-input-overlay').classList.add('hidden');
+    document.getElementById('blocker').style.display = 'flex';
+  }
+
+  // ── Game start (after pointer lock / mobile tap) ─────────
   function startGame() {
-    const blocker = document.getElementById('blocker');
-    blocker.style.display = 'none';
+    document.getElementById('blocker').style.display = 'none';
     GAME.state.gameStarted = true;
-    // Request pointer lock on desktop
+    // Init extension systems now that game is started
+    initInstructions();
+    initBuilding();
+    initSignboard();
+    initEnding();
+    initTBM();
     if (window.matchMedia('(pointer: fine)').matches) {
       GAME.renderer.domElement.requestPointerLock();
     }
