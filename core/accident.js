@@ -9,9 +9,7 @@ function triggerAccident(accidentId) {
 
   if (document.pointerLockElement) document.exitPointerLock();
 
-  if (accidentId === 'sling_snap') {
-    _animBeamFall();
-  }
+  _triggerAccidentVFX(accidentId);
 
   if (typeof SOUND !== 'undefined') {
     SOUND.impact();
@@ -19,8 +17,63 @@ function triggerAccident(accidentId) {
   }
 
   _doFlash();
-  _shakeCamera(0.6);
-  setTimeout(() => showAccidentPanel(accidentId), 1800);
+  _shakeCamera(0.7);
+  setTimeout(() => showAccidentPanel(accidentId), 2400);
+}
+
+// ── 사고 유형별 시각 연출 ─────────────────────────────────────
+function _triggerAccidentVFX(accidentId) {
+  switch (accidentId) {
+    case 'sling_snap':
+    case 'angle_break':
+    case 'pin_drop':
+      // 보 낙하 + 슬링 작업자 래그돌
+      _animBeamFall();
+      _ragdollNPC('park', Math.PI * 0.2);   // 박영수 — 슬링작업자
+      _ragdollNPC('lee',  Math.PI * 0.85);  // 이민호 — 고소작업자
+      break;
+
+    case 'worker_crush':
+      // 작업반경 내 근로자 래그돌
+      _ragdollDangerWorker();
+      _animBeamFall();
+      break;
+
+    case 'no_signal':
+      // 신호수 래그돌
+      _ragdollNPC('gimc', Math.PI);
+      break;
+  }
+}
+
+// NPC 래그돌 트리거
+function _ragdollNPC(npcId, dirY) {
+  if (!GAME.npcs) return;
+  const npc = GAME.npcs.find(n => n.id === npcId);
+  if (npc && typeof npc.startRagdoll === 'function') npc.startRagdoll(dirY);
+}
+
+// 작업반경 내 하드코딩 근로자 래그돌
+function _ragdollDangerWorker() {
+  const w = GAME._dangerWorker;
+  if (!w || !w.group) return;
+  const g = w.group;
+  let rt   = 0;
+  (function fall() {
+    rt += 0.016;
+    if (rt < 0.22) {
+      g.rotation.z = Math.sin(rt * 36) * 0.3 * (rt / 0.22);
+    } else if (rt < 0.95) {
+      const ft = (rt - 0.22) / 0.73;
+      g.rotation.x = ft * (Math.PI * 0.47);
+      g.position.y = Math.max(0, 0.9 * (1 - ft * ft));
+    } else {
+      g.rotation.x = Math.PI * 0.47;
+      g.position.y = 0;
+      return;
+    }
+    requestAnimationFrame(fall);
+  })();
 }
 
 function _doFlash() {

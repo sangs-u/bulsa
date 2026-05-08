@@ -65,6 +65,7 @@ const GAME = {
   initInteraction();
   initHUD();
   initAccident();
+  if (typeof initPostFX === 'function') initPostFX();
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
@@ -90,5 +91,6 @@ function _loop() {
     if (typeof MINIMAP !== 'undefined')          MINIMAP.update();
   }
 
-  GAME.renderer.render(GAME.scene, GAME.camera);
+  if (typeof renderPostFX === 'function') renderPostFX();
+  else GAME.renderer.render(GAME.scene, GAME.camera);
 }

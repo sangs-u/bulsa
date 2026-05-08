@@ -216,12 +216,25 @@ class NPC {
     this._syncTriggerMesh();
   }
 
+  // ── Ragdoll trigger (공개 API) ───────────────────────────────
+  startRagdoll(dirY) {
+    this.setState(NPC_STATES.ACCIDENT);
+    this._ragdollT   = 0;
+    this._ragdollDir = dirY ?? (Math.random() * Math.PI * 2);
+  }
+
   // ── Accident fall (GLB) ──────────────────────────────────────
   _animateGLB() {
     if (this.state !== NPC_STATES.ACCIDENT) return;
-    if (this.group.rotation.x < Math.PI / 2 - 0.05) {
-      this.group.rotation.x += 0.035;
-      this.group.position.y = Math.max(0, 0.4 - this.group.rotation.x * 0.25);
+    this._ragdollT = (this._ragdollT || 0) + 0.016;
+    const t  = this._ragdollT;
+    const rx = this.group.rotation.x;
+    if (t < 0.25) {
+      // 비틀거림
+      this.group.rotation.z = Math.sin(t * 38) * 0.28 * (t / 0.25);
+    } else if (rx < Math.PI / 2 - 0.04) {
+      this.group.rotation.x += 0.045;
+      this.group.position.y  = Math.max(0, 0.5 - this.group.rotation.x * 0.32);
     }
   }
 
@@ -248,12 +261,37 @@ class NPC {
         if (parts.legL) parts.legL.rotation.x = -Math.sin(t * 3) * 0.4;
         if (parts.legR) parts.legR.rotation.x =  Math.sin(t * 3) * 0.4;
         break;
-      case NPC_STATES.ACCIDENT:
-        if (this.group.rotation.x < Math.PI / 2 - 0.05) {
-          this.group.rotation.x += 0.04;
-          this.group.position.y = Math.max(0, 0.5 - this.group.rotation.x * 0.3);
+      case NPC_STATES.ACCIDENT: {
+        this._ragdollT = (this._ragdollT || 0) + 0.016;
+        const rt = this._ragdollT;
+        const p  = this._bodyParts;
+        if (rt < 0.22) {
+          // 비틀거림 단계
+          this.group.rotation.z = Math.sin(rt * 36) * 0.28 * (rt / 0.22);
+        } else if (rt < 0.95) {
+          // 낙하 단계
+          const ft = (rt - 0.22) / 0.73;
+          this.group.rotation.y  = this._ragdollDir || 0;
+          this.group.rotation.x  = ft * (Math.PI * 0.47);
+          this.group.position.y  = Math.max(0, 0.9 * (1 - ft * ft));
+          if (p.armL) { p.armL.rotation.x = ft * 1.5;  p.armL.rotation.z = ft * 1.1; }
+          if (p.armR) { p.armR.rotation.x = -ft * 1.0; p.armR.rotation.z = -ft * 0.9; }
+          if (p.legL) { p.legL.rotation.x = -ft * 0.65; }
+          if (p.legR) { p.legR.rotation.x =  ft * 0.45; }
+          if (p.head) { p.head.rotation.x = -ft * 0.8; }
+        } else {
+          // 정착 단계 — 바닥에서 미세 반동
+          this.group.rotation.x  = Math.PI * 0.47;
+          this.group.rotation.z  = 0;
+          this.group.position.y  = 0;
+          const bt = rt - 0.95;
+          if (bt < 1.2) {
+            const bounce = Math.exp(-bt * 4.5) * Math.sin(bt * 14) * 0.028;
+            this.group.position.y = Math.max(0, bounce);
+          }
         }
         break;
+      }
     }
   }
 
