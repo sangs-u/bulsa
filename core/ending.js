@@ -36,11 +36,9 @@ function startCompletionCutscene(onDone) {
 
   const caption = document.getElementById('cutscene-caption');
   if (caption) {
-    const msg = currentLang === 'en'
-      ? '✓  Lifting operation complete'
-      : '✓  인양 작업 완료';
+    const msgs = { ko: '✓  인양 작업 완료', en: '✓  Lifting operation complete', vi: '✓  Hoàn thành nâng tải', ar: '✓  اكتملت عملية الرفع' };
     setTimeout(() => {
-      caption.textContent = msg;
+      caption.textContent = msgs[currentLang] || msgs.ko;
       caption.classList.add('show');
     }, 500);
   }
@@ -90,10 +88,12 @@ function showCertificate() {
   const overlay = document.getElementById('certificate-overlay');
   if (!overlay) return;
 
-  const name = GAME.state.playerName || (currentLang === 'en' ? 'Player' : '수강자');
+  const defaultNames = { ko: '수강자', en: 'Player', vi: 'Học viên', ar: 'المتدرب' };
+  const name = GAME.state.playerName || defaultNames[currentLang] || '수강자';
   const si   = GAME.state.safetyIndex;
   const violated = GAME.state.violations.size;
-  const date     = new Date().toLocaleDateString(currentLang === 'ko' ? 'ko-KR' : 'en-US', {
+  const locales  = { ko: 'ko-KR', en: 'en-US', vi: 'vi-VN', ar: 'ar-SA' };
+  const date = new Date().toLocaleDateString(locales[currentLang] || 'ko-KR', {
     year: 'numeric', month: 'long', day: 'numeric',
   });
 
@@ -103,36 +103,77 @@ function showCertificate() {
   else if (si >= 70) { grade = 'A'; gradeClass = 'grade-a'; }
   else               { grade = 'B'; gradeClass = 'grade-b'; }
 
-  const isKo = currentLang !== 'en';
+  const T = {
+    ko: {
+      certTitle:  '산업안전 교육 수료증',
+      statement:  `성명 <strong class="cert-name">${name}</strong> 은(는) 아래 산업안전 시뮬레이션 교육 과정을 성실히 이수하였음을 증명합니다.`,
+      thScenario: '시나리오', thKosha: 'KOSHA 기준', thSI: '안전지수', thGrade: '등급',
+      scenario:   '줄걸이·인양 작업 (S-01)',
+      thSI2: '안전지수', thViol: '위반 기록',
+      law:  '관련 법령: 산업안전보건기준에 관한 규칙 제163조, 제164조, 제147조',
+      dateLabel: '이수 일시: ',
+      seal: 'BULSA\n불사',
+      footer: '이 수료증은 BULSA 불사 안전교육 시뮬레이션 완료를 증명합니다.',
+    },
+    en: {
+      certTitle:  'Industrial Safety Training Certificate',
+      statement:  `This is to certify that <strong class="cert-name">${name}</strong> has successfully completed the following industrial safety simulation training.`,
+      thScenario: 'Scenario', thKosha: 'KOSHA Standard', thSI: 'Safety Index', thGrade: 'Grade',
+      scenario:   'Rigging & Lifting (S-01)',
+      thSI2: 'Safety Index', thViol: 'Violations',
+      law:  'Applicable Regulations: OSH Standards §163, §164, §147',
+      dateLabel: 'Completion Date: ',
+      seal: 'BULSA\nSAFETY',
+      footer: 'This certificate confirms completion of the BULSA industrial safety simulation.',
+    },
+    vi: {
+      certTitle:  'Chứng chỉ đào tạo an toàn lao động',
+      statement:  `Chứng nhận <strong class="cert-name">${name}</strong> đã hoàn thành chương trình mô phỏng đào tạo an toàn lao động dưới đây.`,
+      thScenario: 'Kịch bản', thKosha: 'Tiêu chuẩn KOSHA', thSI: 'Chỉ số an toàn', thGrade: 'Xếp loại',
+      scenario:   'Buộc móc & Nâng tải (S-01)',
+      thSI2: 'Chỉ số an toàn', thViol: 'Vi phạm',
+      law:  'Quy định áp dụng: Điều 163, 164, 147 – Tiêu chuẩn ATVSLĐ',
+      dateLabel: 'Ngày hoàn thành: ',
+      seal: 'BULSA\nSAFETY',
+      footer: 'Chứng chỉ này xác nhận đã hoàn thành mô phỏng an toàn lao động BULSA.',
+    },
+    ar: {
+      certTitle:  'شهادة تدريب السلامة الصناعية',
+      statement:  `يُشهد بأن <strong class="cert-name">${name}</strong> قد أتمّ بنجاح برنامج المحاكاة التدريبي للسلامة الصناعية الموضّح أدناه.`,
+      thScenario: 'السيناريو', thKosha: 'معيار KOSHA', thSI: 'مؤشر السلامة', thGrade: 'الدرجة',
+      scenario:   'ربط الأحمال والرفع (S-01)',
+      thSI2: 'مؤشر السلامة', thViol: 'المخالفات',
+      law:  'اللوائح المطبّقة: المادة 163 و164 و147 – معايير السلامة',
+      dateLabel: 'تاريخ الإتمام: ',
+      seal: 'BULSA\nSAFETY',
+      footer: 'تؤكد هذه الشهادة إتمام محاكاة السلامة الصناعية BULSA.',
+    },
+  };
+  const c = T[currentLang] || T.ko;
 
   const cert = document.getElementById('certificate');
   cert.innerHTML = `
     <div class="cert-header">
       <div class="cert-logo-text">BULSA</div>
-      <div class="cert-title">${isKo ? '산업안전 교육 수료증' : 'Industrial Safety Training Certificate'}</div>
+      <div class="cert-title">${c.certTitle}</div>
       <div class="cert-subtitle">불사(不死) 안전교육 시뮬레이션 / BULSA Safety Simulation</div>
     </div>
 
     <div class="cert-body">
-      <p class="cert-statement">
-        ${isKo
-          ? `성명 <strong class="cert-name">${name}</strong> 은(는) 아래 산업안전 시뮬레이션 교육 과정을 성실히 이수하였음을 증명합니다.`
-          : `This is to certify that <strong class="cert-name">${name}</strong> has successfully completed the following industrial safety simulation training.`
-        }
-      </p>
+      <p class="cert-statement">${c.statement}</p>
 
       <table class="cert-table">
         <thead>
           <tr>
-            <th>${isKo ? '시나리오' : 'Scenario'}</th>
-            <th>${isKo ? 'KOSHA 기준' : 'KOSHA Standard'}</th>
-            <th>${isKo ? '안전지수' : 'Safety Index'}</th>
-            <th>${isKo ? '등급' : 'Grade'}</th>
+            <th>${c.thScenario}</th>
+            <th>${c.thKosha}</th>
+            <th>${c.thSI}</th>
+            <th>${c.thGrade}</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>${isKo ? '줄걸이·인양 작업 (S-01)' : 'Rigging & Lifting (S-01)'}</td>
+            <td>${c.scenario}</td>
             <td class="cert-kosha">G-133-2020 / B-M-12-2025</td>
             <td>${si}/100</td>
             <td class="${gradeClass}">${grade}</td>
@@ -142,22 +183,19 @@ function showCertificate() {
 
       <table class="cert-table" style="margin-top:8px;">
         <tr>
-          <th>${isKo ? '안전지수' : 'Safety Index'}</th>
+          <th>${c.thSI2}</th>
           <td>${si}/100</td>
-          <th>${isKo ? '위반 기록' : 'Violations'}</th>
+          <th>${c.thViol}</th>
           <td>${violated}</td>
         </tr>
       </table>
     </div>
 
     <div class="cert-footer">
-      <p>${isKo ? '관련 법령: 산업안전보건기준에 관한 규칙 제163조, 제164조, 제147조' : 'Applicable Regulations: OSH Standards §163, §164, §147'}</p>
-      <p class="cert-date" style="margin-top:6px;">${isKo ? '이수 일시: ' : 'Completion Date: '}${date}</p>
-      <div class="cert-seal">${isKo ? 'BULSA\n불사' : 'BULSA\nSAFETY'}</div>
-      <p style="margin-top:10px; font-size:0.72rem;">${isKo
-        ? '이 수료증은 BULSA 불사 안전교육 시뮬레이션 완료를 증명합니다.'
-        : 'This certificate confirms completion of the BULSA industrial safety simulation.'
-      }</p>
+      <p>${c.law}</p>
+      <p class="cert-date" style="margin-top:6px;">${c.dateLabel}${date}</p>
+      <div class="cert-seal">${c.seal}</div>
+      <p style="margin-top:10px; font-size:0.72rem;">${c.footer}</p>
     </div>
   `;
 

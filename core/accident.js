@@ -119,7 +119,7 @@ function showAccidentPanel(accidentId) {
   const isKo = currentLang === 'ko';
 
   document.getElementById('acc-title').textContent     = t('accidentTitle');
-  document.getElementById('acc-lbl-desc').textContent  = '사고 상황';
+  document.getElementById('acc-lbl-desc').textContent  = t('accidentSituation');
   document.getElementById('acc-lbl-cause').textContent = t('accidentCause');
   document.getElementById('acc-lbl-law').textContent   = t('accidentLaw');
   document.getElementById('acc-lbl-proc').textContent  = t('accidentProcedure');
@@ -169,16 +169,16 @@ function showCompletePanel() {
   if (document.pointerLockElement) document.exitPointerLock();
 
   const checks = [
-    { key: 'slingInspected',  ko: '슬링 점검',       en: 'Sling Inspection' },
-    { key: 'pinSecured',      ko: '안전핀 체결',      en: 'Safety Pin Secured' },
-    { key: 'specChecked',     ko: '사양서 확인',      en: 'Spec Sheet Reviewed' },
-    { key: 'angleMeasured',   ko: '슬링 각도 측정',   en: 'Angle Measured' },
-    { key: 'signalAssigned',  ko: '신호수 위치 지정', en: 'Signal Person Assigned' },
-    { key: 'workerEvacuated', ko: '작업반경 대피 지시', en: 'Worker Evacuated' },
+    { key: 'slingInspected',  ko: '슬링 점검',         en: 'Sling Inspection',       vi: 'Kiểm tra dây đai',        ar: 'فحص حبل الربط' },
+    { key: 'pinSecured',      ko: '안전핀 체결',        en: 'Safety Pin Secured',     vi: 'Khóa chốt an toàn',       ar: 'تثبيت مسمار الأمان' },
+    { key: 'specChecked',     ko: '사양서 확인',        en: 'Spec Sheet Reviewed',    vi: 'Xem tài liệu thông số',   ar: 'مراجعة وثيقة المواصفات' },
+    { key: 'angleMeasured',   ko: '슬링 각도 측정',     en: 'Angle Measured',         vi: 'Đo góc dây',              ar: 'قياس زاوية الحبل' },
+    { key: 'signalAssigned',  ko: '신호수 위치 지정',   en: 'Signal Person Assigned', vi: 'Bố trí người ra hiệu',    ar: 'تحديد موقع المُوجِّه' },
+    { key: 'workerEvacuated', ko: '작업반경 대피 지시', en: 'Worker Evacuated',       vi: 'Ra lệnh sơ tán công nhân', ar: 'إخلاء العامل من المنطقة' },
   ];
 
   const allDone = checks.every(c => LIFT_STATE[c.key]);
-  const isKo    = currentLang === 'ko';
+  const L = currentLang;
 
   document.getElementById('cmp-title').textContent    = t('completeTitle');
   document.getElementById('cmp-msg').textContent      = allDone ? t('safeComplete') : t('unsafeComplete');
@@ -193,7 +193,7 @@ function showCompletePanel() {
       const done = LIFT_STATE[c.key];
       const div  = document.createElement('div');
       div.className  = 'check-item ' + (done ? 'check-done' : 'check-missed');
-      div.textContent = (done ? '✓ ' : '✗ ') + (isKo ? c.ko : c.en);
+      div.textContent = (done ? '✓ ' : '✗ ') + (c[L] || c.ko);
       listEl.appendChild(div);
     });
   }

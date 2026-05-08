@@ -101,6 +101,7 @@ const STRINGS = {
     unsafeComplete:  '작업은 완료됐지만 일부 위험요소가 방치되었습니다.',
     hazardsFixed:    '조치 완료',
     hazardsIgnored:  '방치',
+    accidentSituation: '사고 상황',
   },
 
   en: {
@@ -205,6 +206,7 @@ const STRINGS = {
     unsafeComplete: 'Operation complete, but some hazards were left unaddressed.',
     hazardsFixed:   'Fixed',
     hazardsIgnored: 'Ignored',
+    accidentSituation: 'Accident Situation',
   },
 
   vi: {
@@ -309,6 +311,7 @@ const STRINGS = {
     unsafeComplete: 'Công việc hoàn thành nhưng một số nguy hiểm chưa được xử lý.',
     hazardsFixed:   'Đã xử lý',
     hazardsIgnored: 'Bỏ qua',
+    accidentSituation: 'Tình huống tai nạn',
   },
 
   ar: {
@@ -413,6 +416,7 @@ const STRINGS = {
     unsafeComplete: 'اكتملت العملية لكن بعض المخاطر لم تُعالج.',
     hazardsFixed:   'تمت المعالجة',
     hazardsIgnored: 'مُهمَل',
+    accidentSituation: 'وصف الحادث',
   },
 };
 
