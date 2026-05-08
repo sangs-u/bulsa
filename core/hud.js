@@ -4,7 +4,7 @@ const PHASE_MISSIONS = {
   1: { ko: '📋 현장 사무실로 이동해 작업계획서를 작성하세요 (E키)', en: '📋 Go to site office and write the work plan (E)', vi: '📋 Đến văn phòng công trường và viết kế hoạch làm việc (E)', ar: '📋 اذهب إلى مكتب الموقع واكتب خطة العمل (E)' },
   2: { ko: '🔢 책상에서 안전성 검토를 완료하세요 (E키)', en: '🔢 Complete safety review at the desk (E)', vi: '🔢 Hoàn thành đánh giá an toàn tại bàn làm việc (E)', ar: '🔢 أكمل مراجعة السلامة على المكتب (E)' },
   3: { ko: '🏗 크레인 옆으로 이동해 아웃트리거를 확장하세요 (E키)', en: '🏗 Go to crane and extend outriggers (E)', vi: '🏗 Đến cần cẩu và mở rộng chân chống (E)', ar: '🏗 اذهب إلى الرافعة ومدد أرجل الدعم (E)' },
-  4: { ko: '🔧 박영수에게 줄걸이 작업을 지시하세요', en: '🔧 Instruct rigger (Park) for sling work', vi: '🔧 Hướng dẫn Park (thợ buộc móc) thực hiện công việc', ar: '🔧 وجّه العامل (باك) لعمل ربط الأحمال' },
+  4: { ko: '🔧 슬링 점검·안전핀 체결·슬링 각도를 직접 확인하세요 (E키)', en: '🔧 Inspect sling, secure pin, and measure sling angle (E)', vi: '🔧 Kiểm tra dây cáp, chốt an toàn và đo góc dây (E)', ar: '🔧 افحص الحبال وأحكم البين وقِس زاوية الحبل (E)' },
   5: { ko: '🦺 신호수 배치 및 작업반경 대피를 확인하세요', en: '🦺 Assign signalman and evacuate work zone', vi: '🦺 Bố trí người ra hiệu và sơ tán khu vực làm việc', ar: '🦺 عيّن المُوجِّه وأخلِ منطقة العمل' },
   6: { ko: '🏋 크레인 운전석에서 인양을 시작하세요', en: '🏋 Start lifting from crane cab', vi: '🏋 Bắt đầu nâng tải từ cabin cần cẩu', ar: '🏋 ابدأ الرفع من مقصورة الرافعة' },
 };

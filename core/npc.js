@@ -143,6 +143,7 @@ class NPC {
     if (this.id === 'gimc') {
       GAME.interactables.push({
         mesh: this.mesh, type: 'action', actionId: 'assign_signal', label: '신호수 위치 지정',
+        phase: 5,
       });
     } else {
       GAME.interactables.push({ mesh: this.mesh, type: 'npc', npcId: this.id, nameKey: null });

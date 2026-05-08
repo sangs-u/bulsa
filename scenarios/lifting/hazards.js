@@ -22,6 +22,7 @@ function registerLiftingHazards() {
   );
   GAME.interactables.push({
     mesh: slingMesh, type: 'action', actionId: 'inspect_sling', label: '슬링 점검',
+    phase: 4,
   });
 
   // ── 2. 안전핀/샤클 — 체결 대상 (훅 블록 옆) ─────────────────
@@ -31,6 +32,7 @@ function registerLiftingHazards() {
   );
   GAME.interactables.push({
     mesh: pinMesh, type: 'action', actionId: 'secure_pin', label: '안전핀 체결',
+    phase: 4,
   });
 
   // ── 3. 각도기 — 측정 대상 (슬링 연결 지점 근처) ─────────────
@@ -41,6 +43,7 @@ function registerLiftingHazards() {
   angleMesh.rotation.y = Math.PI / 4;
   GAME.interactables.push({
     mesh: angleMesh, type: 'action', actionId: 'measure_angle', label: '각도 측정',
+    phase: 4,
   });
 
   // ── 4. 크레인 사양서 — 운전실 전면 벽 ───────────────────────
@@ -82,6 +85,7 @@ function registerLiftingHazards() {
   scene.add(workerTrigger);
   GAME.interactables.push({
     mesh: workerTrigger, type: 'action', actionId: 'evacuate_worker', label: '대피 지시',
+    phase: 5,
   });
 
   GAME._dangerWorker = { group: workerGroup, trigger: workerTrigger };
