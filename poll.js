@@ -125,12 +125,13 @@ async function runCommand(entry) {
       proc.stdout.on('data', d => { out += d.toString(); });
       proc.stderr.on('data', d => { out += d.toString(); });
 
-      // 60초마다 진행상황 중간 보고
+      // 30초마다 진행상황 중간 보고
       const hb = setInterval(async () => {
-        const sec = Math.round((Date.now() - start) / 1000);
+        const elapsed = Math.round((Date.now() - start) / 1000);
+        const remaining = Math.round((TIMEOUT_MS - (Date.now() - start)) / 1000);
         const preview = out.slice(-300).trim();
-        await patchStatus(id, { status: 'running', result: `⏳ 작업 중... (${sec}초 경과)${preview ? '\n\n' + preview : ''}` });
-      }, 60000);
+        await patchStatus(id, { status: 'running', result: `⏳ ${elapsed}초 경과 / 남은 시간 ${remaining}초${preview ? '\n\n' + preview : ''}` });
+      }, 30000);
 
       const tm = setTimeout(() => {
         clearInterval(hb);
