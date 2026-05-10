@@ -310,6 +310,52 @@ function _moveSignalNPC() {
   }
 }
 
+// ── Panel localization — call when opening any panel ─────────
+function _localizePanels() {
+  const ids = {
+    'plan-title':          'planTitle',
+    'plan-sec-cargo':      'planSecCargo',
+    'plan-lbl-name':       'planLblName',
+    'plan-lbl-weight':     'planLblWeight',
+    'plan-lbl-shape':      'planLblShape',
+    'plan-sec-crew':       'planSecCrew',
+    'plan-crew-foreman':   'planCrewForeman',
+    'plan-crew-crane':     'planCrewCrane',
+    'plan-crew-rigger':    'planCrewRigger',
+    'plan-crew-signal':    'planCrewSignal',
+    'plan-crew-safety':    'planCrewSafety',
+    'plan-sec-risk':       'planSecRisk',
+    'plan-risk-path':      'planRiskPath',
+    'plan-risk-ground':    'planRiskGround',
+    'plan-risk-wind':      'planRiskWind',
+    'plan-risk-emergency': 'planRiskEmergency',
+    'plan-btn-sign':       'planBtnSign',
+    'safety-title':        'safetyTitle',
+    'safety-lbl-weight':   'safetyLblWeight',
+    'safety-lbl-angle':    'safetyLblAngle',
+    'safety-lbl-k':        'safetyLblK',
+    'safety-lbl-lines':    'safetyLblLines',
+    'safety-lbl-lines-val':'safetyLblLinesVal',
+    'safety-lbl-swl':      'safetyLblSwl',
+    'safety-lbl-ts':       'safetyLblTs',
+    'safety-lbl-sr':       'safetyLblSr',
+    'safety-btn-calc':     'safetyBtnCalc',
+    'safety-btn-confirm':  'safetyBtnConfirm',
+    'equip-title':         'equipTitle',
+    'equip-guide':         'equipGuide',
+    'eq-outrigger-lbl':    'equipOutrigger',
+    'eq-level-lbl':        'equipLevel',
+    'eq-overload-lbl':     'equipOverload',
+    'equip-bubble-guide':  'equipBubbleGuide',
+    'level-confirm-btn':   'equipLevelConfirm',
+    'equipment-btn-confirm':'equipBtnConfirm',
+  };
+  Object.entries(ids).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = t(key);
+  });
+}
+
 // ── Phase 1: Plan Panel ───────────────────────────────────────
 function _closePanel(panelId) {
   const p = document.getElementById(panelId);
@@ -323,6 +369,7 @@ function _closePanel(panelId) {
 function openPlanPanel() {
   document.exitPointerLock();
   INTERACTION.popupOpen = true;
+  _localizePanels();
   const panel = document.getElementById('plan-panel');
   panel.classList.remove('hidden');
 
@@ -355,6 +402,7 @@ function openPlanPanel() {
 function openSafetyPanel() {
   document.exitPointerLock();
   INTERACTION.popupOpen = true;
+  _localizePanels();
   const panel = document.getElementById('safety-panel');
   panel.classList.remove('hidden');
 
@@ -408,6 +456,7 @@ function openSafetyPanel() {
 function openEquipmentPanel() {
   document.exitPointerLock();
   INTERACTION.popupOpen = true;
+  _localizePanels();
   const panel = document.getElementById('equipment-panel');
   panel.classList.remove('hidden');
 

@@ -250,37 +250,37 @@
   </div>
   <div class="panel-body">
     <div class="plan-section">
-      <h3>화물 정보</h3>
+      <h3 id="plan-sec-cargo">화물 정보</h3>
       <div class="plan-row">
-        <label>화물명</label>
+        <label id="plan-lbl-name">화물명</label>
         <input type="text" id="plan-cargo-name" value="RC보 (Reinforced Concrete Beam)" readonly>
       </div>
       <div class="plan-row">
-        <label>중량 (ton)</label>
+        <label id="plan-lbl-weight">중량 (ton)</label>
         <input type="number" id="plan-weight" value="3.0" readonly>
       </div>
       <div class="plan-row">
-        <label>형상</label>
+        <label id="plan-lbl-shape">형상</label>
         <input type="text" id="plan-shape" value="직사각형 단면" readonly>
       </div>
     </div>
     <div class="plan-section">
-      <h3>작업 인원 확인</h3>
+      <h3 id="plan-sec-crew">작업 인원 확인</h3>
       <div class="plan-checklist">
-        <label><input type="checkbox" class="plan-check" data-key="crew_foreman"> 작업반장 — 1인</label>
-        <label><input type="checkbox" class="plan-check" data-key="crew_crane"> 크레인 운전원 — 1인</label>
-        <label><input type="checkbox" class="plan-check" data-key="crew_rigger"> 줄걸이 작업자 — 1인</label>
-        <label><input type="checkbox" class="plan-check" data-key="crew_signal"> 신호수 — 1인</label>
-        <label><input type="checkbox" class="plan-check" data-key="crew_safety"> 안전감시자 — 1인</label>
+        <label><input type="checkbox" class="plan-check" data-key="crew_foreman"> <span id="plan-crew-foreman">작업반장 — 1인</span></label>
+        <label><input type="checkbox" class="plan-check" data-key="crew_crane"> <span id="plan-crew-crane">크레인 운전원 — 1인</span></label>
+        <label><input type="checkbox" class="plan-check" data-key="crew_rigger"> <span id="plan-crew-rigger">줄걸이 작업자 — 1인</span></label>
+        <label><input type="checkbox" class="plan-check" data-key="crew_signal"> <span id="plan-crew-signal">신호수 — 1인</span></label>
+        <label><input type="checkbox" class="plan-check" data-key="crew_safety"> <span id="plan-crew-safety">안전감시자 — 1인</span></label>
       </div>
     </div>
     <div class="plan-section">
-      <h3>위험 확인</h3>
+      <h3 id="plan-sec-risk">위험 확인</h3>
       <div class="plan-checklist">
-        <label><input type="checkbox" class="plan-check" data-key="risk_path"> 인양 경로 장애물 확인</label>
-        <label><input type="checkbox" class="plan-check" data-key="risk_ground"> 지반 지지력 확인</label>
-        <label><input type="checkbox" class="plan-check" data-key="risk_wind"> 풍속 확인 (10m/s 이하)</label>
-        <label><input type="checkbox" class="plan-check" data-key="risk_emergency"> 비상연락체계 확인</label>
+        <label><input type="checkbox" class="plan-check" data-key="risk_path"> <span id="plan-risk-path">인양 경로 장애물 확인</span></label>
+        <label><input type="checkbox" class="plan-check" data-key="risk_ground"> <span id="plan-risk-ground">지반 지지력 확인</span></label>
+        <label><input type="checkbox" class="plan-check" data-key="risk_wind"> <span id="plan-risk-wind">풍속 확인 (10m/s 이하)</span></label>
+        <label><input type="checkbox" class="plan-check" data-key="risk_emergency"> <span id="plan-risk-emergency">비상연락체계 확인</span></label>
       </div>
     </div>
   </div>
@@ -294,37 +294,37 @@
 <div id="safety-panel" class="panel hidden">
   <div class="panel-header">
     <span class="panel-icon">🔢</span>
-    <h2>안전성 검토</h2>
+    <h2 id="safety-title">안전성 검토</h2>
     <span class="panel-phase">Phase 2/6</span>
     <button class="panel-close-btn" id="safety-btn-cancel" title="닫기">✕</button>
   </div>
   <div class="panel-body">
     <div class="safety-calc-row">
-      <span class="calc-label">화물 중량</span>
+      <span id="safety-lbl-weight" class="calc-label">화물 중량</span>
       <span class="calc-value" id="sc-weight">3.0 ton</span>
     </div>
     <div class="safety-calc-row">
-      <span class="calc-label">인양각도 (α)</span>
+      <span id="safety-lbl-angle" class="calc-label">인양각도 (α)</span>
       <span class="calc-value" id="sc-angle">58°</span>
     </div>
     <div class="safety-calc-row">
-      <span class="calc-label">각도계수 (K)</span>
+      <span id="safety-lbl-k" class="calc-label">각도계수 (K)</span>
       <span class="calc-value" id="sc-k">—</span>
     </div>
     <div class="safety-calc-row">
-      <span class="calc-label">줄 수</span>
-      <span class="calc-value">2줄</span>
+      <span id="safety-lbl-lines" class="calc-label">줄 수</span>
+      <span id="safety-lbl-lines-val" class="calc-value">2줄</span>
     </div>
     <div class="safety-calc-row">
-      <span class="calc-label">슬링 SWL</span>
+      <span id="safety-lbl-swl" class="calc-label">슬링 SWL</span>
       <span class="calc-value" id="sc-swl">—</span>
     </div>
     <div class="safety-calc-row highlight">
-      <span class="calc-label">줄당 장력 (Ts)</span>
+      <span id="safety-lbl-ts" class="calc-label">줄당 장력 (Ts)</span>
       <span class="calc-value" id="sc-ts">—</span>
     </div>
     <div class="safety-calc-row highlight">
-      <span class="calc-label">사용률</span>
+      <span id="safety-lbl-sr" class="calc-label">사용률</span>
       <span class="calc-value" id="sc-sr">—</span>
     </div>
     <div id="safety-result" class="safety-result-box hidden"></div>
@@ -339,26 +339,26 @@
 <div id="equipment-panel" class="panel hidden">
   <div class="panel-header">
     <span class="panel-icon">🏗</span>
-    <h2>장비 세팅</h2>
+    <h2 id="equip-title">장비 세팅</h2>
     <span class="panel-phase">Phase 3/6</span>
     <button class="panel-close-btn" id="equipment-btn-cancel" title="닫기">✕</button>
   </div>
   <div class="panel-body">
-    <p class="equipment-guide">크레인 옆으로 이동하여 아웃트리거를 확장하세요.</p>
+    <p id="equip-guide" class="equipment-guide">크레인 옆으로 이동하여 아웃트리거를 확장하세요.</p>
     <div class="equipment-checklist">
       <div class="eq-item" id="eq-outrigger">
         <span class="eq-icon">⬜</span>
-        <span>아웃트리거 4방향 확장</span>
+        <span id="eq-outrigger-lbl">아웃트리거 4방향 확장</span>
         <span class="eq-status">대기</span>
       </div>
       <div class="eq-item" id="eq-level">
         <span class="eq-icon">⬜</span>
-        <span>수평 확인</span>
+        <span id="eq-level-lbl">수평 확인</span>
         <span class="eq-status">대기</span>
       </div>
       <div class="eq-item" id="eq-overload">
         <span class="eq-icon">⬜</span>
-        <span>과부하 방지장치 확인</span>
+        <span id="eq-overload-lbl">과부하 방지장치 확인</span>
         <span class="eq-status">대기</span>
       </div>
     </div>
@@ -366,7 +366,7 @@
       <div class="bubble-container">
         <div class="bubble" id="bubble-dot"></div>
       </div>
-      <p>버블을 중앙으로 맞추세요</p>
+      <p id="equip-bubble-guide">버블을 중앙으로 맞추세요</p>
       <button id="level-confirm-btn" class="btn-secondary">수평 확인 완료</button>
     </div>
   </div>
