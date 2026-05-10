@@ -39,10 +39,7 @@ bulsa/
 ## 작업 완료 규칙 (필수)
 1. 모든 수정 후 즉시 `git add . && git commit && git push` (bulsa 저장소)
 2. sangs-u.github.io 수정 시 해당 저장소도 push
-3. 작업 완료 시 `.claude/status.json` 업데이트 후 push
-   ```json
-   { "timestamp": "ISO시간", "lastTask": "작업내용", "agent": "에이전트명", "status": "done" }
-   ```
+3. 작업 완료 시 `PROGRESS.md` 업데이트 (마지막 완료 작업 + 다음 작업 목록 갱신). 30줄 이내 유지.
 4. 질문 금지. 모호한 부분은 스스로 판단하고 즉시 실행
 
 ## 현재 구현 상태

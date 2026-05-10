@@ -10,6 +10,11 @@ const MAX_RETRIES = 3;        // 실패 시 최대 재시도 횟수
 const RETRY_DELAY_MS = 2000;  // 재시도 간격
 
 const _running = new Set();
+const fs = require('fs');
+
+function loadProgress() {
+  try { return fs.readFileSync('./PROGRESS.md', 'utf8'); } catch { return ''; }
+}
 
 // ── HTTP 요청 (타임아웃 + Connection:close) ──────────────────────
 function _rawRequest(method, path, body) {
@@ -103,7 +108,9 @@ async function runCommand(entry) {
 
   let output = '';
   try {
-    output = execSync(`claude --continue -p ${JSON.stringify(cmd)} --allowedTools all`, {
+    const progress = loadProgress();
+    const fullCmd = progress ? `${progress}\n\n---\n\n${cmd}` : cmd;
+    output = execSync(`claude --continue -p ${JSON.stringify(fullCmd)} --allowedTools all`, {
       cwd:      'C:\\Users\\sangs\\OneDrive\\Desktop\\bulsa', // CLAUDE.md 인식
       encoding: 'utf8',
       timeout:  5 * 60 * 1000,
