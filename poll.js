@@ -52,13 +52,35 @@ async function markDone(id) {
   }
 }
 
+async function patchStatus(id, body) {
+  try {
+    await request('PATCH', `/commands/${id}/status`, body);
+  } catch (e) {
+    console.error(`[poll] /commands/${id}/status PATCH 실패:`, e.message);
+  }
+}
+
+function assignAgent(cmd) {
+  const t = cmd.toLowerCase();
+  if (t.includes('test') || t.includes('qa') || t.includes('playwright')) return '🐶 강아지 QA';
+  if (t.includes('디자인') || t.includes('품질') || t.includes('스크린샷')) return '🐱 고양이 AD';
+  if (t.includes('콘텐츠') || t.includes('영문') || t.includes('메시지')) return '🦊 여우 기획';
+  if (t.includes('분석') || t.includes('데이터') || t.includes('통계')) return '🐻 곰 분석';
+  return '🐰 토끼 PD'; // 기본값 (코드 수정/PM 역할)
+}
+
 async function runCommand(entry) {
   const { id, cmd } = entry;
   if (_running.has(id)) return;
   _running.add(id);
 
+  const agent = assignAgent(cmd);
+
   console.log(`[poll] CMD #${id} 실행: ${cmd}`);
   await postLog(`CMD #${id} 시작: ${cmd}`);
+
+  // 실행 시작 전: status → running + agent 배정
+  await patchStatus(id, { status: 'running', agent });
 
   let output = '';
   try {
@@ -69,10 +91,16 @@ async function runCommand(entry) {
     console.log(`[poll] CMD #${id} 완료`);
     const summary = output.slice(0, 2000); // 최대 2000자 로그
     await postLog(`CMD #${id} 완료:\n${summary}`);
+
+    // 성공 시: status → done + result 저장
+    await patchStatus(id, { status: 'done', result: output.slice(0, 1000) });
   } catch (e) {
     const errMsg = (e.stdout || '') + (e.stderr || '') || e.message;
     console.error(`[poll] CMD #${id} 오류:`, errMsg.slice(0, 500));
     await postLog(`CMD #${id} 오류:\n${errMsg.slice(0, 1000)}`, 'error');
+
+    // 실패 시: status → failed + result 저장
+    await patchStatus(id, { status: 'failed', result: errMsg.slice(0, 500) });
   } finally {
     await markDone(id);
     _running.delete(id);
