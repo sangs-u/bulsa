@@ -109,13 +109,11 @@ async function runCommand(entry) {
       timeout:  5 * 60 * 1000,
     });
     console.log(`[poll] CMD #${id} 완료`);
-    await postLog(`CMD #${id} 완료:\n${output.slice(0, 2000)}`);
-    await patchStatus(id, { status: 'done', result: output.slice(0, 1000) });
+    await patchStatus(id, { status: 'done', result: output.slice(0, 4000) });
   } catch (e) {
     const errMsg = (e.stdout || '') + (e.stderr || '') || e.message;
     console.error(`[poll] CMD #${id} 오류:`, errMsg.slice(0, 500));
-    await postLog(`CMD #${id} 오류:\n${errMsg.slice(0, 1000)}`, 'error');
-    await patchStatus(id, { status: 'failed', result: errMsg.slice(0, 500) });
+    await patchStatus(id, { status: 'failed', result: errMsg.slice(0, 2000) });
   } finally {
     await markDone(id);
     _running.delete(id);
