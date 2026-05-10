@@ -69,7 +69,21 @@
     </div>
   </header>
 
-  <main class="scenario-grid" id="grid"></main>
+  <div class="floor-plan-wrap">
+    <main class="floor-plan" id="grid"></main>
+    <div class="fp-title-block">
+      <div class="fp-tb-left">
+        <div class="fp-tb-project">BULSA — SITE SAFETY SIMULATION</div>
+        <div class="fp-tb-sub">SCENARIO SELECTOR · 시나리오 선택</div>
+      </div>
+      <div class="fp-tb-meta">
+        <div class="fp-tb-cell"><span class="fp-tb-key">DWG</span><span class="fp-tb-val">SIM-001</span></div>
+        <div class="fp-tb-cell"><span class="fp-tb-key">DATE</span><span class="fp-tb-val">2026.05</span></div>
+        <div class="fp-tb-cell"><span class="fp-tb-key">REV</span><span class="fp-tb-val">01</span></div>
+        <div class="fp-tb-cell"><span class="fp-tb-key">SCALE</span><span class="fp-tb-val">NTS</span></div>
+      </div>
+    </div>
+  </div>
 
   <script src="i18n/strings.js"></script>
   <script>
@@ -89,19 +103,25 @@
       document.getElementById('v1-label').textContent = t('v1Progress');
 
       SCENARIOS.forEach(s => {
-        const card  = document.createElement('div');
-        card.className = 'scenario-card ' + (s.ready ? 'ready' : 'soon');
+        const card = document.createElement('div');
+        card.className = 'fp-room ' + (s.ready ? 'ready' : 'soon');
         if (s.ready) card.onclick = () => startScenario(s.url);
 
+        const numOnly = s.num.replace('S-', '');
         card.innerHTML = `
-          <span class="card-badge ${s.ready ? 'badge-ready' : 'badge-soon'}">
-            ${s.ready ? t('scenarioReady') : t('scenarioSoon')}
-          </span>
-          <span class="card-num">${s.num}</span>
-          <div class="card-title">${t(s.titleKey)}</div>
-          <div class="card-desc">${t(s.descKey)}</div>
-          <div class="card-kosha">${t(s.koshaKey)}</div>
-          ${s.ready ? `<button class="card-btn" onclick="event.stopPropagation();startScenario('${s.url}')">${t('scenarioReady')}</button>` : ''}
+          <div class="room-header">
+            <div class="room-header-left">
+              <span class="room-num-circle">${numOnly}</span>
+              <span class="room-label">${s.num}</span>
+            </div>
+            <span class="card-badge ${s.ready ? 'badge-ready' : 'badge-soon'}">
+              ${s.ready ? t('scenarioReady') : t('scenarioSoon')}
+            </span>
+          </div>
+          <div class="room-title">${t(s.titleKey)}</div>
+          <div class="room-desc">${t(s.descKey)}</div>
+          <div class="room-kosha">${t(s.koshaKey)}</div>
+          ${s.ready ? `<button class="room-btn" onclick="event.stopPropagation();startScenario('${s.url}')">${t('scenarioReady')}</button>` : ''}
         `;
         grid.appendChild(card);
       });

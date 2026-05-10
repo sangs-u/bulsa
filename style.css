@@ -28,7 +28,11 @@ html, body {
 .hub-body {
   overflow: auto;
   min-height: 100vh;
-  background: var(--bg);
+  background: #08152A;
+  background-image:
+    linear-gradient(rgba(44,111,172,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(44,111,172,0.10) 1px, transparent 1px);
+  background-size: 40px 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -36,9 +40,19 @@ html, body {
 
 .hub-header {
   width: 100%;
-  padding: 32px 0 24px;
+  padding: 28px 0 20px;
   text-align: center;
-  border-bottom: 1px solid rgba(44,111,172,0.3);
+  border-bottom: 1px solid rgba(44,111,172,0.35);
+  position: relative;
+}
+
+.hub-header::after {
+  content: '';
+  position: absolute;
+  bottom: -3px; left: 50%;
+  transform: translateX(-50%);
+  width: 56px; height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--steel));
 }
 
 .hub-logo {
@@ -83,92 +97,285 @@ html, body {
   background: rgba(44,111,172,0.18);
 }
 
-.scenario-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
-  padding: 40px 32px 60px;
+/* ── FLOOR PLAN LAYOUT ──────────────────────────────────── */
+.floor-plan-wrap {
   width: 100%;
-  max-width: 1100px;
-}
-
-.scenario-card {
-  background: var(--navy);
-  border: 1px solid rgba(44,111,172,0.3);
-  border-radius: var(--radius);
-  padding: 24px;
+  max-width: 1280px;
+  padding: 32px 40px 60px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: transform 0.2s, border-color 0.2s;
 }
 
-.scenario-card.ready {
+/* Blueprint outer wall */
+.floor-plan {
+  display: grid;
+  grid-template-columns: 2.4fr 1fr 1fr;
+  grid-template-rows: 270px 270px auto;
+  width: 100%;
+  border: 3px solid #3A84C4;
+  border-bottom: none;
+  background: transparent;
+  position: relative;
+}
+
+/* Outer corner ticks */
+.floor-plan::before,
+.floor-plan::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  border-color: rgba(100,180,255,0.55);
+  border-style: solid;
+  z-index: 2;
+}
+
+.floor-plan::before { top: -6px; left: -6px; border-width: 2px 0 0 2px; }
+.floor-plan::after  { top: -6px; right: -6px; border-width: 2px 2px 0 0; }
+
+/* Room */
+.fp-room {
+  border: 1.5px solid rgba(44,111,172,0.38);
+  padding: 20px 22px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  background: rgba(6, 18, 44, 0.6);
+  overflow: hidden;
+  transition: background 0.22s;
+}
+
+.fp-room.ready {
   cursor: pointer;
-  border-color: rgba(0,168,150,0.4);
+  background: rgba(0, 65, 58, 0.28);
+  border-color: rgba(0,168,150,0.38);
 }
 
-.scenario-card.ready:hover {
-  transform: translateY(-4px);
+.fp-room.ready:hover { background: rgba(0, 88, 78, 0.38); }
+.fp-room.soon { opacity: 0.48; }
+
+/* Grid positions */
+.fp-room:nth-child(1) { grid-column: 1; grid-row: 1 / 3; }
+.fp-room:nth-child(2) { grid-column: 2; grid-row: 1; }
+.fp-room:nth-child(3) { grid-column: 3; grid-row: 1; }
+.fp-room:nth-child(4) { grid-column: 2; grid-row: 2; }
+.fp-room:nth-child(5) { grid-column: 3; grid-row: 2; }
+.fp-room:nth-child(6) { grid-column: 1 / 4; grid-row: 3; min-height: 120px; }
+
+/* Diagonal hatch for soon rooms */
+.fp-room.soon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    -45deg, transparent, transparent 16px,
+    rgba(44,111,172,0.055) 16px, rgba(44,111,172,0.055) 17px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fp-room > * { position: relative; z-index: 1; }
+
+/* Corner mark inside room */
+.fp-room::after {
+  content: '';
+  position: absolute;
+  bottom: 8px; right: 8px;
+  width: 12px; height: 12px;
+  border-bottom: 1px solid rgba(44,111,172,0.28);
+  border-right: 1px solid rgba(44,111,172,0.28);
+  z-index: 1;
+}
+
+/* Room header */
+.room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.room-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Architectural circle room number */
+.room-num-circle {
+  width: 27px; height: 27px;
+  border: 1.5px solid rgba(44,111,172,0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: var(--steel);
+  flex-shrink: 0;
+}
+
+.fp-room.ready .room-num-circle {
   border-color: var(--teal);
+  color: var(--teal);
 }
 
-.scenario-card.soon {
-  opacity: 0.45;
+.room-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .card-badge {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  padding: 3px 10px;
+  padding: 2px 8px;
   border-radius: 20px;
-  width: fit-content;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.badge-ready { background: rgba(0,168,150,0.2); color: var(--teal); }
-.badge-soon  { background: rgba(139,163,186,0.15); color: var(--muted); }
+.badge-ready { background: rgba(0,168,150,0.18); color: var(--teal); }
+.badge-soon  { background: rgba(139,163,186,0.12); color: var(--muted); }
 
-.card-num {
-  font-size: 0.72rem;
-  color: var(--muted);
-  font-family: monospace;
-}
-
-.card-title {
-  font-size: 1.1rem;
+.room-title {
+  font-size: 1rem;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.35;
+  color: var(--text);
 }
 
-.card-desc {
-  font-size: 0.82rem;
+.fp-room:nth-child(1) .room-title { font-size: 1.3rem; }
+
+.room-desc {
+  font-size: 0.78rem;
   color: var(--muted);
-  line-height: 1.5;
+  line-height: 1.6;
   flex: 1;
 }
 
-.card-kosha {
-  font-size: 0.72rem;
-  color: rgba(44,111,172,0.8);
-  font-family: monospace;
+.room-kosha {
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: rgba(44,111,172,0.65);
+  padding: 5px 0 0;
+  border-top: 1px solid rgba(44,111,172,0.2);
+  letter-spacing: 0.03em;
 }
 
-.card-btn {
-  margin-top: 4px;
+.room-btn {
   background: var(--teal);
   color: #fff;
   border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  padding: 10px 18px;
+  border-radius: 3px;
+  font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.2s;
   font-family: var(--font-ko);
+  width: 100%;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 4px;
 }
 
-.card-btn:hover { background: #008F7E; }
+.room-btn:hover { background: #008F7E; }
+
+/* ── TITLE BLOCK (engineering drawing footer) ──────────── */
+.fp-title-block {
+  border: 3px solid #3A84C4;
+  border-top: 1px solid rgba(58,132,196,0.4);
+  display: flex;
+  align-items: stretch;
+  background: rgba(4, 14, 36, 0.75);
+  font-family: 'Courier New', monospace;
+}
+
+.fp-tb-left {
+  flex: 1;
+  padding: 12px 20px;
+  border-right: 1px solid rgba(44,111,172,0.3);
+}
+
+.fp-tb-project {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--steel);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.fp-tb-sub {
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-top: 3px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.fp-tb-meta {
+  display: flex;
+  align-items: stretch;
+}
+
+.fp-tb-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  border-right: 1px solid rgba(44,111,172,0.25);
+  gap: 2px;
+  min-width: 72px;
+}
+
+.fp-tb-cell:last-child { border-right: none; }
+
+.fp-tb-key {
+  font-size: 0.48rem;
+  color: rgba(140,163,186,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.fp-tb-val {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .floor-plan-wrap { padding: 24px 20px 48px; }
+  .floor-plan {
+    grid-template-columns: 1.8fr 1fr 1fr;
+    grid-template-rows: 240px 240px auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .floor-plan {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 220px 180px 180px auto;
+  }
+  .fp-room:nth-child(1) { grid-column: 1 / 3; grid-row: 1; }
+  .fp-room:nth-child(2) { grid-column: 1; grid-row: 2; }
+  .fp-room:nth-child(3) { grid-column: 2; grid-row: 2; }
+  .fp-room:nth-child(4) { grid-column: 1; grid-row: 3; }
+  .fp-room:nth-child(5) { grid-column: 2; grid-row: 3; }
+  .fp-room:nth-child(6) { grid-column: 1 / 3; grid-row: 4; }
+  .fp-tb-meta { display: none; }
+}
+
+[dir="rtl"] .floor-plan { direction: rtl; }
+[dir="rtl"] .room-header { flex-direction: row-reverse; }
 
 /* ── GAME CANVAS ───────────────────────────────────────── */
 #gameCanvas {
