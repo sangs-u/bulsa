@@ -108,9 +108,11 @@ const TBM_DATA = {
 };
 
 // ── Intercept evaluateLift (Phase 6 인양 시작 전 TBM 2) ───────
-const _origEvaluateLift = typeof evaluateLift === 'function' ? evaluateLift : null;
+// function 선언은 호이스팅으로 자기 자신을 _orig로 잡는 순환참조 버그 발생.
+// window.evaluateLift 할당(non-hoisted)으로 대체.
+const _origEvaluateLift = typeof window.evaluateLift === 'function' ? window.evaluateLift : null;
 
-function evaluateLift() {
+window.evaluateLift = function evaluateLift() {
   if (!TBM._completed.has(2)) {
     // Exit crane cab first so TBM panel isn't behind crane overlay
     if (typeof exitCraneCab === 'function' && GAME.state.craneBoarded) exitCraneCab();
@@ -120,7 +122,7 @@ function evaluateLift() {
     return;
   }
   if (_origEvaluateLift) _origEvaluateLift();
-}
+};
 
 // ── Show TBM panel ────────────────────────────────────────────
 function showTBM(phase, onComplete) {

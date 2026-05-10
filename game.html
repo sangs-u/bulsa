@@ -497,6 +497,19 @@
 <script src="core/postfx.js"></script>
 
 <script>
+  // ── Pointer-lock safety patch ─────────────────────────────
+  // Chrome 122+ returns a Promise; silence rejections in automated/iframe contexts.
+  (function() {
+    const _rpl = HTMLElement.prototype.requestPointerLock;
+    if (!_rpl) return;
+    HTMLElement.prototype.requestPointerLock = function() {
+      try {
+        const r = _rpl.call(this);
+        if (r && typeof r.catch === 'function') r.catch(function() {});
+      } catch (e) {}
+    };
+  })();
+
   // ── Player name flow ──────────────────────────────────────
   function submitPlayerName() {
     const input = document.getElementById('player-name-input');
