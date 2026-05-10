@@ -1,5 +1,5 @@
 'use strict';
-const { execSync } = require('child_process');
+const { spawn } = require('child_process');
 const https = require('https');
 const http  = require('http');
 
@@ -106,21 +106,47 @@ async function runCommand(entry) {
   console.log(`[poll] CMD #${id} 실행: ${cmd}`);
   await patchStatus(id, { status: 'running', agent });
 
-  let output = '';
+  const TIMEOUT_MS = 10 * 60 * 1000; // 10분
+  const CWD = 'C:\\Users\\sangs\\OneDrive\\Desktop\\bulsa';
+
   try {
     const progress = loadProgress();
-    const fullCmd = progress ? `${progress}\n\n---\n\n${cmd}` : cmd;
-    output = execSync(`claude --dangerously-skip-permissions -p ${JSON.stringify(fullCmd)}`, {
-      cwd:      'C:\\Users\\sangs\\OneDrive\\Desktop\\bulsa', // CLAUDE.md 인식
-      encoding: 'utf8',
-      timeout:  5 * 60 * 1000,
+    const isCodeTask = /구현|수정|추가|삭제|fix|phase|작업|개발|만들|넣어|고쳐/i.test(cmd);
+    const fullCmd = (progress && isCodeTask) ? `${progress}\n\n---\n\n${cmd}` : cmd;
+
+    const output = await new Promise((resolve, reject) => {
+      const proc = spawn(
+        `claude --dangerously-skip-permissions -p ${JSON.stringify(fullCmd)}`,
+        [], { cwd: CWD, shell: true, windowsHide: true }
+      );
+      let out = '';
+      const start = Date.now();
+
+      proc.stdout.on('data', d => { out += d.toString(); });
+      proc.stderr.on('data', d => { out += d.toString(); });
+
+      // 60초마다 진행상황 중간 보고
+      const hb = setInterval(async () => {
+        const sec = Math.round((Date.now() - start) / 1000);
+        const preview = out.slice(-300).trim();
+        await patchStatus(id, { status: 'running', result: `⏳ 작업 중... (${sec}초 경과)${preview ? '\n\n' + preview : ''}` });
+      }, 60000);
+
+      const tm = setTimeout(() => {
+        clearInterval(hb);
+        proc.kill();
+        reject(new Error('TIMEOUT: 10분 초과'));
+      }, TIMEOUT_MS);
+
+      proc.on('close', () => { clearTimeout(tm); clearInterval(hb); resolve(out); });
+      proc.on('error', err => { clearTimeout(tm); clearInterval(hb); reject(err); });
     });
+
     console.log(`[poll] CMD #${id} 완료`);
     await patchStatus(id, { status: 'done', result: output.slice(0, 4000) });
   } catch (e) {
-    const errMsg = (e.stdout || '') + (e.stderr || '') || e.message;
-    console.error(`[poll] CMD #${id} 오류:`, errMsg.slice(0, 500));
-    await patchStatus(id, { status: 'failed', result: errMsg.slice(0, 2000) });
+    console.error(`[poll] CMD #${id} 오류:`, e.message.slice(0, 300));
+    await patchStatus(id, { status: 'failed', result: e.message.slice(0, 2000) });
   } finally {
     await markDone(id);
     _running.delete(id);
