@@ -110,7 +110,7 @@ async function runCommand(entry) {
   try {
     const progress = loadProgress();
     const fullCmd = progress ? `${progress}\n\n---\n\n${cmd}` : cmd;
-    output = execSync(`claude --continue --dangerously-skip-permissions -p ${JSON.stringify(fullCmd)}`, {
+    output = execSync(`claude --dangerously-skip-permissions -p ${JSON.stringify(fullCmd)}`, {
       cwd:      'C:\\Users\\sangs\\OneDrive\\Desktop\\bulsa', // CLAUDE.md 인식
       encoding: 'utf8',
       timeout:  5 * 60 * 1000,
