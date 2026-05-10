@@ -117,7 +117,7 @@ async function runCommand(entry) {
     const output = await new Promise((resolve, reject) => {
       const proc = spawn(
         `claude --dangerously-skip-permissions -p ${JSON.stringify(fullCmd)}`,
-        [], { cwd: CWD, shell: true, windowsHide: true }
+        [], { cwd: CWD, shell: true, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }
       );
       let out = '';
       const start = Date.now();
