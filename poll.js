@@ -5,14 +5,35 @@ const http  = require('http');
 
 const API_URL = 'https://bulsa-server-production.up.railway.app';
 const POLL_MS = 5000;
-const REQ_TIMEOUT_MS = 12000; // 요청 타임아웃 12초
-const MAX_RETRIES = 3;        // 실패 시 최대 재시도 횟수
-const RETRY_DELAY_MS = 2000;  // 재시도 간격
+const REQ_TIMEOUT_MS = 12000;
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 2000;
 
 const _running = new Set();
 const fs = require('fs');
 
+// ── CLI 옵션 파싱 ─────────────────────────────────────────────────
+// --no-memory  : PROGRESS.md 로딩 생략 (토큰 절약)
+// --add-dir <path> : claude에 특정 폴더만 전달 (파일 스캔 제한)
+const argv = process.argv.slice(2);
+const NO_MEMORY = argv.includes('--no-memory');
+const ADD_DIR_IDX = argv.indexOf('--add-dir');
+const ADD_DIRS = [];
+for (let i = ADD_DIR_IDX; i !== -1; ) {
+  if (argv[i + 1]) ADD_DIRS.push(argv[i + 1]);
+  const next = argv.indexOf('--add-dir', i + 1);
+  i = next;
+}
+
+// CLAUDE.md 전체 대신 핵심 규칙 5줄만 주입
+const CORE_RULES = `[규칙] 파일 삭제 금지. 수정만.
+[규칙] 작업 후 git add . && git commit && git push.
+[규칙] PROGRESS.md 업데이트 (30줄 이내).
+[규칙] 모든 텍스트 i18n(strings.js). 하드코딩 금지.
+[규칙] 응답 3줄 이내: 파일명+핵심변경사항만.`;
+
 function loadProgress() {
+  if (NO_MEMORY) return '';
   try { return fs.readFileSync('./PROGRESS.md', 'utf8'); } catch { return ''; }
 }
 
@@ -110,13 +131,20 @@ async function runCommand(entry) {
   const CWD = 'C:\\Users\\sangs\\OneDrive\\Desktop\\bulsa';
 
   try {
-    const progress = loadProgress();
     const isCodeTask = /구현|수정|추가|삭제|fix|phase|작업|개발|만들|넣어|고쳐/i.test(cmd);
-    const fullCmd = (progress && isCodeTask) ? `${progress}\n\n---\n\n${cmd}` : cmd;
+    let context = CORE_RULES;
+    if (isCodeTask) {
+      const progress = loadProgress();
+      if (progress) context += `\n\n---\n\n${progress}`;
+    }
+    const fullCmd = `${context}\n\n---\n\n${cmd}`;
+
+    const addDirFlags = ADD_DIRS.map(d => `--add-dir ${JSON.stringify(d)}`).join(' ');
+    const claudeCmd = `claude --dangerously-skip-permissions${addDirFlags ? ' ' + addDirFlags : ''} -p ${JSON.stringify(fullCmd)}`;
 
     const output = await new Promise((resolve, reject) => {
       const proc = spawn(
-        `claude --dangerously-skip-permissions -p ${JSON.stringify(fullCmd)}`,
+        claudeCmd,
         [], { cwd: CWD, shell: true, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }
       );
       let out = '';
@@ -176,7 +204,7 @@ async function ping() {
   } catch (_) { /* 무시 */ }
 }
 
-console.log(`[poll] 시작 — ${API_URL} 폴링 ${POLL_MS / 1000}초 간격`);
+console.log(`[poll] 시작 — ${API_URL} 폴링 ${POLL_MS / 1000}초 간격 | no-memory=${NO_MEMORY} | add-dirs=${ADD_DIRS.join(',') || '없음'}`);
 setInterval(poll, POLL_MS);
 setInterval(ping, 4 * 60 * 1000); // 4분마다 핑
 poll();
