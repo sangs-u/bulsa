@@ -9,41 +9,30 @@
   <link rel="stylesheet" href="style.css">
   <style>
     body { overflow-y: auto; }
-    .hub-body {
-      min-height: 100vh;
-      background: #071424;
-      display: block;
-      padding: 0;
-    }
+    .hub-body { min-height: 100vh; background: #071424; display: block; }
 
-    /* ── BLUEPRINT GRID BACKGROUND ─── */
+    /* ── BLUEPRINT GRID BACKGROUND ────────────────────────── */
     .fp-bg {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background-image:
         linear-gradient(rgba(44,111,172,0.10) 1px, transparent 1px),
         linear-gradient(90deg, rgba(44,111,172,0.10) 1px, transparent 1px),
-        linear-gradient(rgba(44,111,172,0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(44,111,172,0.035) 1px, transparent 1px);
+        linear-gradient(rgba(44,111,172,0.032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(44,111,172,0.032) 1px, transparent 1px);
       background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
-      pointer-events: none;
-      z-index: 0;
+      pointer-events: none; z-index: 0;
     }
 
     .fp-page {
-      position: relative;
-      z-index: 1;
+      position: relative; z-index: 1;
       min-height: 100vh;
-      padding: 28px 48px 64px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      padding: 28px 40px 72px;
+      display: flex; flex-direction: column; align-items: center;
     }
 
-    /* ── TITLE BLOCK ────────────────── */
+    /* ── TITLE BLOCK ────────────────────────────────────────── */
     .fp-title-block {
-      width: 100%;
-      max-width: 1400px;
+      width: 100%; max-width: 1520px;
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
@@ -55,47 +44,32 @@
       position: relative;
     }
 
-    /* Watermark corner marks */
     .fp-title-block::before {
-      content: '+ + + + + + + + +';
+      content: '+ + + + + + + + + + + + + + + + + +';
       position: absolute;
-      bottom: -22px; left: 0; right: 0;
-      font-size: 0.5rem;
-      color: rgba(107,184,232,0.12);
-      letter-spacing: 10px;
-      text-align: center;
-      font-family: monospace;
-      pointer-events: none;
+      bottom: -20px; left: 0; right: 0;
+      font-size: 0.5rem; color: rgba(107,184,232,0.1);
+      letter-spacing: 8px; text-align: center;
+      font-family: monospace; pointer-events: none;
     }
 
     .fp-tb-logo-group { display: flex; flex-direction: column; gap: 5px; }
 
     .fp-tb-logo {
-      font-size: 2.6rem;
-      font-weight: 700;
-      letter-spacing: 0.24em;
+      font-size: 2.6rem; font-weight: 700; letter-spacing: 0.24em;
       background: linear-gradient(135deg, #00A896 0%, #2C6FAC 55%, #6BB8E8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1;
-      font-family: 'Inter', sans-serif;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; line-height: 1; font-family: 'Inter', sans-serif;
     }
 
     .fp-tb-subtitle {
-      font-size: 0.58rem;
-      color: rgba(107,184,232,0.4);
-      font-family: monospace;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
+      font-size: 0.58rem; color: rgba(107,184,232,0.4);
+      font-family: monospace; letter-spacing: 0.2em; text-transform: uppercase;
     }
 
     .fp-tb-tagline {
-      font-size: 0.7rem;
-      color: rgba(107,184,232,0.45);
-      font-family: monospace;
-      font-style: italic;
-      margin-top: 4px;
+      font-size: 0.7rem; color: rgba(107,184,232,0.45);
+      font-family: monospace; font-style: italic; margin-top: 4px;
     }
 
     .fp-tb-center {
@@ -106,42 +80,28 @@
     }
 
     .fp-tb-drawing-title {
-      font-size: 1.05rem;
-      font-weight: 700;
+      font-size: 1.05rem; font-weight: 700;
       color: rgba(107,184,232,0.85);
-      font-family: monospace;
-      letter-spacing: 0.08em;
+      font-family: monospace; letter-spacing: 0.08em;
     }
 
     .fp-tb-drawing-sub {
-      font-size: 0.58rem;
-      color: rgba(107,184,232,0.38);
-      font-family: monospace;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      margin-top: 4px;
+      font-size: 0.58rem; color: rgba(107,184,232,0.38);
+      font-family: monospace; letter-spacing: 0.16em;
+      text-transform: uppercase; margin-top: 4px;
     }
 
     .fp-tb-right-col {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 10px;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
     }
 
     .hub-lang { display: flex; gap: 5px; }
 
     .hub-lang button {
-      background: transparent;
-      border: 1px solid rgba(107,184,232,0.22);
-      color: rgba(107,184,232,0.45);
-      padding: 3px 10px;
-      border-radius: 2px;
-      font-size: 0.66rem;
-      cursor: pointer;
-      font-family: monospace;
-      letter-spacing: 0.04em;
-      transition: all 0.18s;
+      background: transparent; border: 1px solid rgba(107,184,232,0.22);
+      color: rgba(107,184,232,0.45); padding: 3px 10px;
+      border-radius: 2px; font-size: 0.66rem; cursor: pointer;
+      font-family: monospace; letter-spacing: 0.04em; transition: all 0.18s;
     }
 
     .hub-lang button.active,
@@ -152,16 +112,13 @@
     }
 
     .fp-tb-meta-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: grid; grid-template-columns: 1fr 1fr;
       border: 1px solid rgba(107,184,232,0.2);
-      font-family: monospace;
-      font-size: 0.58rem;
+      font-family: monospace; font-size: 0.58rem;
     }
 
     .fp-tb-cell {
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       padding: 4px 10px;
       border-right: 1px solid rgba(107,184,232,0.2);
       border-bottom: 1px solid rgba(107,184,232,0.2);
@@ -169,76 +126,50 @@
 
     .fp-tb-cell:nth-child(even) { border-right: none; }
     .fp-tb-cell:nth-last-child(-n+2) { border-bottom: none; }
+    .fp-tb-key { font-size: 0.5rem; color: rgba(107,184,232,0.35); letter-spacing: 0.12em; text-transform: uppercase; }
+    .fp-tb-val { color: rgba(107,184,232,0.7); font-weight: 600; margin-top: 1px; }
 
-    .fp-tb-key {
-      font-size: 0.5rem;
-      color: rgba(107,184,232,0.35);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .fp-tb-val {
-      color: rgba(107,184,232,0.7);
-      font-weight: 600;
-      margin-top: 1px;
-    }
-
-    /* ── FLOOR PLAN SHELL ───────────── */
+    /* ── FLOOR PLAN SHELL ───────────────────────────────────── */
     .fp-shell {
-      width: 100%;
-      max-width: 1400px;
+      width: 100%; max-width: 1520px;
       border: 2px solid rgba(107,184,232,0.42);
       border-top: none;
       background: rgba(5,13,26,0.97);
       position: relative;
-      padding: 48px 48px 58px;
+      padding: 38px 44px 56px;
     }
 
     /* Compass rose */
     .fp-compass {
-      position: absolute;
-      top: 22px;
-      right: 28px;
-      width: 42px; height: 42px;
+      position: absolute; top: 18px; right: 26px;
+      width: 44px; height: 44px;
       border: 1px solid rgba(107,184,232,0.3);
       border-radius: 50%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: monospace;
-      font-size: 0.62rem;
-      color: rgba(107,184,232,0.55);
-      font-weight: 700;
-      letter-spacing: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-family: monospace; font-size: 0.62rem;
+      color: rgba(107,184,232,0.55); font-weight: 700;
     }
 
     .fp-compass::before {
-      content: '▲';
-      font-size: 0.7rem;
-      color: rgba(107,184,232,0.7);
-      line-height: 1;
+      content: '▲'; font-size: 0.7rem;
+      color: rgba(107,184,232,0.7); line-height: 1;
     }
 
     /* Scale + legend bar */
     .fp-bottom-bar {
       position: absolute;
-      bottom: 14px;
-      left: 40px; right: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      bottom: 14px; left: 44px; right: 44px;
+      display: flex; align-items: center; justify-content: space-between;
       pointer-events: none;
     }
 
     .fp-scale-bar { display: flex; align-items: flex-end; gap: 6px; }
-
     .fp-scale-segs { display: flex; }
 
     .fp-scale-seg {
       width: 28px; height: 7px;
-      border: 1px solid rgba(107,184,232,0.4);
-      border-right: none;
+      border: 1px solid rgba(107,184,232,0.4); border-right: none;
     }
 
     .fp-scale-seg:nth-child(odd)  { background: rgba(107,184,232,0.22); }
@@ -246,342 +177,388 @@
     .fp-scale-seg:last-child      { border-right: 1px solid rgba(107,184,232,0.4); }
 
     .fp-scale-label {
-      font-size: 0.5rem;
-      color: rgba(107,184,232,0.35);
-      font-family: monospace;
-      letter-spacing: 0.05em;
+      font-size: 0.5rem; color: rgba(107,184,232,0.35);
+      font-family: monospace; letter-spacing: 0.05em;
     }
 
     .fp-legend { display: flex; gap: 18px; }
 
     .fp-legend-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.52rem;
-      color: rgba(107,184,232,0.4);
-      font-family: monospace;
-      letter-spacing: 0.08em;
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.52rem; color: rgba(107,184,232,0.4);
+      font-family: monospace; letter-spacing: 0.08em;
     }
 
-    .fp-legend-swatch {
-      width: 18px; height: 11px;
-      border: 1px solid;
-    }
-
+    .fp-legend-swatch { width: 18px; height: 11px; border: 1px solid; }
     .fp-legend-swatch.ready { background: rgba(0,168,150,0.14); border-color: rgba(0,168,150,0.45); }
     .fp-legend-swatch.soon  { background: rgba(107,184,232,0.04); border-color: rgba(107,184,232,0.22); }
 
-    /* ── ZONE LABEL ─────────────────── */
-    .fp-zone-label {
-      font-size: 0.56rem;
-      color: rgba(107,184,232,0.32);
-      font-family: monospace;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      padding: 0 2px 8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .fp-zone-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(107,184,232,0.1);
-    }
-
-    /* ── CORRIDOR ───────────────────── */
-    .fp-corridor {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 48px;
-      margin: 0;
+    /* ── DIMENSION ANNOTATION WRAPPER ──────────────────────── */
+    .fp-dim-wrap {
       position: relative;
-      border-top: 1px dashed rgba(107,184,232,0.18);
-      border-bottom: 1px dashed rgba(107,184,232,0.18);
-      background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(107,184,232,0.025) 20%,
-        rgba(107,184,232,0.025) 80%,
-        transparent 100%
-      );
+      padding-top: 36px;   /* space for horizontal dim bar */
+      padding-left: 52px;  /* space for vertical dim bar */
     }
 
-    .fp-corridor-label {
-      font-size: 0.54rem;
-      color: rgba(107,184,232,0.28);
-      font-family: monospace;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-    }
-
-    /* walking path arrows */
-    .fp-corridor::before {
-      content: '';
+    /* ── TOP DIMENSION BAR ─────────────────────────────────── */
+    .fp-dim-h {
       position: absolute;
-      left: 20px; right: 20px;
-      top: 50%;
-      height: 0;
-      border-top: 1px dotted rgba(107,184,232,0.12);
-    }
-
-    /* ── ROOM GRID ROWS ─────────────── */
-    .fp-row {
+      top: 0; left: 52px; right: 0;
+      height: 36px;
       display: grid;
-      gap: 0;
+      grid-template-columns: 2.2fr 1fr 1fr;
+      font-family: 'Courier New', monospace;
+      font-size: 0.52rem;
+      color: rgba(107,184,232,0.38);
+      letter-spacing: 0.08em;
     }
 
-    .fp-row-upper { grid-template-columns: 2fr 1.1fr 1.3fr; }
-    .fp-row-lower { grid-template-columns: 1.1fr 1.3fr 2fr; }
-
-    /* ── ROOM BASE ──────────────────── */
-    .fp-room {
-      position: relative;
-      border: 1.5px solid rgba(107,184,232,0.28);
-      background: rgba(107,184,232,0.02);
-      padding: 22px 20px 28px;
-      min-height: 240px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      transition: background 0.22s, border-color 0.22s;
-      /* Rooms share walls — collapse adjacent borders */
-      margin-right: -1.5px;
+    .fp-dh-seg {
+      display: flex; align-items: center; justify-content: center;
+      border-bottom: 1px solid rgba(107,184,232,0.25);
+      position: relative; gap: 5px;
     }
-    .fp-row .fp-room:last-child { margin-right: 0; }
 
-    /* Architectural corner ticks */
-    .fp-room::before,
-    .fp-room::after {
+    .fp-dh-seg::before,
+    .fp-dh-seg::after {
       content: '';
+      position: absolute; bottom: 0;
+      width: 1px; height: 8px;
+      background: rgba(107,184,232,0.38);
+    }
+    .fp-dh-seg::before { left: 0; }
+    .fp-dh-seg::after  { right: 0; }
+
+    .fp-dh-arrow { color: rgba(107,184,232,0.28); font-size: 0.6rem; }
+
+    /* ── LEFT DIMENSION BAR ────────────────────────────────── */
+    .fp-dim-v {
       position: absolute;
-      width: 12px; height: 12px;
+      top: 36px; left: 0; width: 52px;
+      display: grid;
+      grid-template-rows: 300px 300px 52px 210px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.46rem;
+      color: rgba(107,184,232,0.36);
+      letter-spacing: 0.06em;
     }
 
-    .fp-room::before {
-      top: 6px; left: 6px;
-      border-top: 1px solid rgba(107,184,232,0.18);
-      border-left: 1px solid rgba(107,184,232,0.18);
+    .fp-dv-seg {
+      display: flex; align-items: center; justify-content: center;
+      border-right: 1px solid rgba(107,184,232,0.25);
+      border-top: 1px solid rgba(107,184,232,0.22);
+      position: relative;
     }
 
-    .fp-room::after {
-      bottom: 6px; right: 6px;
-      border-bottom: 1px solid rgba(107,184,232,0.18);
-      border-right: 1px solid rgba(107,184,232,0.18);
+    .fp-dv-seg:last-child { border-bottom: 1px solid rgba(107,184,232,0.22); }
+
+    .fp-dv-seg span {
+      writing-mode: vertical-rl; text-orientation: mixed;
+      transform: rotate(180deg); white-space: nowrap;
+    }
+
+    .fp-dv-sm { font-size: 0.38rem; }
+
+    /* ── FLOOR PLAN CSS GRID ───────────────────────────────── */
+    .fp-grid {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr 1fr;
+      grid-template-rows: 300px 300px 52px 210px;
+      border: 4px solid #3A84C4;
+      border-bottom: none;
+      background: transparent;
+      position: relative;
+      box-shadow: inset 0 0 0 2px rgba(58,132,196,0.12);
+    }
+
+    /* Outer corner extension marks */
+    .fp-grid::before,
+    .fp-grid::after {
+      content: ''; position: absolute;
+      width: 20px; height: 20px;
+      border-color: rgba(100,180,255,0.5); border-style: solid; z-index: 2;
+    }
+    .fp-grid::before { top: -8px; left: -8px; border-width: 2px 0 0 2px; }
+    .fp-grid::after  { top: -8px; right: -8px; border-width: 2px 2px 0 0; }
+
+    /* ── ROOMS ─────────────────────────────────────────────── */
+    .fp-room {
+      border: 2px solid rgba(107,184,232,0.28);
+      padding: 22px 22px 18px;
+      display: flex; flex-direction: column;
+      gap: 10px; position: relative;
+      background: rgba(6,16,38,0.7);
+      overflow: hidden; transition: background 0.22s;
     }
 
     .fp-room.fp-ready {
-      border-color: rgba(0,168,150,0.42);
-      background: rgba(0,168,150,0.04);
       cursor: pointer;
+      background: rgba(0,55,50,0.32);
+      border-color: rgba(0,168,150,0.42);
     }
 
-    .fp-room.fp-ready::before { border-color: rgba(0,168,150,0.28); }
-    .fp-room.fp-ready::after  { border-color: rgba(0,168,150,0.28); }
+    .fp-room.fp-ready:hover { background: rgba(0,80,72,0.42); }
+    .fp-room.fp-soon { opacity: 0.50; }
 
-    .fp-room.fp-ready:hover {
-      background: rgba(0,168,150,0.09);
-      border-color: rgba(0,168,150,0.68);
-    }
-
-    .fp-room.fp-soon {
-      border-color: rgba(107,184,232,0.13);
-      opacity: 0.58;
-    }
-
-    /* Hatch pattern for coming-soon rooms */
+    /* Hatch pattern */
     .fp-hatch {
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       background-image: repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 10px,
-        rgba(107,184,232,0.022) 10px,
-        rgba(107,184,232,0.022) 11px
+        -45deg, transparent, transparent 18px,
+        rgba(107,184,232,0.04) 18px, rgba(107,184,232,0.04) 19px
       );
       pointer-events: none;
     }
 
-    /* Room label tag on top border */
+    .fp-room > * { position: relative; z-index: 1; }
+
+    /* Inner corner tick mark */
+    .fp-room::after {
+      content: ''; position: absolute;
+      bottom: 8px; right: 8px;
+      width: 14px; height: 14px;
+      border-bottom: 1px solid rgba(107,184,232,0.22);
+      border-right: 1px solid rgba(107,184,232,0.22);
+      z-index: 1;
+    }
+
+    /* ── GRID CELL POSITIONS ───────────────────────────────── */
+    .fp-room.s01 { grid-column: 1; grid-row: 1 / 3; }
+    .fp-room.s02 { grid-column: 2; grid-row: 1; }
+    .fp-room.s03 { grid-column: 3; grid-row: 1; }
+    .fp-room.s04 { grid-column: 2; grid-row: 2; }
+    .fp-room.s05 { grid-column: 3; grid-row: 2; }
+    .fp-room.s06 { grid-column: 1 / 4; grid-row: 4; }
+
+    .fp-room.s01 .fp-room-title { font-size: 1.26rem; }
+
+    /* ── ROOM LABEL TAG (on top wall) ─────────────────────── */
     .fp-room-tag {
-      position: absolute;
-      top: 0;
-      left: 16px;
+      position: absolute; top: 0; left: 18px;
       transform: translateY(-50%);
-      background: #050d1a;
+      background: rgba(5,13,26,0.95);
       padding: 0 7px;
-      font-size: 0.52rem;
-      color: rgba(107,184,232,0.38);
-      font-family: monospace;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      white-space: nowrap;
+      font-size: 0.5rem; color: rgba(107,184,232,0.35);
+      font-family: monospace; letter-spacing: 0.12em;
+      text-transform: uppercase; white-space: nowrap;
     }
 
     .fp-room.fp-ready .fp-room-tag { color: rgba(0,168,150,0.55); }
 
-    /* Door gap in bottom wall (upper row rooms → corridor below) */
+    /* ── WINDOW MARKS ─────────────────────────────────────── */
+    .fp-win {
+      position: absolute; pointer-events: none; z-index: 2;
+    }
+
+    .fp-win-top {
+      top: 0; left: 16%; width: 68%; height: 5px;
+      background: linear-gradient(180deg,
+        rgba(130,210,255,0.6) 0px, rgba(130,210,255,0.6) 1px,
+        transparent 1px, transparent 2.5px,
+        rgba(130,210,255,0.3) 2.5px, rgba(130,210,255,0.3) 3.5px,
+        transparent 3.5px, transparent 4px,
+        rgba(130,210,255,0.15) 4px
+      );
+    }
+
+    .fp-win-right {
+      top: 18%; right: 0; width: 5px; height: 64%;
+      background: linear-gradient(90deg,
+        rgba(130,210,255,0.15) 0px, transparent 1px, transparent 1.5px,
+        rgba(130,210,255,0.3) 1.5px, rgba(130,210,255,0.3) 2.5px,
+        transparent 2.5px, transparent 4px,
+        rgba(130,210,255,0.6) 4px, rgba(130,210,255,0.6) 5px
+      );
+    }
+
+    .fp-win-left {
+      top: 18%; left: 0; width: 5px; height: 64%;
+      background: linear-gradient(90deg,
+        rgba(130,210,255,0.6) 0px, rgba(130,210,255,0.6) 1px,
+        transparent 1px, transparent 2.5px,
+        rgba(130,210,255,0.3) 2.5px, rgba(130,210,255,0.3) 3.5px,
+        transparent 3.5px, transparent 4px,
+        rgba(130,210,255,0.15) 4px
+      );
+    }
+
+    .fp-win-bottom {
+      bottom: 0; left: 22%; width: 56%; height: 5px;
+      background: linear-gradient(0deg,
+        rgba(130,210,255,0.6) 0px, rgba(130,210,255,0.6) 1px,
+        transparent 1px, transparent 2.5px,
+        rgba(130,210,255,0.3) 2.5px, rgba(130,210,255,0.3) 3.5px,
+        transparent 3.5px
+      );
+    }
+
+    /* ── DOOR SWINGS ───────────────────────────────────────── */
+    /*
+      Quarter-circle arcs. border-radius on 56×56 square:
+        border-radius: 0 100% 0 0 → center at BOTTOM-LEFT
+        border-radius: 100% 0 0 0 → center at BOTTOM-RIGHT
+        border-radius: 0 0 100% 0 → center at TOP-LEFT
+        border-radius: 0 0 0 100% → center at TOP-RIGHT
+    */
     .fp-door {
       position: absolute;
-      bottom: -2px;
-      left: 32px;
-      width: 38px; height: 4px;
-      background: #050d1a;
-      z-index: 1;
+      width: 54px; height: 54px;
+      pointer-events: none; z-index: 3;
     }
 
-    /* Door arc */
-    .fp-door::before {
+    .fp-door::before { content: ''; position: absolute; inset: 0; }
+    .fp-door::after  { content: ''; position: absolute; background: rgba(107,184,232,0.6); }
+
+    /* Hinge: bottom-left */
+    .door-bl { bottom: 0; left: 0; }
+    .door-bl::before { border-top: 1.5px solid rgba(107,184,232,0.5); border-right: 1.5px solid rgba(107,184,232,0.5); border-radius: 0 100% 0 0; }
+    .door-bl::after  { left: 0; top: 0; width: 1.5px; height: 100%; }
+
+    /* Hinge: bottom-right */
+    .door-br { bottom: 0; right: 0; }
+    .door-br::before { border-top: 1.5px solid rgba(107,184,232,0.5); border-left: 1.5px solid rgba(107,184,232,0.5); border-radius: 100% 0 0 0; }
+    .door-br::after  { right: 0; top: 0; width: 1.5px; height: 100%; }
+
+    /* Hinge: top-left */
+    .door-tl { top: 0; left: 0; }
+    .door-tl::before { border-bottom: 1.5px solid rgba(107,184,232,0.5); border-right: 1.5px solid rgba(107,184,232,0.5); border-radius: 0 0 100% 0; }
+    .door-tl::after  { left: 0; bottom: 0; top: auto; width: 1.5px; height: 100%; }
+
+    /* Hinge: top-right */
+    .door-tr { top: 0; right: 0; }
+    .door-tr::before { border-bottom: 1.5px solid rgba(107,184,232,0.5); border-left: 1.5px solid rgba(107,184,232,0.5); border-radius: 0 0 0 100%; }
+    .door-tr::after  { right: 0; bottom: 0; top: auto; width: 1.5px; height: 100%; }
+
+    /* ── CORRIDOR ──────────────────────────────────────────── */
+    .fp-corridor {
+      grid-column: 1 / 4; grid-row: 3;
+      border: 2px solid rgba(107,184,232,0.28);
+      background: rgba(8,18,44,0.6);
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+
+    .fp-corridor::before {
       content: '';
-      position: absolute;
-      bottom: 4px; left: 0;
-      width: 38px; height: 22px;
-      border-bottom: 1px dashed rgba(107,184,232,0.2);
-      border-right: 1px dashed rgba(107,184,232,0.2);
-      border-radius: 0 0 38px 0;
+      position: absolute; left: 3%; right: 3%; top: 50%;
+      border-top: 1px dashed rgba(107,184,232,0.3);
     }
 
-    /* Lower row: door at top wall (toward corridor above) */
-    .fp-row-lower .fp-door {
-      bottom: auto;
-      top: -2px;
+    .fp-corridor-label {
+      font-family: 'Courier New', monospace;
+      font-size: 0.5rem; color: rgba(107,184,232,0.3);
+      letter-spacing: 0.38em; text-transform: uppercase;
+      position: relative; z-index: 1;
+      background: rgba(6,14,38,0.6); padding: 2px 14px;
     }
 
-    .fp-row-lower .fp-door::before {
-      bottom: auto;
-      top: 4px;
-      border-bottom: none;
-      border-right: none;
-      border-top: 1px dashed rgba(107,184,232,0.2);
-      border-left: 1px dashed rgba(107,184,232,0.2);
-      border-radius: 38px 0 0 0;
-    }
-
-    /* Room content */
+    /* ── ROOM CONTENT ─────────────────────────────────────── */
     .fp-room-inner {
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-      flex: 1;
-      margin-top: 6px;
+      display: flex; flex-direction: column; gap: 9px; flex: 1;
     }
 
     .fp-room-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 8px;
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 8px;
     }
 
     .fp-room-num {
-      font-size: 0.62rem;
-      color: rgba(107,184,232,0.38);
-      font-family: monospace;
-      letter-spacing: 0.14em;
+      font-size: 0.62rem; color: rgba(107,184,232,0.38);
+      font-family: monospace; letter-spacing: 0.14em;
     }
 
     .fp-room.fp-ready .fp-room-num { color: rgba(0,168,150,0.55); }
 
     .fp-room-badge {
-      font-size: 0.56rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      padding: 2px 8px;
-      border-radius: 2px;
-      white-space: nowrap;
+      font-size: 0.56rem; font-weight: 700; letter-spacing: 0.1em;
+      padding: 2px 8px; border-radius: 2px; white-space: nowrap;
     }
 
     .fp-badge-ready {
-      background: rgba(0,168,150,0.14);
-      color: var(--teal);
+      background: rgba(0,168,150,0.14); color: var(--teal);
       border: 1px solid rgba(0,168,150,0.32);
     }
 
     .fp-badge-soon {
-      background: rgba(107,184,232,0.06);
-      color: rgba(107,184,232,0.38);
+      background: rgba(107,184,232,0.06); color: rgba(107,184,232,0.38);
       border: 1px solid rgba(107,184,232,0.14);
     }
 
     .fp-room-title {
-      font-size: 1.02rem;
-      font-weight: 700;
-      color: #c8ddf0;
-      line-height: 1.3;
+      font-size: 1.0rem; font-weight: 700;
+      color: #c8ddf0; line-height: 1.32;
     }
 
     .fp-room.fp-soon .fp-room-title { color: rgba(180,200,220,0.42); }
 
     .fp-room-desc {
-      font-size: 0.76rem;
-      color: rgba(139,163,186,0.65);
-      line-height: 1.55;
-      flex: 1;
+      font-size: 0.76rem; color: rgba(139,163,186,0.65);
+      line-height: 1.55; flex: 1;
     }
 
     .fp-room-kosha {
-      font-size: 0.6rem;
-      color: rgba(44,111,172,0.5);
+      font-size: 0.6rem; color: rgba(44,111,172,0.5);
       font-family: monospace;
-      padding-top: 8px;
-      border-top: 1px solid rgba(107,184,232,0.07);
+      padding-top: 8px; border-top: 1px solid rgba(107,184,232,0.1);
     }
 
     .fp-room-btn {
-      margin-top: 10px;
-      background: var(--teal);
-      color: #fff;
-      border: none;
-      padding: 9px 20px;
-      border-radius: 3px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: var(--font-ko);
-      transition: background 0.18s;
-      letter-spacing: 0.04em;
-      align-self: flex-start;
+      margin-top: 10px; background: var(--teal); color: #fff;
+      border: none; padding: 10px 22px; border-radius: 3px;
+      font-size: 0.84rem; font-weight: 700; cursor: pointer;
+      font-family: var(--font-ko); transition: background 0.18s;
+      letter-spacing: 0.04em; width: 100%; text-transform: uppercase;
     }
 
     .fp-room-btn:hover { background: #008F7E; }
 
-    /* Dimension annotation */
-    .fp-dim {
-      position: absolute;
-      bottom: 10px;
-      right: 12px;
-      font-size: 0.48rem;
-      color: rgba(107,184,232,0.18);
-      font-family: monospace;
-      letter-spacing: 0.05em;
+    /* Room dimension annotation */
+    .fp-dim-ann {
+      position: absolute; bottom: 10px; right: 12px;
+      font-size: 0.46rem; color: rgba(107,184,232,0.18);
+      font-family: monospace; letter-spacing: 0.05em; z-index: 1;
     }
 
-    /* ── ARABIC RTL ─────────────────── */
+    /* ── ARABIC RTL ──────────────────────────────────────── */
     [dir="rtl"] .fp-title-block { direction: rtl; }
     [dir="rtl"] .fp-tb-right-col { align-items: flex-start; }
-    [dir="rtl"] .fp-room-tag { left: auto; right: 16px; }
+    [dir="rtl"] .fp-room-tag { left: auto; right: 18px; }
     [dir="rtl"] .fp-room-header { flex-direction: row-reverse; }
 
-    /* ── RESPONSIVE ─────────────────── */
-    @media (max-width: 1000px) {
-      .fp-page { padding: 16px 16px 40px; }
-      .fp-title-block {
-        grid-template-columns: 1fr;
-        gap: 14px;
-        padding: 14px 18px;
-      }
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .fp-page { padding: 18px 20px 56px; }
+      .fp-title-block { grid-template-columns: 1fr; gap: 14px; padding: 14px 18px; }
       .fp-tb-center { border: none; padding: 0; }
       .fp-tb-right-col { align-items: flex-start; }
-      .fp-shell { padding: 28px 16px 44px; }
-      .fp-row-upper,
-      .fp-row-lower { grid-template-columns: 1fr; }
-      .fp-room { min-height: 160px; }
+      .fp-shell { padding: 28px 18px 48px; }
+      .fp-dim-wrap { padding-top: 28px; padding-left: 40px; }
+      .fp-dim-h { left: 40px; height: 28px; font-size: 0.46rem; }
+      .fp-dim-v { top: 28px; width: 40px; font-size: 0.4rem; }
+      .fp-grid {
+        grid-template-columns: 2fr 1fr 1fr;
+        grid-template-rows: 260px 260px 48px 190px;
+      }
+      .fp-dim-v { grid-template-rows: 260px 260px 48px 190px; }
       .fp-compass { display: none; }
-      .fp-bottom-bar { position: static; margin-top: 20px; flex-wrap: wrap; gap: 12px; }
+    }
+
+    @media (max-width: 680px) {
+      .fp-dim-wrap { padding-top: 0; padding-left: 0; }
+      .fp-dim-h, .fp-dim-v { display: none; }
+      .fp-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 210px 190px 190px 44px 180px;
+      }
+      .fp-room.s01 { grid-column: 1 / 3; grid-row: 1; }
+      .fp-room.s02 { grid-column: 1; grid-row: 2; }
+      .fp-room.s03 { grid-column: 2; grid-row: 2; }
+      .fp-room.s04 { grid-column: 1; grid-row: 3; }
+      .fp-room.s05 { grid-column: 2; grid-row: 3; }
+      .fp-corridor  { grid-column: 1 / 3; grid-row: 4; }
+      .fp-room.s06 { grid-column: 1 / 3; grid-row: 5; }
+      .fp-tb-meta-grid { display: none; }
+      .fp-bottom-bar { position: static; margin-top: 18px; flex-wrap: wrap; gap: 10px; }
     }
   </style>
 </head>
@@ -591,9 +568,8 @@
 
 <div class="fp-page">
 
-  <!-- ── TITLE BLOCK ─────────────────────── -->
+  <!-- ── TITLE BLOCK ────────────────────────────────── -->
   <div class="fp-title-block">
-
     <div class="fp-tb-logo-group">
       <div class="fp-tb-logo">BULSA</div>
       <div class="fp-tb-subtitle">Industrial Safety Training Center</div>
@@ -619,31 +595,32 @@
         <div class="fp-tb-cell"><span class="fp-tb-key">REV</span><span class="fp-tb-val">A · 2026.05</span></div>
       </div>
     </div>
-
   </div>
 
-  <!-- ── FLOOR PLAN ───────────────────────── -->
+  <!-- ── FLOOR PLAN SHELL ───────────────────────────── -->
   <div class="fp-shell">
 
-    <!-- Compass -->
     <div class="fp-compass">N</div>
 
-    <!-- Zone A label -->
-    <div class="fp-zone-label">▾ ZONE A &nbsp;·&nbsp; 고위험 시뮬레이션 구역 (Upper Bay)</div>
+    <div class="fp-dim-wrap">
+      <!-- Top dimension bar (columns) -->
+      <div class="fp-dim-h">
+        <div class="fp-dh-seg"><span class="fp-dh-arrow">←</span>18,000<span class="fp-dh-arrow">→</span></div>
+        <div class="fp-dh-seg"><span class="fp-dh-arrow">←</span>7,500<span class="fp-dh-arrow">→</span></div>
+        <div class="fp-dh-seg"><span class="fp-dh-arrow">←</span>7,500<span class="fp-dh-arrow">→</span></div>
+      </div>
 
-    <!-- Upper row: S-01 wide / S-02 / S-03 -->
-    <div class="fp-row fp-row-upper" id="upper-row"></div>
+      <!-- Left dimension bar (rows) -->
+      <div class="fp-dim-v">
+        <div class="fp-dv-seg"><span>12,000</span></div>
+        <div class="fp-dv-seg"><span>12,000</span></div>
+        <div class="fp-dv-seg fp-dv-sm"><span>2,400</span></div>
+        <div class="fp-dv-seg"><span>8,500</span></div>
+      </div>
 
-    <!-- Corridor -->
-    <div class="fp-corridor" style="margin: 3px 0;">
-      <span class="fp-corridor-label">Main Corridor &nbsp;·&nbsp; 메인 복도 &nbsp;·&nbsp; W = 3.0 m</span>
+      <!-- Main floor plan grid -->
+      <div class="fp-grid" id="fp-grid"></div>
     </div>
-
-    <!-- Zone B label -->
-    <div class="fp-zone-label">▾ ZONE B &nbsp;·&nbsp; 특수작업 교육구역 (Lower Bay)</div>
-
-    <!-- Lower row: S-04 / S-05 / S-06 wide -->
-    <div class="fp-row fp-row-lower" id="lower-row"></div>
 
     <!-- Bottom annotation bar -->
     <div class="fp-bottom-bar">
@@ -655,17 +632,11 @@
           <div class="fp-scale-seg"></div>
           <div class="fp-scale-seg"></div>
         </div>
-        <span class="fp-scale-label">0 &nbsp; 10 &nbsp; 20 m &nbsp;·&nbsp; SCALE 1:100</span>
+        <span class="fp-scale-label">0 &nbsp; 10 &nbsp; 20 m &nbsp;·&nbsp; SCALE 1:200</span>
       </div>
       <div class="fp-legend">
-        <div class="fp-legend-item">
-          <div class="fp-legend-swatch ready"></div>
-          ACTIVE ZONE
-        </div>
-        <div class="fp-legend-item">
-          <div class="fp-legend-swatch soon"></div>
-          SCHEDULED
-        </div>
+        <div class="fp-legend-item"><div class="fp-legend-swatch ready"></div>ACTIVE ZONE</div>
+        <div class="fp-legend-item"><div class="fp-legend-swatch soon"></div>SCHEDULED</div>
       </div>
     </div>
 
@@ -675,20 +646,26 @@
 
 <script src="i18n/strings.js"></script>
 <script>
+  /*
+    door: which corner the hinge is at (bl/br/tl/tr)
+    win:  which exterior walls have windows
+  */
   const SCENARIOS = [
-    { id:'s01', num:'S-01', room:'ROOM A', dim:'24.0 × 18.0', titleKey:'s01Title', descKey:'s01Desc', koshaKey:'s01Kosha', ready:true,  url:'game.html?s=lifting' },
-    { id:'s02', num:'S-02', room:'ROOM B', dim:'12.0 × 18.0', titleKey:'s02Title', descKey:'s02Desc', koshaKey:'s02Kosha', ready:false },
-    { id:'s03', num:'S-03', room:'ROOM C', dim:'12.0 × 18.0', titleKey:'s03Title', descKey:'s03Desc', koshaKey:'s03Kosha', ready:false },
-    { id:'s04', num:'S-04', room:'ROOM D', dim:'12.0 × 16.0', titleKey:'s04Title', descKey:'s04Desc', koshaKey:'s04Kosha', ready:false },
-    { id:'s05', num:'S-05', room:'ROOM E', dim:'12.0 × 16.0', titleKey:'s05Title', descKey:'s05Desc', koshaKey:'s05Kosha', ready:false },
-    { id:'s06', num:'S-06', room:'ROOM F', dim:'24.0 × 16.0', titleKey:'s06Title', descKey:'s06Desc', koshaKey:'s06Kosha', ready:false },
+    { id:'s01', num:'S-01', room:'ROOM A', dim:'18.0×24.0', titleKey:'s01Title', descKey:'s01Desc', koshaKey:'s01Kosha', ready:true,  url:'game.html?s=lifting', door:'door-br', win:['top','left'] },
+    { id:'s02', num:'S-02', room:'ROOM B', dim:'7.5×12.0',  titleKey:'s02Title', descKey:'s02Desc', koshaKey:'s02Kosha', ready:false, door:'door-bl', win:['top'] },
+    { id:'s03', num:'S-03', room:'ROOM C', dim:'7.5×12.0',  titleKey:'s03Title', descKey:'s03Desc', koshaKey:'s03Kosha', ready:false, door:'door-br', win:['top','right'] },
+    { id:'s04', num:'S-04', room:'ROOM D', dim:'7.5×12.0',  titleKey:'s04Title', descKey:'s04Desc', koshaKey:'s04Kosha', ready:false, door:'door-bl', win:[] },
+    { id:'s05', num:'S-05', room:'ROOM E', dim:'7.5×12.0',  titleKey:'s05Title', descKey:'s05Desc', koshaKey:'s05Kosha', ready:false, door:'door-br', win:['right'] },
+    { id:'s06', num:'S-06', room:'ROOM F', dim:'33.0×8.5',  titleKey:'s06Title', descKey:'s06Desc', koshaKey:'s06Kosha', ready:false, door:'door-tl', win:['bottom'] },
   ];
 
   function makeRoom(s) {
     const div = document.createElement('div');
-    div.className = 'fp-room ' + (s.ready ? 'fp-ready' : 'fp-soon');
+    div.className = `fp-room ${s.id} ${s.ready ? 'fp-ready' : 'fp-soon'}`;
     if (s.ready) div.onclick = () => window.location.href = s.url;
 
+    const winHtml = (s.win || []).map(w => `<div class="fp-win fp-win-${w}"></div>`).join('');
+    const doorHtml = s.door ? `<div class="fp-door ${s.door}"></div>` : '';
     const btnHtml = s.ready
       ? `<button class="fp-room-btn" onclick="event.stopPropagation();window.location.href='${s.url}'">${t('scenarioReady')} →</button>`
       : '';
@@ -696,7 +673,8 @@
     div.innerHTML = `
       ${s.ready ? '' : '<div class="fp-hatch"></div>'}
       <div class="fp-room-tag">${s.room} · ${s.num}</div>
-      <div class="fp-door"></div>
+      ${winHtml}
+      ${doorHtml}
       <div class="fp-room-inner">
         <div class="fp-room-header">
           <span class="fp-room-num">${s.num}</span>
@@ -709,7 +687,7 @@
         <div class="fp-room-kosha">${t(s.koshaKey)}</div>
         ${btnHtml}
       </div>
-      <span class="fp-dim">${s.dim} m</span>
+      <span class="fp-dim-ann">${s.dim} m</span>
     `;
     return div;
   }
@@ -718,13 +696,16 @@
     document.getElementById('tagline').textContent  = t('tagline');
     document.getElementById('v1-label').textContent = t('v1Progress');
 
-    const upper = document.getElementById('upper-row');
-    const lower = document.getElementById('lower-row');
-    upper.innerHTML = '';
-    lower.innerHTML = '';
+    const grid = document.getElementById('fp-grid');
+    grid.innerHTML = '';
 
-    SCENARIOS.slice(0, 3).forEach(s => upper.appendChild(makeRoom(s)));
-    SCENARIOS.slice(3, 6).forEach(s => lower.appendChild(makeRoom(s)));
+    SCENARIOS.forEach(s => grid.appendChild(makeRoom(s)));
+
+    /* Corridor between rows 2 and 4 */
+    const corridor = document.createElement('div');
+    corridor.className = 'fp-corridor';
+    corridor.innerHTML = `<span class="fp-corridor-label">CORRIDOR &nbsp;·&nbsp; 복도 &nbsp;·&nbsp; W = 3.0 m</span>`;
+    grid.appendChild(corridor);
   }
 
   function switchLang(lang) {

@@ -100,41 +100,121 @@ html, body {
 /* ── FLOOR PLAN LAYOUT ──────────────────────────────────── */
 .floor-plan-wrap {
   width: 100%;
-  max-width: 1280px;
-  padding: 32px 40px 60px;
+  max-width: 1540px;
+  padding: 20px 44px 60px;
   display: flex;
   flex-direction: column;
 }
 
-/* Blueprint outer wall */
+/* Drawing area: contains dim bars + floor plan grid */
+.fp-drawing {
+  position: relative;
+  padding-top: 38px;   /* top dim bar */
+  padding-left: 46px;  /* left dim bar */
+}
+
+/* ── TOP DIMENSION BAR ─────────────────────────────────── */
+.fp-dim-h {
+  position: absolute;
+  top: 0; left: 46px; right: 0;
+  height: 38px;
+  display: grid;
+  grid-template-columns: 2.2fr 1fr 1fr;
+  font-family: 'Courier New', monospace;
+  font-size: 0.52rem;
+  color: rgba(100,180,255,0.4);
+  letter-spacing: 0.1em;
+}
+
+.fp-dh-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(58,132,196,0.3);
+  position: relative;
+  gap: 6px;
+}
+
+/* Arrow ticks */
+.fp-dh-seg::before,
+.fp-dh-seg::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  width: 1px; height: 8px;
+  background: rgba(58,132,196,0.4);
+}
+.fp-dh-seg::before { left: 0; }
+.fp-dh-seg::after  { right: 0; }
+
+.fp-dh-arrow {
+  font-size: 0.55rem;
+  color: rgba(100,180,255,0.35);
+  letter-spacing: 0;
+}
+
+/* ── LEFT DIMENSION BAR ────────────────────────────────── */
+.fp-dim-v {
+  position: absolute;
+  top: 38px; left: 0;
+  width: 46px;
+  display: grid;
+  grid-template-rows: 300px 300px 54px 210px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.48rem;
+  color: rgba(100,180,255,0.38);
+  letter-spacing: 0.06em;
+}
+
+.fp-dv-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(58,132,196,0.3);
+  border-top: 1px solid rgba(58,132,196,0.28);
+  position: relative;
+}
+.fp-dv-seg:last-child { border-bottom: 1px solid rgba(58,132,196,0.28); }
+
+.fp-dv-seg span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.fp-dv-sm { font-size: 0.4rem; }
+.fp-dv-sm span { letter-spacing: 0.04em; }
+
+/* ── BLUEPRINT OUTER WALL ──────────────────────────────── */
 .floor-plan {
   display: grid;
-  grid-template-columns: 2.4fr 1fr 1fr;
-  grid-template-rows: 270px 270px auto;
+  grid-template-columns: 2.2fr 1fr 1fr;
+  grid-template-rows: 300px 300px 54px 210px;
   width: 100%;
-  border: 3px solid #3A84C4;
+  border: 4px solid #3A84C4;
   border-bottom: none;
   background: transparent;
   position: relative;
+  box-shadow: inset 0 0 0 2px rgba(58,132,196,0.15);
 }
 
-/* Outer corner ticks */
+/* Outer corner marks */
 .floor-plan::before,
 .floor-plan::after {
   content: '';
   position: absolute;
-  width: 16px; height: 16px;
+  width: 20px; height: 20px;
   border-color: rgba(100,180,255,0.55);
   border-style: solid;
   z-index: 2;
 }
+.floor-plan::before { top: -8px; left: -8px; border-width: 2px 0 0 2px; }
+.floor-plan::after  { top: -8px; right: -8px; border-width: 2px 2px 0 0; }
 
-.floor-plan::before { top: -6px; left: -6px; border-width: 2px 0 0 2px; }
-.floor-plan::after  { top: -6px; right: -6px; border-width: 2px 2px 0 0; }
-
-/* Room */
+/* ── ROOMS ─────────────────────────────────────────────── */
 .fp-room {
-  border: 1.5px solid rgba(44,111,172,0.38);
+  border: 2px solid rgba(44,111,172,0.42);
   padding: 20px 22px 16px;
   display: flex;
   flex-direction: column;
@@ -147,20 +227,12 @@ html, body {
 
 .fp-room.ready {
   cursor: pointer;
-  background: rgba(0, 65, 58, 0.28);
-  border-color: rgba(0,168,150,0.38);
+  background: rgba(0, 55, 50, 0.32);
+  border-color: rgba(0,168,150,0.42);
 }
 
-.fp-room.ready:hover { background: rgba(0, 88, 78, 0.38); }
-.fp-room.soon { opacity: 0.48; }
-
-/* Grid positions */
-.fp-room:nth-child(1) { grid-column: 1; grid-row: 1 / 3; }
-.fp-room:nth-child(2) { grid-column: 2; grid-row: 1; }
-.fp-room:nth-child(3) { grid-column: 3; grid-row: 1; }
-.fp-room:nth-child(4) { grid-column: 2; grid-row: 2; }
-.fp-room:nth-child(5) { grid-column: 3; grid-row: 2; }
-.fp-room:nth-child(6) { grid-column: 1 / 4; grid-row: 3; min-height: 120px; }
+.fp-room.ready:hover { background: rgba(0, 80, 72, 0.42); }
+.fp-room.soon { opacity: 0.50; }
 
 /* Diagonal hatch for soon rooms */
 .fp-room.soon::before {
@@ -168,8 +240,8 @@ html, body {
   position: absolute;
   inset: 0;
   background-image: repeating-linear-gradient(
-    -45deg, transparent, transparent 16px,
-    rgba(44,111,172,0.055) 16px, rgba(44,111,172,0.055) 17px
+    -45deg, transparent, transparent 18px,
+    rgba(44,111,172,0.05) 18px, rgba(44,111,172,0.05) 19px
   );
   pointer-events: none;
   z-index: 0;
@@ -182,13 +254,193 @@ html, body {
   content: '';
   position: absolute;
   bottom: 8px; right: 8px;
-  width: 12px; height: 12px;
-  border-bottom: 1px solid rgba(44,111,172,0.28);
-  border-right: 1px solid rgba(44,111,172,0.28);
+  width: 14px; height: 14px;
+  border-bottom: 1px solid rgba(44,111,172,0.3);
+  border-right: 1px solid rgba(44,111,172,0.3);
   z-index: 1;
 }
 
-/* Room header */
+/* ── ROOM GRID POSITIONS (by scenario class) ───────────── */
+.fp-room.s01 { grid-column: 1; grid-row: 1 / 3; }
+.fp-room.s02 { grid-column: 2; grid-row: 1; }
+.fp-room.s03 { grid-column: 3; grid-row: 1; }
+.fp-room.s04 { grid-column: 2; grid-row: 2; }
+.fp-room.s05 { grid-column: 3; grid-row: 2; }
+.fp-room.s06 { grid-column: 1 / 4; grid-row: 4; }
+
+.fp-room.s01 .room-title { font-size: 1.28rem; }
+
+/* ── WINDOW MARKS (exterior walls) ────────────────────── */
+.fp-win {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Window: gap + triple line on the wall */
+.fp-win-top {
+  top: 0; left: 18%; width: 64%; height: 5px;
+  background:
+    linear-gradient(180deg,
+      rgba(130,210,255,0.55) 0px, rgba(130,210,255,0.55) 1px,
+      transparent 1px, transparent 2px,
+      rgba(130,210,255,0.35) 2px, rgba(130,210,255,0.35) 3px,
+      transparent 3px, transparent 4px,
+      rgba(130,210,255,0.2) 4px, rgba(130,210,255,0.2) 5px
+    );
+}
+
+.fp-win-right {
+  top: 20%; right: 0; width: 5px; height: 60%;
+  background:
+    linear-gradient(90deg,
+      rgba(130,210,255,0.2) 0px, rgba(130,210,255,0.2) 1px,
+      transparent 1px, transparent 2px,
+      rgba(130,210,255,0.35) 2px, rgba(130,210,255,0.35) 3px,
+      transparent 3px, transparent 4px,
+      rgba(130,210,255,0.55) 4px, rgba(130,210,255,0.55) 5px
+    );
+}
+
+.fp-win-left {
+  top: 20%; left: 0; width: 5px; height: 60%;
+  background:
+    linear-gradient(90deg,
+      rgba(130,210,255,0.55) 0px, rgba(130,210,255,0.55) 1px,
+      transparent 1px, transparent 2px,
+      rgba(130,210,255,0.35) 2px, rgba(130,210,255,0.35) 3px,
+      transparent 3px, transparent 4px,
+      rgba(130,210,255,0.2) 4px, rgba(130,210,255,0.2) 5px
+    );
+}
+
+.fp-win-bottom {
+  bottom: 0; left: 25%; width: 50%; height: 5px;
+  background:
+    linear-gradient(0deg,
+      rgba(130,210,255,0.55) 0px, rgba(130,210,255,0.55) 1px,
+      transparent 1px, transparent 2px,
+      rgba(130,210,255,0.35) 2px, rgba(130,210,255,0.35) 3px,
+      transparent 3px, transparent 4px,
+      rgba(130,210,255,0.2) 4px, rgba(130,210,255,0.2) 5px
+    );
+}
+
+/* ── DOOR SWINGS ───────────────────────────────────────── */
+/*
+  Quarter-circle center is at the hinge corner.
+  border-radius trick (52×52 element):
+    border-radius: 0 100% 0 0  → center at BOTTOM-LEFT
+    border-radius: 100% 0 0 0  → center at BOTTOM-RIGHT
+    border-radius: 0 0 100% 0  → center at TOP-LEFT  [not standard — uses clip instead]
+    border-radius: 0 0 0 100%  → center at TOP-RIGHT
+*/
+.fp-door {
+  position: absolute;
+  width: 56px; height: 56px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Arc line */
+.fp-door::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* Door panel (straight line from hinge) */
+.fp-door::after {
+  content: '';
+  position: absolute;
+  background: rgba(100,190,255,0.65);
+}
+
+/* Hinge: bottom-left → arc goes top-right */
+.door-bl { bottom: 0; left: 0; }
+.door-bl::before {
+  border-top: 1.5px solid rgba(100,190,255,0.5);
+  border-right: 1.5px solid rgba(100,190,255,0.5);
+  border-radius: 0 100% 0 0;
+}
+.door-bl::after { left: 0; top: 0; width: 1.5px; height: 100%; }
+
+/* Hinge: bottom-right → arc goes top-left */
+.door-br { bottom: 0; right: 0; }
+.door-br::before {
+  border-top: 1.5px solid rgba(100,190,255,0.5);
+  border-left: 1.5px solid rgba(100,190,255,0.5);
+  border-radius: 100% 0 0 0;
+}
+.door-br::after { right: 0; top: 0; width: 1.5px; height: 100%; }
+
+/* Hinge: top-left → arc goes bottom-right */
+.door-tl { top: 0; left: 0; }
+.door-tl::before {
+  border-bottom: 1.5px solid rgba(100,190,255,0.5);
+  border-right: 1.5px solid rgba(100,190,255,0.5);
+  border-radius: 0 0 100% 0;
+}
+.door-tl::after { left: 0; bottom: 0; top: auto; width: 1.5px; height: 100%; }
+
+/* Hinge: top-right → arc goes bottom-left */
+.door-tr { top: 0; right: 0; }
+.door-tr::before {
+  border-bottom: 1.5px solid rgba(100,190,255,0.5);
+  border-left: 1.5px solid rgba(100,190,255,0.5);
+  border-radius: 0 0 0 100%;
+}
+.door-tr::after { right: 0; bottom: 0; top: auto; width: 1.5px; height: 100%; }
+
+/* ── CORRIDOR ──────────────────────────────────────────── */
+.fp-corridor {
+  grid-column: 1 / 4;
+  grid-row: 3;
+  border: 2px solid rgba(44,111,172,0.35);
+  background: rgba(10, 22, 50, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.fp-corridor::before {
+  content: '';
+  position: absolute;
+  left: 3%; right: 3%;
+  top: 50%;
+  border-top: 1px dashed rgba(44,111,172,0.4);
+}
+
+/* Door opening notches on corridor walls */
+.fp-corridor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg,
+      transparent 22%, rgba(0,168,150,0.04) 22%, rgba(0,168,150,0.04) 23%,
+      transparent 23%, transparent 46%, rgba(44,111,172,0.04) 46%, rgba(44,111,172,0.04) 47%,
+      transparent 47%, transparent 68%, rgba(44,111,172,0.04) 68%, rgba(44,111,172,0.04) 69%,
+      transparent 69%
+    );
+  pointer-events: none;
+}
+
+.fp-corridor-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.5rem;
+  color: rgba(100,180,255,0.3);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+  background: rgba(8, 18, 44, 0.5);
+  padding: 2px 14px;
+}
+
+/* ── ROOM HEADER ───────────────────────────────────────── */
 .room-header {
   display: flex;
   align-items: center;
@@ -202,9 +454,8 @@ html, body {
   gap: 8px;
 }
 
-/* Architectural circle room number */
 .room-num-circle {
-  width: 27px; height: 27px;
+  width: 28px; height: 28px;
   border: 1.5px solid rgba(44,111,172,0.6);
   border-radius: 50%;
   display: flex;
@@ -249,8 +500,6 @@ html, body {
   color: var(--text);
 }
 
-.fp-room:nth-child(1) .room-title { font-size: 1.3rem; }
-
 .room-desc {
   font-size: 0.78rem;
   color: var(--muted);
@@ -288,7 +537,7 @@ html, body {
 
 /* ── TITLE BLOCK (engineering drawing footer) ──────────── */
 .fp-title-block {
-  border: 3px solid #3A84C4;
+  border: 4px solid #3A84C4;
   border-top: 1px solid rgba(58,132,196,0.4);
   display: flex;
   align-items: stretch;
@@ -351,26 +600,33 @@ html, body {
   letter-spacing: 0.06em;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .floor-plan-wrap { padding: 24px 20px 48px; }
+/* ── RESPONSIVE ────────────────────────────────────────── */
+@media (max-width: 1000px) {
+  .floor-plan-wrap { padding: 16px 24px 48px; }
+  .fp-drawing { padding-top: 32px; padding-left: 38px; }
+  .fp-dim-h { left: 38px; height: 32px; }
+  .fp-dim-v { top: 32px; width: 38px; }
   .floor-plan {
-    grid-template-columns: 1.8fr 1fr 1fr;
-    grid-template-rows: 240px 240px auto;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 260px 260px 50px 190px;
   }
+  .fp-dim-v { grid-template-rows: 260px 260px 50px 190px; }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 680px) {
+  .fp-drawing { padding-top: 0; padding-left: 0; }
+  .fp-dim-h, .fp-dim-v { display: none; }
   .floor-plan {
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 220px 180px 180px auto;
+    grid-template-rows: 220px 190px 190px 44px 180px;
   }
-  .fp-room:nth-child(1) { grid-column: 1 / 3; grid-row: 1; }
-  .fp-room:nth-child(2) { grid-column: 1; grid-row: 2; }
-  .fp-room:nth-child(3) { grid-column: 2; grid-row: 2; }
-  .fp-room:nth-child(4) { grid-column: 1; grid-row: 3; }
-  .fp-room:nth-child(5) { grid-column: 2; grid-row: 3; }
-  .fp-room:nth-child(6) { grid-column: 1 / 3; grid-row: 4; }
+  .fp-room.s01 { grid-column: 1 / 3; grid-row: 1; }
+  .fp-room.s02 { grid-column: 1; grid-row: 2; }
+  .fp-room.s03 { grid-column: 2; grid-row: 2; }
+  .fp-room.s04 { grid-column: 1; grid-row: 3; }
+  .fp-room.s05 { grid-column: 2; grid-row: 3; }
+  .fp-corridor  { grid-column: 1 / 3; grid-row: 4; }
+  .fp-room.s06 { grid-column: 1 / 3; grid-row: 5; }
   .fp-tb-meta { display: none; }
 }
 
