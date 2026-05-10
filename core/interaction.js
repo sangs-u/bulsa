@@ -106,6 +106,7 @@ function _handleE() {
   switch (target.type) {
     case 'action':     performAction(target.actionId); break;
     case 'document':   openSpecPopup(target.docId);    break;
+    case 'blueprint':  openBlueprintPanel();            break;
     case 'crane_cab':  boardCrane();                    break;
     case 'npc':        openPopup(target);               break;   // instruction.js handles
   }

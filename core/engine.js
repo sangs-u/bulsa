@@ -65,6 +65,7 @@ const GAME = {
   initInteraction();
   initHUD();
   initAccident();
+  if (typeof initBlueprintViewer === 'function') initBlueprintViewer();
   if (typeof initPostFX === 'function') initPostFX();
 
   const bScenario = document.getElementById('blocker-scenario');

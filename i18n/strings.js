@@ -165,6 +165,8 @@ const STRINGS = {
     equipBubbleGuide: '버블을 중앙으로 맞추세요',
     equipLevelConfirm:'수평 확인 완료',
     equipBtnConfirm:  '세팅 완료',
+    blueprintLabel:   '📐 도면 열람',
+    blueprintKey:     '[B] 도면',
   },
 
   en: {
@@ -333,6 +335,8 @@ const STRINGS = {
     equipBubbleGuide: 'Center the bubble',
     equipLevelConfirm:'Confirm Level',
     equipBtnConfirm:  'Setup Complete',
+    blueprintLabel:   '📐 View Blueprint',
+    blueprintKey:     '[B] Blueprint',
   },
 
   vi: {
@@ -501,6 +505,8 @@ const STRINGS = {
     equipBubbleGuide: 'Căn giữa bong bóng',
     equipLevelConfirm:'Xác nhận cân bằng',
     equipBtnConfirm:  'Hoàn tất cài đặt',
+    blueprintLabel:   '📐 Xem bản vẽ',
+    blueprintKey:     '[B] Bản vẽ',
   },
 
   ar: {
@@ -669,6 +675,8 @@ const STRINGS = {
     equipBubbleGuide: 'أوسط الفقاعة في المركز',
     equipLevelConfirm:'تأكيد الاستواء',
     equipBtnConfirm:  'اكتمل الإعداد',
+    blueprintLabel:   '📐 عرض المخطط',
+    blueprintKey:     '[B] المخطط',
   },
 };
 

@@ -128,6 +128,29 @@ function registerLiftingHazards() {
     label: '아웃트리거 확장 (E)',
     phase: 3,
   });
+
+  // ── 도면 스탠드 (사무실 옆 — 항상 열람 가능) ─────────────────
+  const bpMat = new THREE.MeshLambertMaterial({ color: 0xC8A96E });
+  // 스탠드 기둥
+  const bpPole = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.1, 8), bpMat);
+  bpPole.position.set(11.2, 0.55, -3.0);
+  scene.add(bpPole);
+  // 도면 롤 (파란 원통)
+  const bpRollMat = new THREE.MeshLambertMaterial({ color: 0x2B6CB0 });
+  const bpRoll = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.55, 12), bpRollMat);
+  bpRoll.rotation.z = Math.PI / 2;
+  bpRoll.position.set(11.2, 1.08, -3.0);
+  scene.add(bpRoll);
+  // 베이스 플레이트
+  const bpBase = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.06, 0.3), bpMat);
+  bpBase.position.set(11.2, 0.03, -3.0);
+  scene.add(bpBase);
+
+  GAME.interactables.push({
+    mesh: bpRoll,
+    type: 'blueprint',
+    label: '📐 도면 열람 (E)',
+  });
 }
 
 // ── 위험구역 근로자 기하학 빌드 ────────────────────────────────
