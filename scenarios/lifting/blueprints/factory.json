@@ -1,0 +1,62 @@
+{
+  "id": "factory",
+  "type": "factory",
+  "nameKo": "제조공장",
+  "nameEn": "Factory",
+  "nameVi": "Nhà máy",
+  "nameAr": "مصنع",
+  "floors": 2,
+  "heightM": 14,
+  "footprintM": { "w": 40, "d": 25 },
+  "kosha": "KOSHA GUIDE P-160-2013",
+  "stages": [
+    {
+      "id": "excavation",
+      "labelKo": "터파기",
+      "labelEn": "Excavation",
+      "labelVi": "Đào móng",
+      "labelAr": "الحفر",
+      "mesh": { "type": "box", "w": 42, "h": 0.5, "d": 27, "y": -0.25, "color": "#8B7355" }
+    },
+    {
+      "id": "foundation",
+      "labelKo": "기초",
+      "labelEn": "Foundation",
+      "labelVi": "Móng",
+      "labelAr": "الأساس",
+      "mesh": { "type": "box", "w": 40, "h": 0.8, "d": 25, "y": 0.4, "color": "#A0998A" }
+    },
+    {
+      "id": "steel_frame",
+      "labelKo": "철골 기둥·보",
+      "labelEn": "Steel Frame",
+      "labelVi": "Khung thép",
+      "labelAr": "الهيكل الفولاذي",
+      "mesh": { "type": "columns", "w": 40, "h": 14, "d": 25, "y": 7, "color": "#708090", "cols": 6, "rows": 4 }
+    },
+    {
+      "id": "wall_panel",
+      "labelKo": "벽체 패널",
+      "labelEn": "Wall Panels",
+      "labelVi": "Tấm tường",
+      "labelAr": "ألواح الجدران",
+      "mesh": { "type": "box", "w": 40, "h": 14, "d": 25, "y": 7, "color": "#B0A898", "wireframe": true }
+    },
+    {
+      "id": "roof_truss",
+      "labelKo": "지붕 트러스",
+      "labelEn": "Roof Truss",
+      "labelVi": "Giàn mái",
+      "labelAr": "جمالون السقف",
+      "mesh": { "type": "box", "w": 40, "h": 1.2, "d": 25, "y": 14.6, "color": "#909898" }
+    },
+    {
+      "id": "roof_sheet",
+      "labelKo": "지붕 패널",
+      "labelEn": "Roof Sheet",
+      "labelVi": "Tôn mái",
+      "labelAr": "صفيح السقف",
+      "mesh": { "type": "box", "w": 41, "h": 0.15, "d": 26, "y": 15.27, "color": "#607060" }
+    }
+  ]
+}

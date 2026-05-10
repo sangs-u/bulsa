@@ -1,0 +1,62 @@
+{
+  "id": "apartment",
+  "type": "apartment",
+  "nameKo": "공동주택",
+  "nameEn": "Apartment",
+  "nameVi": "Chung cư",
+  "nameAr": "شقق سكنية",
+  "floors": 10,
+  "heightM": 33,
+  "footprintM": { "w": 16, "d": 12 },
+  "kosha": "KOSHA GUIDE C-42-2017",
+  "stages": [
+    {
+      "id": "excavation",
+      "labelKo": "터파기",
+      "labelEn": "Excavation",
+      "labelVi": "Đào móng",
+      "labelAr": "الحفر",
+      "mesh": { "type": "box", "w": 18, "h": 0.6, "d": 14, "y": -0.3, "color": "#8B7355" }
+    },
+    {
+      "id": "foundation",
+      "labelKo": "기초",
+      "labelEn": "Foundation",
+      "labelVi": "Móng",
+      "labelAr": "الأساس",
+      "mesh": { "type": "box", "w": 16, "h": 1.0, "d": 12, "y": 0.5, "color": "#A0998A" }
+    },
+    {
+      "id": "frame_1_3f",
+      "labelKo": "1~3층 골조",
+      "labelEn": "1F-3F Frame",
+      "labelVi": "Khung tầng 1-3",
+      "labelAr": "هيكل الطوابق 1-3",
+      "mesh": { "type": "box", "w": 16, "h": 9.9, "d": 12, "y": 6.45, "color": "#C0B8A8" }
+    },
+    {
+      "id": "frame_4_7f",
+      "labelKo": "4~7층 골조",
+      "labelEn": "4F-7F Frame",
+      "labelVi": "Khung tầng 4-7",
+      "labelAr": "هيكل الطوابق 4-7",
+      "mesh": { "type": "box", "w": 16, "h": 13.2, "d": 12, "y": 17.7, "color": "#C8C0B0" }
+    },
+    {
+      "id": "frame_8_10f",
+      "labelKo": "8~10층 골조",
+      "labelEn": "8F-10F Frame",
+      "labelVi": "Khung tầng 8-10",
+      "labelAr": "هيكل الطوابق 8-10",
+      "mesh": { "type": "box", "w": 16, "h": 9.9, "d": 12, "y": 29.25, "color": "#D0C8B8" }
+    },
+    {
+      "id": "roof",
+      "labelKo": "옥상 슬라브",
+      "labelEn": "Roof Slab",
+      "labelVi": "Sàn mái",
+      "labelAr": "بلاطة السطح",
+      "mesh": { "type": "box", "w": 16.4, "h": 0.35, "d": 12.4, "y": 34.375, "color": "#787878" }
+    }
+  ]
+}

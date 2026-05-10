@@ -1,0 +1,54 @@
+{
+  "id": "warehouse",
+  "type": "warehouse",
+  "nameKo": "물류창고",
+  "nameEn": "Warehouse",
+  "nameVi": "Kho hàng",
+  "nameAr": "مستودع",
+  "floors": 1,
+  "heightM": 9,
+  "footprintM": { "w": 30, "d": 20 },
+  "kosha": "KOSHA GUIDE C-35-2011",
+  "stages": [
+    {
+      "id": "excavation",
+      "labelKo": "터파기",
+      "labelEn": "Excavation",
+      "labelVi": "Đào móng",
+      "labelAr": "الحفر",
+      "mesh": { "type": "box", "w": 32, "h": 0.4, "d": 22, "y": -0.2, "color": "#8B7355" }
+    },
+    {
+      "id": "foundation",
+      "labelKo": "기초",
+      "labelEn": "Foundation",
+      "labelVi": "Móng",
+      "labelAr": "الأساس",
+      "mesh": { "type": "box", "w": 30, "h": 0.6, "d": 20, "y": 0.3, "color": "#A0998A" }
+    },
+    {
+      "id": "column",
+      "labelKo": "기둥",
+      "labelEn": "Columns",
+      "labelVi": "Cột",
+      "labelAr": "الأعمدة",
+      "mesh": { "type": "columns", "w": 30, "h": 9, "d": 20, "y": 4.5, "color": "#C0B9A8", "cols": 4, "rows": 3 }
+    },
+    {
+      "id": "roof_beam",
+      "labelKo": "지붕보",
+      "labelEn": "Roof Beams",
+      "labelVi": "Dầm mái",
+      "labelAr": "عوارض السقف",
+      "mesh": { "type": "box", "w": 30, "h": 0.4, "d": 20, "y": 9.2, "color": "#9B9284" }
+    },
+    {
+      "id": "roof",
+      "labelKo": "지붕",
+      "labelEn": "Roof",
+      "labelVi": "Mái",
+      "labelAr": "السقف",
+      "mesh": { "type": "box", "w": 31, "h": 0.15, "d": 21, "y": 9.47, "color": "#7A8A7A" }
+    }
+  ]
+}

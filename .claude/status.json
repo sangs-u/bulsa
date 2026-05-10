@@ -1,0 +1,19 @@
+{
+  "timestamp": "2026-05-10T00:00:00.000Z",
+  "lastTask": "blueprints/ 도면 5종 + blueprint-manager + structure-builder 추가; CLAUDE.md 에이전트 구조 업데이트 (품질 Sonnet→Opus, status.json push 규칙 추가)",
+  "agent": "PM (Sonnet 4.6)",
+  "status": "completed",
+  "qaStatus": "running",
+  "files": [
+    "CLAUDE.md",
+    "game.html",
+    "scenarios/lifting/blueprints/warehouse.json",
+    "scenarios/lifting/blueprints/office.json",
+    "scenarios/lifting/blueprints/factory.json",
+    "scenarios/lifting/blueprints/apartment.json",
+    "scenarios/lifting/blueprints/bridge.json",
+    "scenarios/lifting/blueprints/blueprint-manager.js",
+    "scenarios/lifting/blueprints/structure-builder.js",
+    ".claude/status.json"
+  ]
+}
