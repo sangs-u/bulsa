@@ -120,7 +120,7 @@ function _drawGrid(ctx, canvas) {
   // 도면 외곽 테두리
   ctx.strokeStyle = '#3A3228';
   ctx.lineWidth = 2;
-  ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 60);
+  ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 62);
 }
 
 // ── 탭 1: 평면도 ─────────────────────────────────────────────────
@@ -128,102 +128,262 @@ function _drawPlan(ctx, canvas) {
   if (typeof BLUEPRINT_LIFTING === 'undefined') return;
   const bp = BLUEPRINT_LIFTING.plan;
 
-  // 월드 좌표 → 캔버스 좌표 변환
-  // 월드: x ∈ [-25, 25], z ∈ [-25, 5] → 캔버스: 20px 여백
-  const W = canvas.width - 20, H = canvas.height - 70;
-  const ox = 10, oy = 15; // 원점 오프셋
+  // 그리드 영역 여백: 좌20(행라벨) 우12 상20(열라벨) 하68(타이틀블록)
+  const ox = 28, oy = 22;
+  const W = canvas.width - ox - 14;
+  const H = canvas.height - oy - 70;
 
-  const wx0 = -22, wx1 = 22, wz0 = -24, wz1 = 8;
+  // 월드 범위
+  const wx0 = -24, wx1 = 24, wz0 = -26, wz1 = 10;
   const sx = W / (wx1 - wx0);
   const sz = H / (wz1 - wz0);
   const toC = (wx, wz) => ({ x: ox + (wx - wx0) * sx, y: oy + (wz - wz0) * sz });
 
-  // ── 크레인 작업반경 ────────────────────────────
-  const cPos = toC(bp.crane.x, bp.crane.z);
+  // ── 1. 사이트 경계 (부지 경계선) ────────────────
+  const sp1 = toC(-23, -25), sp2 = toC(23, 9);
   ctx.save();
-  ctx.strokeStyle = '#E53E3E';
-  ctx.setLineDash([6, 4]);
+  ctx.strokeStyle = '#6B5C48';
   ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.arc(cPos.x, cPos.y, bp.craneRadius * sx, 0, Math.PI * 2);
-  ctx.stroke();
+  ctx.setLineDash([10, 5]);
+  ctx.strokeRect(sp1.x, sp1.y, sp2.x - sp1.x, sp2.y - sp1.y);
+  ctx.setLineDash([]);
+  ctx.restore();
+  ctx.fillStyle = '#6B5C48';
+  ctx.font = '8px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('-- 부지 경계선 --', (sp1.x + sp2.x) / 2, sp1.y - 4);
 
-  // 위험반경 내부
-  ctx.fillStyle = 'rgba(229,62,62,0.06)';
-  ctx.beginPath();
-  ctx.arc(cPos.x, cPos.y, bp.craneRadius * sx, 0, Math.PI * 2);
-  ctx.fill();
+  // ── 2. 그리드 기준선 ──────────────────────────
+  // 열: A(-18) B(-6) C(6) D(18)
+  // 행: 1(-24) 2(-14) 3(-4) 4(8)
+  const COLS = [{ x: -18, l: 'A' }, { x: -6, l: 'B' }, { x: 6, l: 'C' }, { x: 18, l: 'D' }];
+  const ROWS = [{ z: -24, l: '1' }, { z: -14, l: '2' }, { z: -4, l: '3' }, { z: 8, l: '4' }];
+  ctx.save();
+  ctx.strokeStyle = 'rgba(90,100,160,0.18)';
+  ctx.lineWidth = 0.6;
+  ctx.setLineDash([3, 5]);
+  COLS.forEach(c => {
+    const p = toC(c.x, wz0);
+    const e = toC(c.x, wz1);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(e.x, e.y); ctx.stroke();
+    // 열 라벨 (원형)
+    const lp = toC(c.x, wz1);
+    ctx.fillStyle = '#4A5568';
+    ctx.beginPath(); ctx.arc(lp.x, oy - 9, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(c.l, lp.x, oy - 5);
+  });
+  ROWS.forEach(r => {
+    const p = toC(wx0, r.z);
+    const e = toC(wx1, r.z);
+    ctx.strokeStyle = 'rgba(90,100,160,0.18)';
+    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(e.x, e.y); ctx.stroke();
+    // 행 라벨 (원형)
+    ctx.fillStyle = '#4A5568';
+    ctx.beginPath(); ctx.arc(ox - 11, p.y, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(r.l, ox - 11, p.y + 3);
+  });
   ctx.setLineDash([]);
   ctx.restore();
 
-  // ── 건물 외곽 ────────────────────────────────
-  const bPos = toC(bp.building.x, bp.building.z);
-  ctx.fillStyle = 'rgba(49,130,206,0.12)';
-  ctx.strokeStyle = '#2B6CB0';
-  ctx.lineWidth = 2;
-  const bW = bp.building.w * sx, bD = bp.building.d * sz;
+  // ── 3. 포장 구역 (크레인 발판/콘크리트) ──────────
+  const paveP = toC(8, -14), paveEnd = toC(22, -2);
+  ctx.fillStyle = 'rgba(160,150,135,0.12)';
+  ctx.strokeStyle = 'rgba(120,110,90,0.3)';
+  ctx.lineWidth = 0.8;
+  ctx.fillRect(paveP.x, paveP.y, paveEnd.x - paveP.x, paveEnd.y - paveP.y);
+  ctx.strokeRect(paveP.x, paveP.y, paveEnd.x - paveP.x, paveEnd.y - paveP.y);
+  ctx.fillStyle = 'rgba(120,110,90,0.5)';
+  ctx.font = '7px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('포장 구역', (paveP.x + paveEnd.x) / 2, paveEnd.y - 4);
+
+  // ── 4. 건물 (두꺼운 벽 + 해치) ───────────────────
+  const bldg = bp.building;
+  const bPos = toC(bldg.x, bldg.z);
+  const bW = bldg.w * sx, bD = bldg.d * sz;
+  const wt = Math.max(4, 0.5 * Math.min(sx, sz)); // 벽 두께 px
+
+  // 바닥 채우기 + 사선 해치
+  ctx.fillStyle = 'rgba(43,108,176,0.08)';
   ctx.fillRect(bPos.x, bPos.y, bW, bD);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(bPos.x, bPos.y, bW, bD); ctx.clip();
+  ctx.strokeStyle = 'rgba(43,108,176,0.18)';
+  ctx.lineWidth = 0.8; ctx.setLineDash([]);
+  for (let i = -30; i < 30; i++) {
+    ctx.beginPath();
+    ctx.moveTo(bPos.x + i * 10, bPos.y);
+    ctx.lineTo(bPos.x + i * 10 + bD, bPos.y + bD);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // 벽 (두꺼운 솔리드 라인)
+  ctx.fillStyle = '#2B6CB0';
+  ctx.fillRect(bPos.x, bPos.y, bW, wt);                      // 상
+  ctx.fillRect(bPos.x, bPos.y + bD - wt, bW, wt);            // 하
+  ctx.fillRect(bPos.x, bPos.y, wt, bD);                      // 좌
+  ctx.fillRect(bPos.x + bW - wt, bPos.y, wt, bD);            // 우
+  ctx.strokeStyle = '#1A4E8C'; ctx.lineWidth = 1;
   ctx.strokeRect(bPos.x, bPos.y, bW, bD);
 
-  // 해치 (건설 중)
-  ctx.save();
-  ctx.strokeStyle = '#2B6CB0';
-  ctx.lineWidth = 0.7;
-  ctx.setLineDash([4, 4]);
-  for (let i = -20; i < 20; i++) {
-    const x1 = bPos.x + i * 10, y1 = bPos.y;
-    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 + bD, y1 + bD); ctx.stroke();
-  }
+  // 내부 컬럼 포인트 (4×4 그리드)
+  [0.25, 0.75].forEach(fx => [0.25, 0.5, 0.75].forEach(fz => {
+    const cx2 = bPos.x + bW * fx, cy2 = bPos.y + bD * fz;
+    ctx.fillStyle = '#1A4E8C';
+    ctx.fillRect(cx2 - 3, cy2 - 3, 6, 6);
+  }));
+
+  // 건물 라벨
+  ctx.fillStyle = '#1A4E8C'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('건물 (건설 중)', bPos.x + bW / 2, bPos.y + bD / 2 - 6);
+  ctx.font = '8px monospace'; ctx.fillStyle = '#2B6CB0';
+  ctx.fillText('RC S01', bPos.x + bW / 2, bPos.y + bD / 2 + 8);
+
+  // 치수선 (건물)
+  _dimLineH(ctx, bPos.x, bPos.x + bW, bPos.y - 14, `${bldg.w}m`, '#2B6CB0');
+  _dimLineV(ctx, bPos.y, bPos.y + bD, bPos.x - 14, `${bldg.d}m`, '#2B6CB0');
+
+  // ── 5. 자재 보관 구역 ─────────────────────────
+  const stP = toC(-5, -6), stE = toC(5, -1);
+  ctx.fillStyle = 'rgba(214,158,46,0.15)';
+  ctx.strokeStyle = '#B7791F'; ctx.lineWidth = 1;
+  ctx.setLineDash([5, 3]);
+  ctx.fillRect(stP.x, stP.y, stE.x - stP.x, stE.y - stP.y);
+  ctx.strokeRect(stP.x, stP.y, stE.x - stP.x, stE.y - stP.y);
   ctx.setLineDash([]);
-  ctx.restore();
+  ctx.fillStyle = '#744210'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('자재 보관', (stP.x + stE.x) / 2, (stP.y + stE.y) / 2 - 2);
+  ctx.font = '8px monospace';
+  ctx.fillText('(RC 보·샤클)', (stP.x + stE.x) / 2, (stP.y + stE.y) / 2 + 9);
 
-  _label(ctx, bPos.x + bW / 2, bPos.y + bD / 2, _bl('building'), '#2B6CB0', 10);
-
-  // ── RC 보 ────────────────────────────────────
+  // RC 보 심볼
   const bmPos = toC(bp.beam.x, bp.beam.z);
+  const blen = bp.beam.len * sx, bwid = Math.max(6, bp.beam.w * sz * 4);
   ctx.fillStyle = '#D69E2E';
-  ctx.strokeStyle = '#744210';
-  ctx.lineWidth = 1.5;
-  const blen = bp.beam.len * sx, bwid = bp.beam.w * sz * 2;
+  ctx.strokeStyle = '#744210'; ctx.lineWidth = 1.5;
   ctx.fillRect(bmPos.x - blen / 2, bmPos.y - bwid / 2, blen, bwid);
   ctx.strokeRect(bmPos.x - blen / 2, bmPos.y - bwid / 2, blen, bwid);
-  _label(ctx, bmPos.x, bmPos.y - bwid / 2 - 8, _bl('beam'), '#744210', 10);
+  ctx.fillStyle = '#744210'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('RC 보 3.0t', bmPos.x, bmPos.y + bwid / 2 + 11);
 
-  // ── 인양 경로 화살표 ──────────────────────────
-  const tPos = toC(bp.target.x, bp.target.z);
-  ctx.strokeStyle = '#38A169';
-  ctx.fillStyle   = '#38A169';
-  ctx.lineWidth   = 1.5;
-  ctx.setLineDash([5, 3]);
-  ctx.beginPath(); ctx.moveTo(bmPos.x, bmPos.y); ctx.lineTo(tPos.x, tPos.y); ctx.stroke();
-  ctx.setLineDash([]);
-  _arrowHead(ctx, tPos.x, tPos.y, bmPos.x, bmPos.y);
-  _label(ctx, tPos.x + 12, tPos.y, _bl('target'), '#38A169', 9);
-
-  // ── 크레인 마스트 ─────────────────────────────
-  ctx.fillStyle = '#D69E2E';
-  ctx.strokeStyle = '#744210';
-  ctx.lineWidth = 2;
+  // ── 6. 현장사무소 ─────────────────────────────
+  const ofP = toC(7, -3), ofE = toC(13, 0);
+  ctx.fillStyle = 'rgba(49,130,206,0.18)';
+  ctx.strokeStyle = '#2B6CB0'; ctx.lineWidth = 1.5;
+  ctx.fillRect(ofP.x, ofP.y, ofE.x - ofP.x, ofE.y - ofP.y);
+  ctx.strokeRect(ofP.x, ofP.y, ofE.x - ofP.x, ofE.y - ofP.y);
+  // 출입문 심볼 (호)
+  const doorX = ofP.x + (ofE.x - ofP.x) * 0.5;
+  const doorR = (ofE.x - ofP.x) * 0.3;
+  ctx.strokeStyle = '#2B6CB0'; ctx.lineWidth = 0.8;
   ctx.beginPath();
-  ctx.arc(cPos.x, cPos.y, 6, 0, Math.PI * 2);
-  ctx.fill(); ctx.stroke();
-  _label(ctx, cPos.x + 10, cPos.y - 10, _bl('crane'), '#744210', 10);
+  ctx.moveTo(doorX, ofE.y);
+  ctx.arc(doorX, ofE.y, doorR, -Math.PI / 2, 0);
+  ctx.stroke();
+  ctx.fillStyle = '#1A4E8C'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('현장사무소', (ofP.x + ofE.x) / 2, (ofP.y + ofE.y) / 2 + 4);
 
-  // ── 마커 (신호수, 사무실) ─────────────────────
+  // ── 7. 위험 반경 + 작업 반경 ───────────────────
+  const cPos = toC(bp.crane.x, bp.crane.z);
+  ctx.save();
+  // 내부 위험반경 (진한 빨강)
+  ctx.fillStyle = 'rgba(229,62,62,0.07)';
+  ctx.beginPath(); ctx.arc(cPos.x, cPos.y, bp.dangerZoneR * sx, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#FC8181'; ctx.lineWidth = 1;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.arc(cPos.x, cPos.y, bp.dangerZoneR * sx, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  // 외부 작업반경
+  ctx.fillStyle = 'rgba(229,62,62,0.04)';
+  ctx.beginPath(); ctx.arc(cPos.x, cPos.y, bp.craneRadius * sx, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#E53E3E'; ctx.lineWidth = 1.5;
+  ctx.setLineDash([8, 5]);
+  ctx.beginPath(); ctx.arc(cPos.x, cPos.y, bp.craneRadius * sx, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+  // 반경 라벨
+  _label(ctx, cPos.x + bp.craneRadius * sx * 0.68, cPos.y - 6, `R=${bp.craneRadius}m`, '#E53E3E', 8);
+  _label(ctx, cPos.x + bp.dangerZoneR * sx * 0.62, cPos.y + 6, `위험R=${bp.dangerZoneR}m`, '#FC8181', 7);
+
+  // ── 8. 타워크레인 (TC-01) ─────────────────────
+  const tSz = 2.5 * Math.min(sx, sz);
+  const tp = toC(bp.crane.x, bp.crane.z);
+  ctx.fillStyle = '#D69E2E'; ctx.strokeStyle = '#744210'; ctx.lineWidth = 2;
+  ctx.fillRect(tp.x - tSz / 2, tp.y - tSz / 2, tSz, tSz);
+  ctx.strokeRect(tp.x - tSz / 2, tp.y - tSz / 2, tSz, tSz);
+  // X 대각
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(tp.x - tSz / 2, tp.y - tSz / 2); ctx.lineTo(tp.x + tSz / 2, tp.y + tSz / 2); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(tp.x + tSz / 2, tp.y - tSz / 2); ctx.lineTo(tp.x - tSz / 2, tp.y + tSz / 2); ctx.stroke();
+  // 지브 방향선
+  ctx.strokeStyle = '#B7791F'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(tp.x, tp.y); ctx.lineTo(tp.x - bp.craneRadius * sx * 0.7, tp.y + 4); ctx.stroke();
+  _label(ctx, tp.x, tp.y - tSz / 2 - 10, 'TC-01', '#744210', 10);
+
+  // ── 9. 인양 경로 ────────────────────────────
+  const tPos = toC(bp.target.x, bp.target.z);
+  ctx.strokeStyle = '#38A169'; ctx.fillStyle = '#38A169';
+  ctx.lineWidth = 1.5; ctx.setLineDash([6, 3]);
+  ctx.beginPath(); ctx.moveTo(bmPos.x, bmPos.y - bwid / 2); ctx.lineTo(tPos.x, tPos.y); ctx.stroke();
+  ctx.setLineDash([]);
+  _arrowHead(ctx, tPos.x, tPos.y, bmPos.x, bmPos.y - bwid / 2);
+  // 목표 위치 십자 심볼
+  ctx.strokeStyle = '#38A169'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(tPos.x, tPos.y, 7, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(tPos.x - 12, tPos.y); ctx.lineTo(tPos.x + 12, tPos.y);
+  ctx.moveTo(tPos.x, tPos.y - 12); ctx.lineTo(tPos.x, tPos.y + 12);
+  ctx.stroke();
+  _label(ctx, tPos.x + 18, tPos.y - 4, '거치 위치', '#38A169', 9);
+
+  // ── 10. 신호수 + 출입구 마커 ──────────────────
   bp.markers.forEach(m => {
+    if (m.label === '크레인') return;
     const mp = toC(m.x, m.z);
+    // 사람 심볼
     ctx.fillStyle = m.color;
+    ctx.beginPath(); ctx.arc(mp.x, mp.y - 7, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = m.color; ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.arc(mp.x, mp.y, 5, 0, Math.PI * 2);
-    ctx.fill();
-    _label(ctx, mp.x + 8, mp.y, m.label, m.color, 9);
+    ctx.moveTo(mp.x, mp.y - 3);
+    ctx.lineTo(mp.x, mp.y + 5);
+    ctx.moveTo(mp.x - 4, mp.y); ctx.lineTo(mp.x + 4, mp.y); // 팔
+    ctx.stroke();
+    _label(ctx, mp.x + 12, mp.y - 4, m.label, m.color, 9);
   });
 
-  // 반경 라벨
-  _label(ctx, cPos.x + bp.craneRadius * sx * 0.7, cPos.y - 8, `R=${bp.craneRadius}m`, '#E53E3E', 9);
+  // 출입구
+  const entP = toC(-2, 9);
+  ctx.fillStyle = '#38A169'; ctx.strokeStyle = '#276749'; ctx.lineWidth = 1.5;
+  ctx.fillRect(entP.x - 14, entP.y - 5, 28, 10);
+  ctx.strokeRect(entP.x - 14, entP.y - 5, 28, 10);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('출입구', entP.x, entP.y + 3);
 
-  // 방위 (N 화살표)
-  _drawNorthArrow(ctx, canvas.width - 40, oy + 20);
+  // ── 11. 스케일 바 ────────────────────────────
+  const sbX = ox + 10, sbY = oy + H - 16;
+  const s5 = 5 * sx;
+  ctx.strokeStyle = '#3A3228'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(sbX, sbY - 5); ctx.lineTo(sbX, sbY + 5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(sbX + s5, sbY - 5); ctx.lineTo(sbX + s5, sbY + 5); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(sbX + s5 * 2, sbY - 5); ctx.lineTo(sbX + s5 * 2, sbY + 5); ctx.stroke();
+  for (let i = 0; i < 2; i++) {
+    ctx.fillStyle = i % 2 === 0 ? '#3A3228' : '#F0EDE6';
+    ctx.fillRect(sbX + i * s5, sbY - 2, s5, 4);
+  }
+  ctx.strokeRect(sbX, sbY - 2, s5 * 2, 4);
+  ctx.fillStyle = '#3A3228'; ctx.font = '8px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('0', sbX, sbY + 12);
+  ctx.fillText('5m', sbX + s5, sbY + 12);
+  ctx.fillText('10m', sbX + s5 * 2, sbY + 12);
+
+  // ── 12. 방위 화살표 ──────────────────────────
+  _drawNorthArrow(ctx, canvas.width - 36, oy + 26);
 }
 
 // ── 탭 2: 입면도 ─────────────────────────────────────────────────
@@ -433,7 +593,6 @@ function _dimLine(ctx, x, y1, y2, label, color) {
   ctx.save();
   ctx.strokeStyle = color || '#555'; ctx.fillStyle = color || '#555';
   ctx.lineWidth = 1;
-  // 수직선 + 양끝 티크
   ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
   [y1, y2].forEach(y => {
     ctx.beginPath(); ctx.moveTo(x - 4, y); ctx.lineTo(x + 4, y); ctx.stroke();
@@ -441,6 +600,36 @@ function _dimLine(ctx, x, y1, y2, label, color) {
   ctx.font = '9px monospace';
   ctx.textAlign = 'center';
   ctx.fillText(label, x, (y1 + y2) / 2 - 4);
+  ctx.restore();
+}
+
+function _dimLineH(ctx, x1, x2, y, label, color) {
+  ctx.save();
+  ctx.strokeStyle = color || '#555'; ctx.fillStyle = color || '#555';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+  [x1, x2].forEach(x => {
+    ctx.beginPath(); ctx.moveTo(x, y - 4); ctx.lineTo(x, y + 4); ctx.stroke();
+  });
+  ctx.font = '8px monospace'; ctx.textAlign = 'center';
+  ctx.fillText(label, (x1 + x2) / 2, y - 5);
+  ctx.restore();
+}
+
+function _dimLineV(ctx, y1, y2, x, label, color) {
+  ctx.save();
+  ctx.strokeStyle = color || '#555'; ctx.fillStyle = color || '#555';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
+  [y1, y2].forEach(y => {
+    ctx.beginPath(); ctx.moveTo(x - 4, y); ctx.lineTo(x + 4, y); ctx.stroke();
+  });
+  ctx.font = '8px monospace'; ctx.textAlign = 'center';
+  ctx.save();
+  ctx.translate(x - 5, (y1 + y2) / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText(label, 0, 0);
+  ctx.restore();
   ctx.restore();
 }
 
