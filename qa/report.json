@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-05-08T12:39:08.193Z",
+  "timestamp": "2026-05-10T11:15:38.061Z",
   "url": "https://sangs-u.github.io/bulsa/game.html?s=lifting",
   "consoleErrors": [],
   "consoleWarnings": [],
@@ -8,46 +8,39 @@
   "npcPositions": [
     {
       "id": "gimc",
-      "x": 6.153355909903662,
-      "z": -6.6661115677700415
+      "x": 3,
+      "z": -6
     },
     {
       "id": "park",
-      "x": -4.409016877431866,
-      "z": -7.744065422397701
+      "x": -3.951995186568673,
+      "z": -8.681818750360893
     },
     {
       "id": "lee",
-      "x": 3.401452896024929,
-      "z": -15.968572823823084
+      "x": -0.8668940351527249,
+      "z": -13.844274828022783
     },
     {
       "id": "ahmad",
-      "x": 8.141425265108216,
-      "z": -12.606620496638547
+      "x": 5.213068781028023,
+      "z": -11.963010450425447
     },
     {
       "id": "nguyen",
-      "x": -1.9558313884515377,
-      "z": -4.580576339477886
+      "x": -5.668630706319645,
+      "z": -4.086586974336467
     }
   ],
   "screenshots": [
     "01_load.png",
     "02_name.png",
-    "02_name_enter.png",
     "03_game_entered.png",
-    "03_game_start.png",
-    "04_move_forward.png",
     "04_movement.png",
     "05_actions_done.png",
-    "05_move_strafe.png",
-    "06_after10s.png",
     "06_crane_boarded.png",
     "07_beam_rising.png",
-    "07_interact_e.png",
     "08_cutscene.png",
-    "08_final.png",
     "09_complete.png"
   ],
   "summary": {
