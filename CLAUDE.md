@@ -44,12 +44,13 @@ bulsa/
 
 ## 현재 구현 상태
 ```
-✅ Three.js 씬 + 게임루프
-✅ 1인칭 플레이어 이동 + Raycaster 충돌
-✅ NPC 5명 (역할별 + Yuka AI)
-✅ 다국어 ko/en/ar/vi
+✅ Three.js 씬 + 게임루프 + 1인칭 이동
+✅ NPC 5명 (역할별 + Yuka AI) + 다국어 ko/en/ar/vi
+✅ Phase 4 rigging_setup (줄걸이 지시)
+✅ Phase 5 site_setup (작업반경/TBM)
+✅ Phase 6 execution (인양 실행)
 ✅ 사고 패널 + 수료증
-✅ 크레인 인양 애니메이션
-🔄 Phase 1~3 (계획서/안전검토/장비세팅) — 구현 중
-⏳ 불안전 행동 감지, 돌발 이벤트, Rapier.js 물리엔진
+🔗 Phase 1·2 — 무사이 담당 (BULSA 미구현, 기본값으로 통과)
+⏳ Phase 3 equipment_setup — 다음 목표
+⏳ 크레인 운전원 NPC 거부권, 불안전 행동 감지
 ```

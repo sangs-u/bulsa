@@ -76,11 +76,25 @@ bulsa/
 │   ├── postfx.js               Bloom+SSAO 포스트프로세싱
 │   ├── building.js             구조물 메시 생성
 │   ├── ending.js               완료/수료증 패널
+│   ├── minimap.js              미니맵
+│   ├── signboard.js            현장 간판/표지판
+│   ├── structure.js            구조물 메시
 │   └── (예정) roles.js / process.js / safety-engine.js / violation.js / events.js
-├── scenarios/lifting/
-│   ├── scene.js                게임 씬 + GAME.colliders 구축
-│   ├── hazards.js              위험 오브젝트 등록
-│   └── data.js (또는 lifting-data.js)  사고 데이터 DB
+├── scenarios/
+│   ├── lifting/                ✅ v1.0 — 줄걸이/인양 (현재 유일한 플레이 가능 시나리오)
+│   │   ├── scene.js
+│   │   ├── hazards.js
+│   │   ├── data.js
+│   │   ├── actions.js
+│   │   └── calc.js
+│   ├── confined/               🔲 v2.0 stub — 밀폐공간
+│   ├── electrical/             🔲 v2.0 stub — 전기작업
+│   ├── fire/                   🔲 v2.0 stub — 화재
+│   ├── scaffold/               🔲 v2.0 stub — 비계
+│   └── vehicle/                🔲 v2.0 stub — 차량/장비
+├── blueprints/                 도면 시스템
+│   ├── lifting-plan.js
+│   └── viewer.js
 └── i18n/strings.js             ko/en/ar/vi 전체 문자열
 ```
 
@@ -101,14 +115,16 @@ bulsa/
 
 ## 6개 Phase (줄걸이/인양 시나리오)
 
-| Phase | 이름 | 내용 |
-|-------|------|------|
-| 1 | plan | 현장 사무실에서 작업계획서 작성 |
-| 2 | safety_review | 무사이 계산 엔진 연동 안전성 검토 |
-| 3 | equipment_setup | 크레인 세팅 (아웃트리거, 수준기, 과부하장치) |
-| 4 | rigging_setup | 박영수에게 지시 — 슬링선택/달기기구/걸이방식/각도/점검/핀 |
-| 5 | site_setup | 작업반경 설치/표지/NPC 대피/TBM |
-| 6 | execution | 크레인 운전석 탑승 or NPC 지시로 인양 실행 |
+| Phase | 이름 | 내용 | 담당 |
+|-------|------|------|------|
+| 1 | plan | 작업계획서 작성 | **무사이** (연동 — BULSA 진입 전 완료) |
+| 2 | safety_review | 안전성 검토 + 하중계산 | **무사이** (연동 — 계산 결과 BULSA로 전달) |
+| 3 | equipment_setup | 크레인 세팅 (아웃트리거/수준기/과부하장치) | **BULSA** ← v1.0 게임 시작점 |
+| 4 | rigging_setup | 박영수에게 지시 — 슬링/달기기구/걸이방식/각도/점검/핀 | **BULSA** ✅ |
+| 5 | site_setup | 작업반경 설치/표지/NPC 대피/TBM | **BULSA** ✅ |
+| 6 | execution | 크레인 운전석 탑승 or NPC 지시로 인양 실행 | **BULSA** ✅ |
+
+> Phase 1·2는 무사이가 담당. BULSA는 Phase 3부터 시작하며, 무사이에서 완료된 계획서·계산 결과를 파라미터로 전달받아 시작 조건으로 활용 (v2.0 연동 예정, v1.0은 기본값 사용).
 
 ---
 
@@ -208,12 +224,12 @@ bulsa/
 
 | Phase | 상태 | 메모 |
 |-------|------|------|
+| Phase 1: plan | 🔗 | 무사이 담당. BULSA는 기본값으로 시작, v2.0 연동 |
+| Phase 2: safety_review | 🔗 | 무사이 담당. 계산 결과 파라미터 수신, v2.0 연동 |
+| Phase 3: equipment_setup | ⏳ | **다음 목표** — 크레인 아웃트리거/수준기/과부하장치 |
 | Phase 4: rigging_setup | ✅ | 슬링/달기기구/걸이방식/각도/점검/핀 |
 | Phase 5: site_setup | ✅ | 작업반경/표지/NPC 대피/TBM |
 | Phase 6: execution | ✅ | 인양 실행 |
-| Phase 1: plan | ⏳ | 작업계획서 작성 UI |
-| Phase 2: safety_review | ⏳ | 무사이 연동 |
-| Phase 3: equipment_setup | ⏳ | 크레인 세팅 |
 
 ### 고급 시스템
 
