@@ -9,138 +9,716 @@
   <link rel="stylesheet" href="style.css">
   <style>
     body { overflow-y: auto; }
-    .hub-body { min-height: 100vh; }
-
-    /* v1.0 progress bar */
-    .v1-progress {
-      width: 100%;
-      max-width: 480px;
-      margin: 18px auto 0;
-      padding: 0 16px;
+    .hub-body {
+      min-height: 100vh;
+      background: #071424;
+      display: block;
+      padding: 0;
     }
-    .v1-progress-label {
-      font-size: 0.72rem;
-      color: var(--muted);
+
+    /* ── BLUEPRINT GRID BACKGROUND ─── */
+    .fp-bg {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(44,111,172,0.10) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(44,111,172,0.10) 1px, transparent 1px),
+        linear-gradient(rgba(44,111,172,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(44,111,172,0.035) 1px, transparent 1px);
+      background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .fp-page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      padding: 28px 40px 56px;
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 5px;
-    }
-    .v1-progress-track {
-      height: 4px;
-      background: rgba(44,111,172,0.2);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .v1-progress-fill {
-      height: 100%;
-      width: 20%; /* 1/5 scenarios */
-      background: linear-gradient(90deg, var(--teal), var(--steel));
-      border-radius: 2px;
-      transition: width 0.6s ease;
+      flex-direction: column;
+      align-items: center;
     }
 
-    /* Arabic RTL adjustments */
-    [dir="rtl"] .hub-lang { flex-direction: row-reverse; }
-    [dir="rtl"] .scenario-grid { direction: rtl; }
-    [dir="rtl"] .card-badge { margin-right: 0; margin-left: auto; }
+    /* ── TITLE BLOCK ────────────────── */
+    .fp-title-block {
+      width: 100%;
+      max-width: 1400px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      border: 1.5px solid rgba(107,184,232,0.38);
+      border-bottom: 3px solid rgba(107,184,232,0.38);
+      background: rgba(5,14,28,0.98);
+      padding: 16px 28px;
+      gap: 28px;
+      position: relative;
+    }
+
+    /* Watermark corner marks */
+    .fp-title-block::before {
+      content: '+ + + + + + + + +';
+      position: absolute;
+      bottom: -22px; left: 0; right: 0;
+      font-size: 0.5rem;
+      color: rgba(107,184,232,0.12);
+      letter-spacing: 10px;
+      text-align: center;
+      font-family: monospace;
+      pointer-events: none;
+    }
+
+    .fp-tb-logo-group { display: flex; flex-direction: column; gap: 5px; }
+
+    .fp-tb-logo {
+      font-size: 2.6rem;
+      font-weight: 700;
+      letter-spacing: 0.24em;
+      background: linear-gradient(135deg, #00A896 0%, #2C6FAC 55%, #6BB8E8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .fp-tb-subtitle {
+      font-size: 0.58rem;
+      color: rgba(107,184,232,0.4);
+      font-family: monospace;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .fp-tb-tagline {
+      font-size: 0.7rem;
+      color: rgba(107,184,232,0.45);
+      font-family: monospace;
+      font-style: italic;
+      margin-top: 4px;
+    }
+
+    .fp-tb-center {
+      text-align: center;
+      border-left: 1px solid rgba(107,184,232,0.18);
+      border-right: 1px solid rgba(107,184,232,0.18);
+      padding: 4px 32px;
+    }
+
+    .fp-tb-drawing-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: rgba(107,184,232,0.85);
+      font-family: monospace;
+      letter-spacing: 0.08em;
+    }
+
+    .fp-tb-drawing-sub {
+      font-size: 0.58rem;
+      color: rgba(107,184,232,0.38);
+      font-family: monospace;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .fp-tb-right-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .hub-lang { display: flex; gap: 5px; }
+
+    .hub-lang button {
+      background: transparent;
+      border: 1px solid rgba(107,184,232,0.22);
+      color: rgba(107,184,232,0.45);
+      padding: 3px 10px;
+      border-radius: 2px;
+      font-size: 0.66rem;
+      cursor: pointer;
+      font-family: monospace;
+      letter-spacing: 0.04em;
+      transition: all 0.18s;
+    }
+
+    .hub-lang button.active,
+    .hub-lang button:hover {
+      border-color: rgba(107,184,232,0.55);
+      color: rgba(107,184,232,0.9);
+      background: rgba(107,184,232,0.08);
+    }
+
+    .fp-tb-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid rgba(107,184,232,0.2);
+      font-family: monospace;
+      font-size: 0.58rem;
+    }
+
+    .fp-tb-cell {
+      display: flex;
+      flex-direction: column;
+      padding: 4px 10px;
+      border-right: 1px solid rgba(107,184,232,0.2);
+      border-bottom: 1px solid rgba(107,184,232,0.2);
+    }
+
+    .fp-tb-cell:nth-child(even) { border-right: none; }
+    .fp-tb-cell:nth-last-child(-n+2) { border-bottom: none; }
+
+    .fp-tb-key {
+      font-size: 0.5rem;
+      color: rgba(107,184,232,0.35);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .fp-tb-val {
+      color: rgba(107,184,232,0.7);
+      font-weight: 600;
+      margin-top: 1px;
+    }
+
+    /* ── FLOOR PLAN SHELL ───────────── */
+    .fp-shell {
+      width: 100%;
+      max-width: 1400px;
+      border: 1.5px solid rgba(107,184,232,0.38);
+      border-top: none;
+      background: rgba(5,13,26,0.97);
+      position: relative;
+      padding: 40px 40px 50px;
+    }
+
+    /* Compass rose */
+    .fp-compass {
+      position: absolute;
+      top: 22px;
+      right: 28px;
+      width: 42px; height: 42px;
+      border: 1px solid rgba(107,184,232,0.3);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: monospace;
+      font-size: 0.62rem;
+      color: rgba(107,184,232,0.55);
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .fp-compass::before {
+      content: '▲';
+      font-size: 0.7rem;
+      color: rgba(107,184,232,0.7);
+      line-height: 1;
+    }
+
+    /* Scale + legend bar */
+    .fp-bottom-bar {
+      position: absolute;
+      bottom: 14px;
+      left: 40px; right: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .fp-scale-bar { display: flex; align-items: flex-end; gap: 6px; }
+
+    .fp-scale-segs { display: flex; }
+
+    .fp-scale-seg {
+      width: 28px; height: 7px;
+      border: 1px solid rgba(107,184,232,0.4);
+      border-right: none;
+    }
+
+    .fp-scale-seg:nth-child(odd)  { background: rgba(107,184,232,0.22); }
+    .fp-scale-seg:nth-child(even) { background: transparent; }
+    .fp-scale-seg:last-child      { border-right: 1px solid rgba(107,184,232,0.4); }
+
+    .fp-scale-label {
+      font-size: 0.5rem;
+      color: rgba(107,184,232,0.35);
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .fp-legend { display: flex; gap: 18px; }
+
+    .fp-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.52rem;
+      color: rgba(107,184,232,0.4);
+      font-family: monospace;
+      letter-spacing: 0.08em;
+    }
+
+    .fp-legend-swatch {
+      width: 18px; height: 11px;
+      border: 1px solid;
+    }
+
+    .fp-legend-swatch.ready { background: rgba(0,168,150,0.14); border-color: rgba(0,168,150,0.45); }
+    .fp-legend-swatch.soon  { background: rgba(107,184,232,0.04); border-color: rgba(107,184,232,0.22); }
+
+    /* ── ZONE LABEL ─────────────────── */
+    .fp-zone-label {
+      font-size: 0.56rem;
+      color: rgba(107,184,232,0.32);
+      font-family: monospace;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 0 2px 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .fp-zone-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(107,184,232,0.1);
+    }
+
+    /* ── CORRIDOR ───────────────────── */
+    .fp-corridor {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 48px;
+      margin: 0;
+      position: relative;
+      border-top: 1px dashed rgba(107,184,232,0.18);
+      border-bottom: 1px dashed rgba(107,184,232,0.18);
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(107,184,232,0.025) 20%,
+        rgba(107,184,232,0.025) 80%,
+        transparent 100%
+      );
+    }
+
+    .fp-corridor-label {
+      font-size: 0.54rem;
+      color: rgba(107,184,232,0.28);
+      font-family: monospace;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    /* walking path arrows */
+    .fp-corridor::before {
+      content: '';
+      position: absolute;
+      left: 20px; right: 20px;
+      top: 50%;
+      height: 0;
+      border-top: 1px dotted rgba(107,184,232,0.12);
+    }
+
+    /* ── ROOM GRID ROWS ─────────────── */
+    .fp-row {
+      display: grid;
+      gap: 3px;
+    }
+
+    .fp-row-upper { grid-template-columns: 2.4fr 1fr 1fr; }
+    .fp-row-lower { grid-template-columns: 1fr 1fr 2.4fr; }
+
+    /* ── ROOM BASE ──────────────────── */
+    .fp-room {
+      position: relative;
+      border: 1.5px solid rgba(107,184,232,0.22);
+      background: rgba(107,184,232,0.02);
+      padding: 22px 20px 28px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background 0.22s, border-color 0.22s;
+    }
+
+    /* Architectural corner ticks */
+    .fp-room::before,
+    .fp-room::after {
+      content: '';
+      position: absolute;
+      width: 12px; height: 12px;
+    }
+
+    .fp-room::before {
+      top: 6px; left: 6px;
+      border-top: 1px solid rgba(107,184,232,0.18);
+      border-left: 1px solid rgba(107,184,232,0.18);
+    }
+
+    .fp-room::after {
+      bottom: 6px; right: 6px;
+      border-bottom: 1px solid rgba(107,184,232,0.18);
+      border-right: 1px solid rgba(107,184,232,0.18);
+    }
+
+    .fp-room.fp-ready {
+      border-color: rgba(0,168,150,0.42);
+      background: rgba(0,168,150,0.04);
+      cursor: pointer;
+    }
+
+    .fp-room.fp-ready::before { border-color: rgba(0,168,150,0.28); }
+    .fp-room.fp-ready::after  { border-color: rgba(0,168,150,0.28); }
+
+    .fp-room.fp-ready:hover {
+      background: rgba(0,168,150,0.09);
+      border-color: rgba(0,168,150,0.68);
+    }
+
+    .fp-room.fp-soon {
+      border-color: rgba(107,184,232,0.13);
+      opacity: 0.58;
+    }
+
+    /* Hatch pattern for coming-soon rooms */
+    .fp-hatch {
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 10px,
+        rgba(107,184,232,0.022) 10px,
+        rgba(107,184,232,0.022) 11px
+      );
+      pointer-events: none;
+    }
+
+    /* Room label tag on top border */
+    .fp-room-tag {
+      position: absolute;
+      top: 0;
+      left: 16px;
+      transform: translateY(-50%);
+      background: #050d1a;
+      padding: 0 7px;
+      font-size: 0.52rem;
+      color: rgba(107,184,232,0.38);
+      font-family: monospace;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .fp-room.fp-ready .fp-room-tag { color: rgba(0,168,150,0.55); }
+
+    /* Door gap in bottom wall */
+    .fp-door {
+      position: absolute;
+      bottom: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 36px; height: 4px;
+      background: #050d1a;
+    }
+
+    /* Door arc (quarter circle) */
+    .fp-door::before {
+      content: '';
+      position: absolute;
+      bottom: 4px; left: 0;
+      width: 36px; height: 20px;
+      border-bottom: 1px dashed rgba(107,184,232,0.18);
+      border-radius: 0 0 50% 50%;
+    }
+
+    /* Room content */
+    .fp-room-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      flex: 1;
+      margin-top: 6px;
+    }
+
+    .fp-room-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .fp-room-num {
+      font-size: 0.62rem;
+      color: rgba(107,184,232,0.38);
+      font-family: monospace;
+      letter-spacing: 0.14em;
+    }
+
+    .fp-room.fp-ready .fp-room-num { color: rgba(0,168,150,0.55); }
+
+    .fp-room-badge {
+      font-size: 0.56rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 2px 8px;
+      border-radius: 2px;
+      white-space: nowrap;
+    }
+
+    .fp-badge-ready {
+      background: rgba(0,168,150,0.14);
+      color: var(--teal);
+      border: 1px solid rgba(0,168,150,0.32);
+    }
+
+    .fp-badge-soon {
+      background: rgba(107,184,232,0.06);
+      color: rgba(107,184,232,0.38);
+      border: 1px solid rgba(107,184,232,0.14);
+    }
+
+    .fp-room-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #c8ddf0;
+      line-height: 1.3;
+    }
+
+    .fp-room.fp-soon .fp-room-title { color: rgba(180,200,220,0.42); }
+
+    .fp-room-desc {
+      font-size: 0.76rem;
+      color: rgba(139,163,186,0.65);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .fp-room-kosha {
+      font-size: 0.6rem;
+      color: rgba(44,111,172,0.5);
+      font-family: monospace;
+      padding-top: 8px;
+      border-top: 1px solid rgba(107,184,232,0.07);
+    }
+
+    .fp-room-btn {
+      margin-top: 10px;
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 3px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font-ko);
+      transition: background 0.18s;
+      letter-spacing: 0.04em;
+      align-self: flex-start;
+    }
+
+    .fp-room-btn:hover { background: #008F7E; }
+
+    /* Dimension annotation */
+    .fp-dim {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      font-size: 0.48rem;
+      color: rgba(107,184,232,0.18);
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── ARABIC RTL ─────────────────── */
+    [dir="rtl"] .fp-title-block { direction: rtl; }
+    [dir="rtl"] .fp-tb-right-col { align-items: flex-start; }
+    [dir="rtl"] .fp-room-tag { left: auto; right: 16px; }
+    [dir="rtl"] .fp-room-header { flex-direction: row-reverse; }
+
+    /* ── RESPONSIVE ─────────────────── */
+    @media (max-width: 1000px) {
+      .fp-page { padding: 16px 16px 40px; }
+      .fp-title-block {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 14px 18px;
+      }
+      .fp-tb-center { border: none; padding: 0; }
+      .fp-tb-right-col { align-items: flex-start; }
+      .fp-shell { padding: 28px 16px 44px; }
+      .fp-row-upper,
+      .fp-row-lower { grid-template-columns: 1fr; }
+      .fp-room { min-height: 160px; }
+      .fp-compass { display: none; }
+      .fp-bottom-bar { position: static; margin-top: 20px; flex-wrap: wrap; gap: 12px; }
+    }
   </style>
 </head>
 <body class="hub-body">
 
-  <header class="hub-header">
-    <div class="hub-logo">BULSA</div>
-    <p class="hub-tagline" id="tagline"></p>
+<div class="fp-bg"></div>
 
-    <div class="v1-progress">
-      <div class="v1-progress-label">
-        <span id="v1-label"></span>
-        <span>1 / 5</span>
+<div class="fp-page">
+
+  <!-- ── TITLE BLOCK ─────────────────────── -->
+  <div class="fp-title-block">
+
+    <div class="fp-tb-logo-group">
+      <div class="fp-tb-logo">BULSA</div>
+      <div class="fp-tb-subtitle">Industrial Safety Training Center</div>
+      <div class="fp-tb-tagline" id="tagline"></div>
+    </div>
+
+    <div class="fp-tb-center">
+      <div class="fp-tb-drawing-title">시뮬레이션 훈련구역 배치도</div>
+      <div class="fp-tb-drawing-sub">Simulation Training Zone · Floor Plan</div>
+    </div>
+
+    <div class="fp-tb-right-col">
+      <div class="hub-lang">
+        <button onclick="switchLang('ko')" id="lang-ko" class="active">한국어</button>
+        <button onclick="switchLang('en')" id="lang-en">EN</button>
+        <button onclick="switchLang('vi')" id="lang-vi">VI</button>
+        <button onclick="switchLang('ar')" id="lang-ar">AR</button>
       </div>
-      <div class="v1-progress-track">
-        <div class="v1-progress-fill"></div>
+      <div class="fp-tb-meta-grid">
+        <div class="fp-tb-cell"><span class="fp-tb-key">PROJECT</span><span class="fp-tb-val" id="v1-label">—</span></div>
+        <div class="fp-tb-cell"><span class="fp-tb-key">PROGRESS</span><span class="fp-tb-val">1 / 5</span></div>
+        <div class="fp-tb-cell"><span class="fp-tb-key">DWG NO.</span><span class="fp-tb-val">BULSA-FP-001</span></div>
+        <div class="fp-tb-cell"><span class="fp-tb-key">REV</span><span class="fp-tb-val">A · 2026.05</span></div>
       </div>
     </div>
 
-    <div class="hub-lang" style="margin-top:18px;">
-      <button onclick="switchLang('ko')" id="lang-ko" class="active">한국어</button>
-      <button onclick="switchLang('en')" id="lang-en">English</button>
-      <button onclick="switchLang('vi')" id="lang-vi">Tiếng Việt</button>
-      <button onclick="switchLang('ar')" id="lang-ar">العربية</button>
-    </div>
-  </header>
-
-  <div class="floor-plan-wrap">
-    <main class="floor-plan" id="grid"></main>
-    <div class="fp-title-block">
-      <div class="fp-tb-left">
-        <div class="fp-tb-project">BULSA — SITE SAFETY SIMULATION</div>
-        <div class="fp-tb-sub">SCENARIO SELECTOR · 시나리오 선택</div>
-      </div>
-      <div class="fp-tb-meta">
-        <div class="fp-tb-cell"><span class="fp-tb-key">DWG</span><span class="fp-tb-val">SIM-001</span></div>
-        <div class="fp-tb-cell"><span class="fp-tb-key">DATE</span><span class="fp-tb-val">2026.05</span></div>
-        <div class="fp-tb-cell"><span class="fp-tb-key">REV</span><span class="fp-tb-val">01</span></div>
-        <div class="fp-tb-cell"><span class="fp-tb-key">SCALE</span><span class="fp-tb-val">NTS</span></div>
-      </div>
-    </div>
   </div>
 
-  <script src="i18n/strings.js"></script>
-  <script>
-    const SCENARIOS = [
-      { id: 's01', num: 'S-01', titleKey: 's01Title', descKey: 's01Desc', koshaKey: 's01Kosha', ready: true,  url: 'game.html?s=lifting' },
-      { id: 's02', num: 'S-02', titleKey: 's02Title', descKey: 's02Desc', koshaKey: 's02Kosha', ready: false },
-      { id: 's03', num: 'S-03', titleKey: 's03Title', descKey: 's03Desc', koshaKey: 's03Kosha', ready: false },
-      { id: 's04', num: 'S-04', titleKey: 's04Title', descKey: 's04Desc', koshaKey: 's04Kosha', ready: false },
-      { id: 's05', num: 'S-05', titleKey: 's05Title', descKey: 's05Desc', koshaKey: 's05Kosha', ready: false },
-      { id: 's06', num: 'S-06', titleKey: 's06Title', descKey: 's06Desc', koshaKey: 's06Kosha', ready: false },
-    ];
+  <!-- ── FLOOR PLAN ───────────────────────── -->
+  <div class="fp-shell">
 
-    function renderGrid() {
-      const grid = document.getElementById('grid');
-      grid.innerHTML = '';
-      document.getElementById('tagline').textContent  = t('tagline');
-      document.getElementById('v1-label').textContent = t('v1Progress');
+    <!-- Compass -->
+    <div class="fp-compass">N</div>
 
-      SCENARIOS.forEach(s => {
-        const card = document.createElement('div');
-        card.className = 'fp-room ' + (s.ready ? 'ready' : 'soon');
-        if (s.ready) card.onclick = () => startScenario(s.url);
+    <!-- Zone A label -->
+    <div class="fp-zone-label">▾ ZONE A &nbsp;·&nbsp; 고위험 시뮬레이션 구역 (Upper Bay)</div>
 
-        const numOnly = s.num.replace('S-', '');
-        card.innerHTML = `
-          <div class="room-header">
-            <div class="room-header-left">
-              <span class="room-num-circle">${numOnly}</span>
-              <span class="room-label">${s.num}</span>
-            </div>
-            <span class="card-badge ${s.ready ? 'badge-ready' : 'badge-soon'}">
-              ${s.ready ? t('scenarioReady') : t('scenarioSoon')}
-            </span>
-          </div>
-          <div class="room-title">${t(s.titleKey)}</div>
-          <div class="room-desc">${t(s.descKey)}</div>
-          <div class="room-kosha">${t(s.koshaKey)}</div>
-          ${s.ready ? `<button class="room-btn" onclick="event.stopPropagation();startScenario('${s.url}')">${t('scenarioReady')}</button>` : ''}
-        `;
-        grid.appendChild(card);
-      });
-    }
+    <!-- Upper row: S-01 wide / S-02 / S-03 -->
+    <div class="fp-row fp-row-upper" id="upper-row"></div>
 
-    function startScenario(url) {
-      window.location.href = url;
-    }
+    <!-- Corridor -->
+    <div class="fp-corridor" style="margin: 3px 0;">
+      <span class="fp-corridor-label">Main Corridor &nbsp;·&nbsp; 메인 복도 &nbsp;·&nbsp; W = 3.0 m</span>
+    </div>
 
-    function switchLang(lang) {
-      setLang(lang);
-      ['ko','en','vi','ar'].forEach(l => {
-        const btn = document.getElementById('lang-' + l);
-        if (btn) btn.classList.toggle('active', l === lang);
-      });
-      renderGrid();
-    }
+    <!-- Zone B label -->
+    <div class="fp-zone-label">▾ ZONE B &nbsp;·&nbsp; 특수작업 교육구역 (Lower Bay)</div>
 
-    renderGrid();
-  </script>
+    <!-- Lower row: S-04 / S-05 / S-06 wide -->
+    <div class="fp-row fp-row-lower" id="lower-row"></div>
+
+    <!-- Bottom annotation bar -->
+    <div class="fp-bottom-bar">
+      <div class="fp-scale-bar">
+        <div class="fp-scale-segs">
+          <div class="fp-scale-seg"></div>
+          <div class="fp-scale-seg"></div>
+          <div class="fp-scale-seg"></div>
+          <div class="fp-scale-seg"></div>
+          <div class="fp-scale-seg"></div>
+        </div>
+        <span class="fp-scale-label">0 &nbsp; 10 &nbsp; 20 m &nbsp;·&nbsp; SCALE 1:100</span>
+      </div>
+      <div class="fp-legend">
+        <div class="fp-legend-item">
+          <div class="fp-legend-swatch ready"></div>
+          ACTIVE ZONE
+        </div>
+        <div class="fp-legend-item">
+          <div class="fp-legend-swatch soon"></div>
+          SCHEDULED
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /fp-shell -->
+
+</div><!-- /fp-page -->
+
+<script src="i18n/strings.js"></script>
+<script>
+  const SCENARIOS = [
+    { id:'s01', num:'S-01', room:'ROOM A', dim:'24.0 × 18.0', titleKey:'s01Title', descKey:'s01Desc', koshaKey:'s01Kosha', ready:true,  url:'game.html?s=lifting' },
+    { id:'s02', num:'S-02', room:'ROOM B', dim:'12.0 × 18.0', titleKey:'s02Title', descKey:'s02Desc', koshaKey:'s02Kosha', ready:false },
+    { id:'s03', num:'S-03', room:'ROOM C', dim:'12.0 × 18.0', titleKey:'s03Title', descKey:'s03Desc', koshaKey:'s03Kosha', ready:false },
+    { id:'s04', num:'S-04', room:'ROOM D', dim:'12.0 × 16.0', titleKey:'s04Title', descKey:'s04Desc', koshaKey:'s04Kosha', ready:false },
+    { id:'s05', num:'S-05', room:'ROOM E', dim:'12.0 × 16.0', titleKey:'s05Title', descKey:'s05Desc', koshaKey:'s05Kosha', ready:false },
+    { id:'s06', num:'S-06', room:'ROOM F', dim:'24.0 × 16.0', titleKey:'s06Title', descKey:'s06Desc', koshaKey:'s06Kosha', ready:false },
+  ];
+
+  function makeRoom(s) {
+    const div = document.createElement('div');
+    div.className = 'fp-room ' + (s.ready ? 'fp-ready' : 'fp-soon');
+    if (s.ready) div.onclick = () => window.location.href = s.url;
+
+    const btnHtml = s.ready
+      ? `<button class="fp-room-btn" onclick="event.stopPropagation();window.location.href='${s.url}'">${t('scenarioReady')} →</button>`
+      : '';
+
+    div.innerHTML = `
+      ${s.ready ? '' : '<div class="fp-hatch"></div>'}
+      <div class="fp-room-tag">${s.room} · ${s.num}</div>
+      <div class="fp-door"></div>
+      <div class="fp-room-inner">
+        <div class="fp-room-header">
+          <span class="fp-room-num">${s.num}</span>
+          <span class="fp-room-badge ${s.ready ? 'fp-badge-ready' : 'fp-badge-soon'}">
+            ${s.ready ? t('scenarioReady') : t('scenarioSoon')}
+          </span>
+        </div>
+        <div class="fp-room-title">${t(s.titleKey)}</div>
+        <div class="fp-room-desc">${t(s.descKey)}</div>
+        <div class="fp-room-kosha">${t(s.koshaKey)}</div>
+        ${btnHtml}
+      </div>
+      <span class="fp-dim">${s.dim} m</span>
+    `;
+    return div;
+  }
+
+  function renderPlan() {
+    document.getElementById('tagline').textContent  = t('tagline');
+    document.getElementById('v1-label').textContent = t('v1Progress');
+
+    const upper = document.getElementById('upper-row');
+    const lower = document.getElementById('lower-row');
+    upper.innerHTML = '';
+    lower.innerHTML = '';
+
+    SCENARIOS.slice(0, 3).forEach(s => upper.appendChild(makeRoom(s)));
+    SCENARIOS.slice(3, 6).forEach(s => lower.appendChild(makeRoom(s)));
+  }
+
+  function switchLang(lang) {
+    setLang(lang);
+    ['ko','en','vi','ar'].forEach(l => {
+      const btn = document.getElementById('lang-' + l);
+      if (btn) btn.classList.toggle('active', l === lang);
+    });
+    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    document.documentElement.setAttribute('lang', lang);
+    renderPlan();
+  }
+
+  renderPlan();
+</script>
 </body>
 </html>
