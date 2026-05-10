@@ -99,7 +99,6 @@ async function runCommand(entry) {
 
   const agent = assignAgent(cmd);
   console.log(`[poll] CMD #${id} 실행: ${cmd}`);
-  await postLog(`CMD #${id} 시작: ${cmd}`);
   await patchStatus(id, { status: 'running', agent });
 
   let output = '';
