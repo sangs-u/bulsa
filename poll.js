@@ -105,6 +105,7 @@ async function runCommand(entry) {
   let output = '';
   try {
     output = execSync(`claude -p ${JSON.stringify(cmd)} --allowedTools all`, {
+      cwd:      'C:\\Users\\sangs\\OneDrive\\Desktop\\bulsa', // CLAUDE.md 인식
       encoding: 'utf8',
       timeout:  5 * 60 * 1000,
     });
