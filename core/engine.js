@@ -52,15 +52,27 @@ const GAME = {
     GAME.renderer.setSize(innerWidth, innerHeight);
   });
 
-  if (typeof buildLiftingScene === 'function') {
-    buildLiftingScene();
+  // ── Scenario dispatch ──────────────────────────────────────
+  const _params = new URLSearchParams(location.search);
+  const _scenarioId = _params.get('s') || 'lifting';
+  const _scenarios = {
+    lifting:    { build: 'buildLiftingScene',    register: 'registerLiftingHazards' },
+    excavation: { build: 'buildExcavationScene', register: 'registerExcavationHazards' },
+  };
+  const _active = _scenarios[_scenarioId] || _scenarios.lifting;
+  GAME.scenarioId = _scenarioId in _scenarios ? _scenarioId : 'lifting';
+
+  const _buildFn    = window[_active.build];
+  const _registerFn = window[_active.register];
+  if (typeof _buildFn === 'function') {
+    _buildFn();
   } else {
-    console.error('buildLiftingScene 없음 — scene.js 로딩 순서 확인');
+    console.error(`${_active.build} 없음 — scene.js 로딩 순서 확인`);
   }
-  if (typeof registerLiftingHazards === 'function') {
-    registerLiftingHazards();
+  if (typeof _registerFn === 'function') {
+    _registerFn();
   } else {
-    console.error('registerLiftingHazards 없음 — hazards.js 로딩 순서 확인');
+    console.error(`${_active.register} 없음 — hazards.js 로딩 순서 확인`);
   }
 
   initPlayer();

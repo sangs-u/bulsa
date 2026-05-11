@@ -1,6 +1,11 @@
 // BULSA 공정 매니페스트 — 5층 건물 건설 안전 시뮬레이터
 // 산안법(시행규칙 별표 3) + KOSHA GUIDE 기준
 // 현재 구현: rc_frame.subSteps.lift 만 완성. 다른 공정은 v1.x 진행.
+//
+// ── 공통 설계 원칙 ──────────────────────────────────────
+// 모든 공정의 Phase 1 = "작업 지시(work instruction)" 입력 단계.
+// 플레이어가 직접 매개변수(깊이/치수/자재량/순서 등)를 결정해야 다음 단계 진행 가능.
+// 잘못된 지시 → 사고 확률↑ + 과태료 (이벤트성). 각 시나리오 data.js 에 workInstruction 정의.
 
 const CONSTRUCTION_MANIFEST = [
   {
@@ -23,6 +28,7 @@ const CONSTRUCTION_MANIFEST = [
       requiredPpe:    ['안전모', '안전화', '안전대(굴착단부)'],
     },
     kosha: ['C-39-2011', 'C-104-2020'],
+    workInstruction: ['굴착 깊이', '굴착 구배', '흙막이 종류', '매설물 도면 확인'],
     status: 'planned',
   },
 
@@ -46,6 +52,7 @@ const CONSTRUCTION_MANIFEST = [
       requiredPpe:    ['안전모', '안전화', '보안경(타설)', '안전대(고소)'],
     },
     kosha: ['C-67-2018', 'C-72-2017'],
+    workInstruction: ['기초 면적', '철근 배근간격', '콘크리트 강도', '동바리 간격'],
     status: 'planned',
   },
 
@@ -80,6 +87,7 @@ const CONSTRUCTION_MANIFEST = [
       requiredPpe:    ['안전모', '안전화', '안전대', '안전대걸이'],
     },
     kosha: ['C-67-2018', 'G-133-2020', 'C-72-2017'],
+    workInstruction: ['인양 부재 종류', '인양 무게', '슬링 규격', '작업반경'],
     status: 'partial',                       // 양중만 구현
   },
 
@@ -103,6 +111,7 @@ const CONSTRUCTION_MANIFEST = [
       requiredPpe:    ['안전모', '안전화', '안전대', '안전대걸이'],
     },
     kosha: ['G-110-2020', 'C-101-2017'],
+    workInstruction: ['비계 종류', '비계 높이', '안전난간 단수', '외장재 사양'],
     status: 'planned',
   },
 
@@ -126,6 +135,7 @@ const CONSTRUCTION_MANIFEST = [
       requiredPpe:    ['안전모', '절연장갑', '방진마스크', '방독마스크'],
     },
     kosha: ['G-82-2018', 'G-119-2020'],
+    workInstruction: ['전선 규격·차단기 용량', '배관 경로·구경', '마감재 종류', 'LOTO 절차'],
     status: 'planned',
   },
 ];
