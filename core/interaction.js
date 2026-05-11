@@ -1236,6 +1236,14 @@ function openExcavPlanPanel() {
     EXCAV_STATE.planUnderground = underground;
     EXCAV_STATE.planWritten     = true;
 
+    // 작업계획서 확정 — 시점·내용 저장 (이후 실제 작업의 근거)
+    GAME.state.workPlans = GAME.state.workPlans || {};
+    GAME.state.workPlans.excavation = {
+      params: { depth, slope, shoring, underground },
+      signedAt: new Date().toLocaleTimeString('ko-KR'),
+      signedBy: GAME.state.playerName || '작업반장',
+    };
+
     // 운전석 게이지에 반영
     const cd = document.getElementById('excav-cab-depth');
     if (cd) cd.textContent = depth.toFixed(1) + ' m';
@@ -1280,7 +1288,6 @@ function boardExcavator() {
 function _setOperatorInfo(panelId, trade, taskLabel) {
   const el = document.getElementById(panelId);
   if (!el) return;
-  // 동일 공종 NPC 중 스킬 최고 = 운전원 (없으면 가상 운전원)
   const eligible = (GAME.npcs || []).filter(n => n.trade === trade);
   let opName = '최기사', opExp = 15, opSkill = 0.8;
   if (eligible.length) {
@@ -1289,7 +1296,22 @@ function _setOperatorInfo(panelId, trade, taskLabel) {
     opExp = eligible[0].experience;
     opSkill = eligible[0].skill;
   }
-  el.innerHTML = `👷 운전원: <b>${opName}</b> · 경력 ${opExp}년 · 스킬 ${(opSkill*100).toFixed(0)}%<br>📋 ${taskLabel}`;
+  // 현재 시나리오의 작업계획서 확정 내역
+  const plan = (GAME.state.workPlans || {})[GAME.scenarioId];
+  let planLine = '';
+  if (plan) {
+    const paramLines = Object.entries(plan.params)
+      .map(([k, v]) => `${k}: <b>${v}</b>`).join(' · ');
+    planLine = `<div style="margin-top:6px;padding:6px 8px;background:rgba(0,255,170,0.08);border-left:3px solid #00FFAA;border-radius:4px;font-size:11px;color:#E8EEF6;">
+      📋 <b>작업계획서</b> (${plan.signedAt} ${plan.signedBy} 확정)<br>${paramLines}<br>
+      <span style="color:#A8B0BC;font-size:10px;">→ 운전원은 이 계획에 따라 작업합니다. 미준수 시 거부합니다.</span>
+    </div>`;
+  } else {
+    planLine = `<div style="margin-top:6px;padding:6px 8px;background:rgba(239,68,68,0.12);border-left:3px solid #EF4444;border-radius:4px;font-size:11px;color:#FCA5A5;">
+      ⚠ <b>작업계획서 미작성</b> — 운전원이 임의 판단 위험 ↑↑
+    </div>`;
+  }
+  el.innerHTML = `👷 운전원: <b>${opName}</b> · 경력 ${opExp}년 · 스킬 ${(opSkill*100).toFixed(0)}%<br>📋 ${taskLabel}${planLine}`;
 }
 
 // ── 기초공사 — 작업계획서 ──────────────────────────────────
@@ -1306,6 +1328,18 @@ function openFoundPlanPanel() {
     FOUND_STATE.planConcStrength = parseFloat(document.getElementById('found-conc').value);
     FOUND_STATE.planShoringSpace = parseFloat(document.getElementById('found-shoring').value);
     FOUND_STATE.planWritten = true;
+
+    GAME.state.workPlans = GAME.state.workPlans || {};
+    GAME.state.workPlans.foundation = {
+      params: {
+        matArea: FOUND_STATE.planMatArea,
+        rebarSpacing: FOUND_STATE.planRebarSpacing,
+        concStrength: FOUND_STATE.planConcStrength,
+        shoringSpace: FOUND_STATE.planShoringSpace,
+      },
+      signedAt: new Date().toLocaleTimeString('ko-KR'),
+      signedBy: GAME.state.playerName || '작업반장',
+    };
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
@@ -1330,6 +1364,18 @@ function openEnvPlanPanel() {
     ENV_STATE.planGuardrailLevels = parseInt(document.getElementById('env-guardrails').value, 10);
     ENV_STATE.planPanelType       = document.getElementById('env-panel-type').value;
     ENV_STATE.planWritten = true;
+
+    GAME.state.workPlans = GAME.state.workPlans || {};
+    GAME.state.workPlans.envelope = {
+      params: {
+        scaffoldType:    ENV_STATE.planScaffoldType,
+        scaffoldHeight:  ENV_STATE.planScaffoldHeight,
+        guardrailLevels: ENV_STATE.planGuardrailLevels,
+        panelType:       ENV_STATE.planPanelType,
+      },
+      signedAt: new Date().toLocaleTimeString('ko-KR'),
+      signedBy: GAME.state.playerName || '작업반장',
+    };
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
@@ -1365,6 +1411,18 @@ function openMepPlanPanel() {
     MEP_STATE.planFinishType    = document.getElementById('mep-finish-type').value;
     MEP_STATE.planLotoProcedure = document.getElementById('mep-loto').checked;
     MEP_STATE.planWritten = true;
+
+    GAME.state.workPlans = GAME.state.workPlans || {};
+    GAME.state.workPlans.mep_finish = {
+      params: {
+        breaker:       MEP_STATE.planBreaker,
+        pipeDiameter:  MEP_STATE.planPipeDiameter,
+        finishType:    MEP_STATE.planFinishType,
+        lotoProcedure: MEP_STATE.planLotoProcedure,
+      },
+      signedAt: new Date().toLocaleTimeString('ko-KR'),
+      signedBy: GAME.state.playerName || '작업반장',
+    };
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();

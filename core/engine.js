@@ -27,6 +27,8 @@ const GAME = {
     playerName:      '',
     targetFloors:    5,
     completedFloors: 0,
+    // 작업계획서 (시나리오별 확정 — 사전 수립, 이후 실제 작업의 근거)
+    workPlans:       {},
   },
 };
 
