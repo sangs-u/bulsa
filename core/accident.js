@@ -114,7 +114,11 @@ function _doFlash() {
 }
 
 function showAccidentPanel(accidentId) {
-  const data = LIFTING_DATA.accidents[accidentId];
+  // 시나리오 인식: 활성 데이터셋에서 사고 정보 조회
+  const dataset = (GAME.scenarioId === 'excavation' && typeof EXCAVATION_DATA !== 'undefined')
+    ? EXCAVATION_DATA
+    : LIFTING_DATA;
+  const data = dataset.accidents[accidentId];
   if (!data) return;
   const isKo = currentLang === 'ko';
 

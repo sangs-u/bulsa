@@ -110,12 +110,16 @@ function _handleE() {
     case 'document':   openSpecPopup(target.docId);    break;
     case 'blueprint':  openBlueprintPanel();            break;
     case 'crane_cab':  boardCrane();                    break;
+    case 'excav_cab':  if (typeof boardExcavator === 'function') boardExcavator(); break;
     case 'npc':        openPopup(target);               break;   // instruction.js handles
   }
 }
 
-// ── Phase gate ────────────────────────────────────────────────
+// ── Phase gate (시나리오 인식) ───────────────────────────────
 function getCurrentPhase() {
+  if (GAME.scenarioId === 'excavation' && typeof getCurrentExcavPhase === 'function') {
+    return getCurrentExcavPhase();
+  }
   if (!LIFT_STATE.planWritten)       return 1;
   if (!LIFT_STATE.safetyChecked)     return 2;
   if (!LIFT_STATE.outriggerExtended) return 3;
@@ -194,6 +198,58 @@ function performAction(actionId) {
       _checkPhase5Done();
       break;
     }
+
+    // ── Excavation actions ──────────────────────────────────
+    case 'write_excav_plan':
+      if (EXCAV_STATE.planWritten) {
+        showActionNotif('작업계획서 이미 작성됨', 2000);
+        break;
+      }
+      openExcavPlanPanel();
+      break;
+
+    case 'survey_underground':
+      if (EXCAV_STATE.surveyDone) return;
+      if (!EXCAV_STATE.planWritten) {
+        showActionNotif('먼저 작업계획서를 작성하세요', 2000);
+        break;
+      }
+      EXCAV_STATE.surveyDone = true;
+      _dimActionMesh('survey_underground');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 매설물 사전조사 완료', 2500);
+      break;
+
+    case 'install_shoring':
+      if (EXCAV_STATE.shoringInstalled) return;
+      if (!EXCAV_STATE.surveyDone) { showActionNotif('매설물 조사 먼저', 2000); break; }
+      EXCAV_STATE.shoringInstalled = true;
+      _dimActionMesh('install_shoring');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 흙막이 가시설 점검 완료', 2500);
+      break;
+
+    case 'install_railing':
+      if (EXCAV_STATE.railingInstalled) return;
+      if (!EXCAV_STATE.shoringInstalled) { showActionNotif('흙막이 먼저', 2000); break; }
+      EXCAV_STATE.railingInstalled = true;
+      _dimActionMesh('install_railing');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 안전난간 설치 완료', 2500);
+      break;
+
+    case 'assign_signal_excav':
+      if (EXCAV_STATE.signalAssigned) return;
+      if (!EXCAV_STATE.railingInstalled) { showActionNotif('안전난간 먼저', 2000); break; }
+      EXCAV_STATE.signalAssigned = true;
+      _dimActionMesh('assign_signal_excav');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 신호수 배치 완료 — 굴착기 운전석으로', 3000);
+      break;
   }
 }
 
@@ -959,6 +1015,80 @@ function _respawnBeam() {
     plate.position.set(-2 + dx, 0.28, -8);
     GAME.scene.add(plate);
   });
+}
+
+// ── 토공사 — 작업계획서 패널 ──────────────────────────────
+function openExcavPlanPanel() {
+  document.exitPointerLock();
+  INTERACTION.popupOpen = true;
+  const panel = document.getElementById('excav-plan-panel');
+  if (!panel) return;
+  panel.classList.remove('hidden');
+
+  document.getElementById('excav-plan-sign').onclick = () => {
+    const depth     = parseFloat(document.getElementById('excav-depth').value);
+    const slope     = parseFloat(document.getElementById('excav-slope').value);
+    const shoring   = document.getElementById('excav-shoring').value;
+    const underground = document.getElementById('excav-underground').checked;
+
+    EXCAV_STATE.planDepth       = depth;
+    EXCAV_STATE.planSlope       = slope;
+    EXCAV_STATE.planShoring     = shoring;
+    EXCAV_STATE.planUnderground = underground;
+    EXCAV_STATE.planWritten     = true;
+
+    // 운전석 게이지에 반영
+    const cd = document.getElementById('excav-cab-depth');
+    if (cd) cd.textContent = depth.toFixed(1) + ' m';
+    const cs = document.getElementById('excav-cab-shoring');
+    if (cs) cs.textContent = ({ none:'미설치', h_pile:'H-pile', sheet_pile:'시트파일', earth_anchor:'어스앵커' })[shoring] || shoring;
+
+    GAME.state.phase = getCurrentPhase();
+    updateHUD();
+    showActionNotif('✅ 작업계획서 서명 완료 — 매설물 조사로 이동', 3500);
+    _closePanel('excav-plan-panel');
+  };
+  document.getElementById('excav-plan-cancel').onclick = () => _closePanel('excav-plan-panel');
+}
+
+// ── 토공사 — 굴착기 운전석 ────────────────────────────────
+function boardExcavator() {
+  if (GAME.state.craneBoarded || GAME.state.liftStarted) return;
+  if (typeof EXCAV_STATE === 'undefined') return;
+
+  if (!EXCAV_STATE.signalAssigned) {
+    showActionNotif('신호수 배치 먼저', 2500);
+    return;
+  }
+  GAME.state.craneBoarded = true;
+  INTERACTION.popupOpen   = true;
+  if (document.pointerLockElement) document.exitPointerLock();
+
+  GAME._prevCamMode  = PLAYER.camMode;
+  GAME._prevWorldPos = PLAYER.worldPos.clone();
+
+  PLAYER.camMode = 'fixed';
+  GAME.camera.position.set(-13, 3.0, -8);
+  GAME.camera.lookAt(0, 1, -8);
+
+  document.getElementById('excav-cab-overlay').classList.remove('hidden');
+  hideInteractPrompt();
+}
+
+function exitExcavCab() {
+  if (!GAME.state.craneBoarded) return;
+  GAME.state.craneBoarded = false;
+  INTERACTION.popupOpen   = false;
+
+  PLAYER.camMode = GAME._prevCamMode || 'fps';
+  if (GAME._prevWorldPos) PLAYER.worldPos.copy(GAME._prevWorldPos);
+  GAME.camera.position.set(PLAYER.worldPos.x, 1.7, PLAYER.worldPos.z);
+
+  document.getElementById('excav-cab-overlay').classList.add('hidden');
+
+  if (!GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
+    GAME.renderer.domElement.requestPointerLock();
+  }
 }
 
 // ── NPC popup — kept for instruction.js monkey-patch ─────────

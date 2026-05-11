@@ -1,24 +1,60 @@
-// S — 토공사 인터랙터블 (placeholder)
-// 양중 시나리오와 동일 구조로 확장 예정 — 현재는 골조만.
+// S — 토공사 인터랙터블 — 6단계 전부 매핑
 
 function registerExcavationHazards() {
   const scene = GAME.scene;
   GAME.hazards      = [];
   GAME.interactables = [];
 
-  // 책상 트리거 (작업계획서)
-  const deskTrigger = new THREE.Mesh(
-    new THREE.SphereGeometry(1.2, 8, 6),
-    new THREE.MeshBasicMaterial({ visible: false })
-  );
-  const d = GAME._excavDesk || { x: 10, y: 1.0, z: 2 };
-  deskTrigger.position.set(d.x, 1.0, d.z);
-  scene.add(deskTrigger);
+  function invisTrigger(pos, r) {
+    const m = new THREE.Mesh(
+      new THREE.SphereGeometry(r || 1.0, 8, 6),
+      new THREE.MeshBasicMaterial({ visible: false })
+    );
+    m.position.set(...pos);
+    scene.add(m);
+    return m;
+  }
+
+  // Phase 1: 책상 — 작업계획서
+  const d = GAME._excavDesk || { x: 10, z: 2 };
   GAME.interactables.push({
-    mesh: deskTrigger, type: 'action', actionId: 'write_excav_plan',
+    mesh: invisTrigger([d.x, 1.0, d.z], 1.4),
+    type: 'action', actionId: 'write_excav_plan',
     label: '토공 작업계획서 작성 (E)',
   });
 
-  // TODO: 매설물 도면 / 흙막이 설치 트리거 / 굴착기 운전석 / 안전난간 트리거
-  // 각 인터랙터블은 EXCAV_STATE 항목과 1:1 매핑
+  // Phase 2: 매설물 도면 마커 (가스관 표시 중앙)
+  GAME.interactables.push({
+    mesh: invisTrigger([0, 0.6, -5], 1.2),
+    type: 'action', actionId: 'survey_underground',
+    label: '매설물 사전조사 (E)', phase: 2,
+  });
+
+  // Phase 3: 흙막이 설치 트리거 (굴착 모서리 4곳 중 1곳)
+  GAME.interactables.push({
+    mesh: invisTrigger([6, 1.0, -17], 1.6),
+    type: 'action', actionId: 'install_shoring',
+    label: '흙막이 가시설 점검 (E)', phase: 3,
+  });
+
+  // Phase 4: 안전난간 설치 트리거 (반대쪽 모서리)
+  GAME.interactables.push({
+    mesh: invisTrigger([-6, 1.0, -17], 1.6),
+    type: 'action', actionId: 'install_railing',
+    label: '안전난간 설치 (E)', phase: 4,
+  });
+
+  // Phase 5: 신호수 배치 (굴착기 옆)
+  GAME.interactables.push({
+    mesh: invisTrigger([-10, 1.0, -10], 1.6),
+    type: 'action', actionId: 'assign_signal_excav',
+    label: '신호수 위치 지정 (E)', phase: 5,
+  });
+
+  // Phase 6: 굴착기 운전석 진입
+  GAME.interactables.push({
+    mesh: invisTrigger([-13, 2.0, -8], 1.8),
+    type: 'excav_cab',
+    label: '굴착기 운전석 탑승 (E)',
+  });
 }

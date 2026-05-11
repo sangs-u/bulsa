@@ -149,6 +149,81 @@
   </div>
 </div>
 
+<!-- Excavation Work Plan Panel (Phase 1) -->
+<div id="excav-plan-panel" class="panel hidden">
+  <div class="panel-header">
+    <span class="panel-icon">📋</span>
+    <h2 id="excav-plan-title">토공 작업계획서</h2>
+    <span class="panel-phase">Phase 1/6</span>
+    <button class="panel-close-btn" id="excav-plan-cancel" title="닫기">✕</button>
+  </div>
+  <div class="panel-body">
+    <p class="panel-guide" id="excav-plan-guide">굴착 매개변수를 직접 결정하세요. 잘못된 지시는 사고로 이어집니다.</p>
+    <div class="wi-form">
+      <label class="wi-row">
+        <span class="wi-label" id="excav-lbl-depth">굴착 깊이 (m)</span>
+        <input type="number" id="excav-depth" min="1" max="6" step="0.1" value="2.0">
+      </label>
+      <p class="wi-hint" id="excav-hint-depth">기초 매트 매설 위해 1.8~2.5m 권장 · 5m 초과 시 흙막이 의무</p>
+
+      <label class="wi-row">
+        <span class="wi-label" id="excav-lbl-slope">굴착 구배 (1:N)</span>
+        <select id="excav-slope">
+          <option value="0.5">1:0.5 (경암)</option>
+          <option value="1.0">1:1.0 (풍화암)</option>
+          <option value="1.2" selected>1:1.2 (점토 · 현장 토질)</option>
+          <option value="1.5">1:1.5 (사질)</option>
+          <option value="1.8">1:1.8 (모래)</option>
+        </select>
+      </label>
+
+      <label class="wi-row">
+        <span class="wi-label" id="excav-lbl-shoring">흙막이 가시설</span>
+        <select id="excav-shoring">
+          <option value="none">미설치</option>
+          <option value="h_pile" selected>H-pile + 토류판</option>
+          <option value="sheet_pile">시트파일</option>
+          <option value="earth_anchor">어스앵커</option>
+        </select>
+      </label>
+
+      <label class="wi-row wi-check">
+        <input type="checkbox" id="excav-underground">
+        <span id="excav-lbl-underground">매설물 도면 확인 완료 (가스·전기·통신·수도)</span>
+      </label>
+      <p class="wi-hint" id="excav-hint-underground">미확인 시 산안법 §38 위반 — 과태료 5백만원</p>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn-primary" id="excav-plan-sign">서명·제출</button>
+  </div>
+</div>
+
+<!-- Excavator Cab Overlay (Phase 6) -->
+<div id="excav-cab-overlay" class="hidden">
+  <div class="cab-panel">
+    <div class="cab-header">
+      <span class="cab-title">굴착기 운전석</span>
+      <button class="cab-exit-btn" onclick="exitExcavCab()">[E] 하차</button>
+    </div>
+    <div class="cab-gauges">
+      <div class="cab-gauge-block">
+        <div class="cab-gauge-lbl">굴착 깊이 지시</div>
+        <div class="cab-gauge-val" id="excav-cab-depth">2.0 m</div>
+      </div>
+      <div class="cab-gauge-block">
+        <div class="cab-gauge-lbl">흙막이</div>
+        <div class="cab-gauge-val" id="excav-cab-shoring">H-pile</div>
+      </div>
+      <div class="cab-gauge-block">
+        <div class="cab-gauge-lbl">작업반경</div>
+        <div class="cab-gauge-val">6 m</div>
+      </div>
+    </div>
+    <button class="cab-lift-btn" onclick="evaluateExcavation()">굴착 시작</button>
+  </div>
+</div>
+
 <!-- Crane Operator Refusal Popup -->
 <div id="operator-refusal-popup" class="hidden">
   <div class="op-refusal-box">
@@ -533,6 +608,7 @@
 <script src="scenarios/excavation/data.js"></script>
 <script src="scenarios/excavation/scene.js"></script>
 <script src="scenarios/excavation/hazards.js"></script>
+<script src="scenarios/excavation/actions.js"></script>
 <script src="core/hud.js"></script>
 <script src="core/accident.js"></script>
 <script src="core/unsafe.js"></script>

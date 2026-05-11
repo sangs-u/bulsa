@@ -35,15 +35,17 @@ function updateHUD() {
   const numEl = document.getElementById('hud-si-num');
   if (numEl) numEl.textContent = pct;
 
-  // Phase label (phases 1-6)
+  // Phase label (시나리오 인식)
   const phase = Math.max(1, Math.min(6, s.phase || 1));
-  const phaseName = (PHASE_NAMES[phase] && PHASE_NAMES[phase][currentLang]) ||
-                    (PHASE_NAMES[phase] && PHASE_NAMES[phase].ko) || '';
+  const isExcav = GAME.scenarioId === 'excavation' && typeof EXCAV_PHASE_NAMES !== 'undefined';
+  const namesTbl   = isExcav ? EXCAV_PHASE_NAMES    : PHASE_NAMES;
+  const missionTbl = isExcav ? EXCAV_PHASE_MISSIONS : PHASE_MISSIONS;
+  const phaseName = (namesTbl[phase] && namesTbl[phase][currentLang]) ||
+                    (namesTbl[phase] && namesTbl[phase].ko) || '';
   const phaseEl = document.getElementById('hud-phase-text');
   if (phaseEl) phaseEl.textContent = `PHASE ${phase}/6 · ${phaseName}`;
 
-  // Mission text (phases 1-6)
-  const missionObj = PHASE_MISSIONS[phase];
+  const missionObj = missionTbl[phase];
   const mText = missionObj
     ? (missionObj[currentLang] || missionObj.ko)
     : t('mission1');
