@@ -116,6 +116,31 @@ function updateHUD() {
       fEl.classList.add('hidden');
     }
   }
+
+  // 컴퍼스 — 카메라 yaw 기반 8방위 표시 (윈도우 21자)
+  const cEl = document.getElementById('hud-compass-text');
+  if (cEl && GAME.camera) {
+    cEl.textContent = _renderCompass(GAME.camera.rotation.y);
+  }
+}
+
+// ── 컴퍼스 렌더 (21자 윈도우, 중앙에 현재 방위) ───────────────
+function _renderCompass(yaw) {
+  // -π .. π → 0..360 deg, 0=N(player facing -Z)
+  // three.js camera 의 yaw 는 회전. 플레이어가 -Z 향할 때 yaw=0 이고 그때가 북쪽이라 가정.
+  let deg = -yaw * 180 / Math.PI;
+  while (deg < 0) deg += 360;
+  while (deg >= 360) deg -= 360;
+  const TICKS = ['N','·','·','E','·','·','S','·','·','W','·','·']; // 12 ticks → 30° 간격
+  const head = Math.round(deg / 30) % 12;
+  // 21자 윈도우: 중앙 인덱스 10. 양쪽으로 10개 보임.
+  const out = [];
+  for (let i = -10; i <= 10; i++) {
+    const idx = ((head + i) % 12 + 12) % 12;
+    out.push(TICKS[idx]);
+  }
+  out[10] = '▲'; // 중앙 화살표
+  return out.join(' ');
 }
 
 // ── Interact prompt ──────────────────────────────────────────
