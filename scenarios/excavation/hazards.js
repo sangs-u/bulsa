@@ -29,19 +29,7 @@ function registerExcavationHazards() {
   // Phase 3: 흙막이 점검 미니게임 (행동 기반)
   // 별도 클릭 트리거 없음 — Phase 2 완료 시 자동 활성화, E 키 홀드
 
-  // Phase 4: 안전난간 설치 트리거 (반대쪽 모서리)
-  GAME.interactables.push({
-    mesh: invisTrigger([-6, 1.0, -17], 1.6),
-    type: 'action', actionId: 'install_railing',
-    label: '안전난간 설치 (E)', phase: 4,
-  });
-
-  // Phase 5: 신호수 배치 (굴착기 옆)
-  GAME.interactables.push({
-    mesh: invisTrigger([-10, 1.0, -10], 1.6),
-    type: 'action', actionId: 'assign_signal_excav',
-    label: '신호수 위치 지정 (E)', phase: 5,
-  });
+  // Phase 4·5 미니게임으로 대체 — 자동 활성화 (railing/signal _minigame.js)
 
   // Phase 6: 굴착기 운전석 진입
   GAME.interactables.push({

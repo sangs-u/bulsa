@@ -115,9 +115,26 @@ function _loop() {
     updateInteraction();
     updateHUD();
     if (typeof updateUnsafe === 'function')      updateUnsafe();
-    if (typeof updateSurvey === 'function')      updateSurvey();
-    if (typeof updateShoring === 'function')     updateShoring(delta);
-    if (typeof updateAvatar === 'function')      updateAvatar();
+    if (typeof updateSurvey === 'function')         updateSurvey();
+    if (typeof updateShoring === 'function')        updateShoring(delta);
+    if (typeof updateRailing === 'function')        updateRailing(elapsed);
+    if (typeof updateSignalPlacement === 'function')updateSignalPlacement();
+    // foundation
+    if (typeof updateRebar === 'function')          updateRebar(delta);
+    if (typeof updateFormwork === 'function')       updateFormwork(delta);
+    if (typeof updatePump === 'function')           updatePump(delta);
+    if (typeof updatePourOrder === 'function')      updatePourOrder(delta);
+    // envelope
+    if (typeof updateScaffold === 'function')       updateScaffold(delta);
+    if (typeof updateLifeline === 'function')       updateLifeline(delta);
+    if (typeof updatePanel === 'function')          updatePanel(delta);
+    if (typeof updateEnvSignal === 'function')      updateEnvSignal(delta);
+    // mep_finish
+    if (typeof updateLoto === 'function')           updateLoto(delta);
+    if (typeof updateGas === 'function')            updateGas(delta);
+    if (typeof updateVent === 'function')           updateVent(delta);
+    if (typeof updateExt === 'function')            updateExt(delta);
+    if (typeof updateAvatar === 'function')         updateAvatar();
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();

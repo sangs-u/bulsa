@@ -36,14 +36,11 @@ function startSurvey() {
   SURVEY.scanSweepMesh.visible = true;
 
   showActionNotif('📡 탐지기 활성화 — 부지를 수색하세요. 신호 강할 때 SPACE 로 마크', 5000);
-  _renderSurveyHUD(0, 0);
 }
 
 function endSurvey() {
   SURVEY.active = false;
   if (SURVEY.scanSweepMesh) SURVEY.scanSweepMesh.visible = false;
-  const hud = document.getElementById('survey-hud');
-  if (hud) hud.classList.add('hidden');
 }
 
 function updateSurvey() {
@@ -71,7 +68,21 @@ function updateSurvey() {
     signal = Math.max(0, Math.min(100, (1 - (minDist - 0.5) / 11) * 100));
   }
 
-  _renderSurveyHUD(signal, nearestIdx);
+  // 월드 피드백 — 스캔 링 크기·색이 신호 강도에 따라 변함
+  if (SURVEY.scanSweepMesh) {
+    const r = 1.5 + (1 - signal/100) * 2.0;
+    SURVEY.scanSweepMesh.scale.set(r/2.2, r/2.2, 1);
+    SURVEY.scanSweepMesh.material.color.setHex(
+      signal > 75 ? 0xFF3322 : signal > 35 ? 0xF59E0B : 0x00FFAA
+    );
+    SURVEY.scanSweepMesh.material.opacity = 0.3 + signal/400;
+  }
+  // 우상단 살짝 힌트 (게임 진행 방해 X)
+  const found = SURVEY.lines.filter(l => l.found).length;
+  const total = SURVEY.lines.length;
+  if (signal > 80) {
+    if (typeof showTaskHint === 'function') showTaskHint(`📡 매우 강함 (${found}/${total}) — SPACE 마크`, '#FF3322');
+  }
 }
 
 function tryMarkSurvey() {
@@ -149,41 +160,7 @@ function _distToSegment(px, pz, seg) {
   return Math.hypot(px - (x1 + t * dx), pz - (z1 + t * dz));
 }
 
-function _renderSurveyHUD(signal, nearestIdx) {
-  let hud = document.getElementById('survey-hud');
-  if (!hud) {
-    hud = document.createElement('div');
-    hud.id = 'survey-hud';
-    hud.innerHTML = `
-      <div class="sh-row"><span class="sh-icon">📡</span><span class="sh-title">매설물 탐지기</span></div>
-      <div class="sh-bar-outer"><div class="sh-bar" id="sh-bar"></div></div>
-      <div class="sh-readout"><span id="sh-signal">0%</span> · <span id="sh-found">0/${SURVEY.lines.length}</span></div>
-      <div class="sh-hint" id="sh-hint">신호 약함 — 부지 전체 탐색</div>
-    `;
-    document.body.appendChild(hud);
-  }
-  hud.classList.remove('hidden');
-
-  const bar = document.getElementById('sh-bar');
-  if (bar) {
-    bar.style.width = signal.toFixed(0) + '%';
-    bar.style.background = signal > 75 ? '#22C55E' : signal > 35 ? '#F59E0B' : '#EF4444';
-  }
-  const sig = document.getElementById('sh-signal');
-  if (sig) sig.textContent = signal.toFixed(0) + '%';
-  const found = document.getElementById('sh-found');
-  if (found) found.textContent = SURVEY.lines.filter(l => l.found).length + '/' + SURVEY.lines.length;
-  const hint = document.getElementById('sh-hint');
-  if (hint) {
-    if (signal > 80)       hint.textContent = '🚨 매우 강함 — SPACE로 마크';
-    else if (signal > 50)  hint.textContent = '⚠ 강함 — 미세 조정';
-    else if (signal > 20)  hint.textContent = '📶 약함 — 근처에 있음';
-    else                    hint.textContent = '신호 없음 — 다른 구역으로';
-  }
-}
-
-// 숙련도 카운터
+// 숙련도 카운터 (core/minigame.js bumpSkill 별칭 — 호환용)
 function _bumpSkill(toolId) {
-  GAME.state.skill = GAME.state.skill || {};
-  GAME.state.skill[toolId] = (GAME.state.skill[toolId] || 0) + 1;
+  if (typeof bumpSkill === 'function') bumpSkill(toolId);
 }

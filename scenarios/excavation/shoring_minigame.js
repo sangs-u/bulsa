@@ -69,8 +69,6 @@ function endShoringInspection() {
   SHORING.active = false;
   SHORING.holding = false;
   SHORING.currentSpotIdx = -1;
-  const hud = document.getElementById('shoring-hud');
-  if (hud) hud.classList.add('hidden');
 }
 
 function updateShoring(delta) {
@@ -97,7 +95,6 @@ function updateShoring(delta) {
       _completeSpot(spot);
     }
   } else if (!SHORING.holding && nearestIdx >= 0) {
-    // 홀드 안 누르고 있으면 진행도 감소 (선택사항)
     const spot = SHORING.spots[nearestIdx];
     if (spot.progress > 0 && !spot.inspected) {
       spot.progress = Math.max(0, spot.progress - delta * 1.5);
@@ -105,7 +102,12 @@ function updateShoring(delta) {
     }
   }
 
-  _renderShoringHUD();
+  // 우상단 미니 힌트
+  if (nearestIdx >= 0 && typeof showTaskHint === 'function') {
+    const done = SHORING.spots.filter(s => s.inspected).length;
+    const total = SHORING.spots.length;
+    showTaskHint(`🔍 ${SHORING.spots[nearestIdx].label} — E 키 홀드 (${done}/${total})`, '#00FFAA');
+  }
 }
 
 function _updateSpotMarker(spot) {
@@ -133,48 +135,11 @@ function _completeSpot(spot) {
     endShoringInspection();
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('🎉 흙막이 가시설 점검 완료 — 안전난간 설치 단계로', 4000);
-    // 다음 단계 — 안전난간 미니게임은 추후 (현재는 단순 E 클릭 유지)
-  }
-}
-
-function _renderShoringHUD() {
-  let hud = document.getElementById('shoring-hud');
-  if (!hud) {
-    hud = document.createElement('div');
-    hud.id = 'shoring-hud';
-    hud.innerHTML = `
-      <div class="sh-row"><span class="sh-icon">🔍</span><span class="sh-title">흙막이 점검</span></div>
-      <div class="sh-bar-outer"><div class="sh-bar" id="shor-bar"></div></div>
-      <div class="sh-readout"><span id="shor-status">대기 중</span> · <span id="shor-count">0/4</span></div>
-      <div class="sh-hint" id="shor-hint">붉은 코너 마커로 이동하세요</div>
-    `;
-    document.body.appendChild(hud);
-  }
-  hud.classList.remove('hidden');
-
-  const bar = document.getElementById('shor-bar');
-  const status = document.getElementById('shor-status');
-  const count = document.getElementById('shor-count');
-  const hint = document.getElementById('shor-hint');
-
-  if (count) count.textContent = SHORING.spots.filter(s => s.inspected).length + '/' + SHORING.spots.length;
-
-  if (SHORING.currentSpotIdx >= 0) {
-    const spot = SHORING.spots[SHORING.currentSpotIdx];
-    const ratio = spot.progress / SHORING.HOLD_TIME;
-    if (bar) {
-      bar.style.width = (ratio * 100).toFixed(0) + '%';
-      bar.style.background = '#00FFAA';
-    }
-    if (status) status.textContent = spot.label + ' 점검 중';
-    if (hint) {
-      hint.textContent = SHORING.holding ? '🔧 점검 중 — 계속 E 키 유지' : '⚠ E 키 길게 눌러 점검';
-    }
-  } else {
-    if (bar) bar.style.width = '0%';
-    if (status) status.textContent = '범위 밖';
-    if (hint) hint.textContent = '붉은 코너 마커 1.8초 점검';
+    showActionNotif('🎉 흙막이 점검 완료 — 안전난간 설치 단계', 4000);
+    // Phase 4 자동 진입
+    setTimeout(() => {
+      if (typeof startRailingInstall === 'function') startRailingInstall();
+    }, 1500);
   }
 }
 

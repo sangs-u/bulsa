@@ -23,33 +23,7 @@ function registerFoundationHazards() {
     label: '기초 작업계획서 작성 (E)',
   });
 
-  // Phase 2: 철근 보호캡 점검 (매트 코너)
-  GAME.interactables.push({
-    mesh: invisTrigger([-5, 0.5, -22], 1.4),
-    type: 'action', actionId: 'check_rebar_caps',
-    label: '철근 보호캡 점검 (E)', phase: 2,
-  });
-
-  // Phase 3: 거푸집 동바리 검사
-  GAME.interactables.push({
-    mesh: invisTrigger([5, 0.5, -22], 1.4),
-    type: 'action', actionId: 'inspect_formwork',
-    label: '거푸집·동바리 점검 (E)', phase: 3,
-  });
-
-  // Phase 4: 펌프카 점검 (호스·아웃트리거)
-  GAME.interactables.push({
-    mesh: invisTrigger([14, 1.5, -8], 1.8),
-    type: 'action', actionId: 'inspect_pump',
-    label: '펌프카 점검 (E)', phase: 4,
-  });
-
-  // Phase 5: 타설 순서·신호 합의 (NPC 또는 책상 옆 트리거)
-  GAME.interactables.push({
-    mesh: invisTrigger([10, 1.0, 0], 1.4),
-    type: 'action', actionId: 'agree_pour_order',
-    label: '타설 순서·신호 합의 (E)', phase: 5,
-  });
+  // Phase 2~5 미니게임으로 대체 (rebar_minigame.js 자동 시작)
 
   // Phase 6: 타설 실행 트리거 (펌프카 옆)
   GAME.interactables.push({

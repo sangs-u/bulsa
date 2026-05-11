@@ -21,12 +21,7 @@ function initInteraction() {
 
     if (e.code === 'KeyE' && !INTERACTION._eDown) {
       INTERACTION._eDown = true;
-      // 흙막이 점검 활성 시 — 클릭 인터랙트 대신 홀드 시작
-      if (typeof SHORING !== 'undefined' && SHORING.active) {
-        if (typeof shoringHoldStart === 'function') shoringHoldStart();
-      } else {
-        _handleE();
-      }
+      if (_dispatchHoldStart()) return; // 홀드 미니게임에 위임
     }
 
     // SPACE — 미니게임 마킹 (현재 매설물 탐지기만)
@@ -53,9 +48,7 @@ function initInteraction() {
   document.addEventListener('keyup', e => {
     if (e.code === 'KeyE') {
       INTERACTION._eDown = false;
-      if (typeof SHORING !== 'undefined' && SHORING.active && typeof shoringHoldEnd === 'function') {
-        shoringHoldEnd();
-      }
+      _dispatchHoldEnd();
     }
   });
 
@@ -110,6 +103,51 @@ function updateInteraction() {
     showInteractPrompt(`[E]  ${label}`);
   } else {
     hideInteractPrompt();
+  }
+}
+
+// ── 미니게임 dispatch (E 키 down/up) ───────────────────────
+// 활성 미니게임에 위임 — 반환 true 면 _handleE 호출 안 함
+function _dispatchHoldStart() {
+  // 홀드 점검 패턴
+  const holdGames = [
+    () => typeof SHORING !== 'undefined' && SHORING.active && (shoringHoldStart(), true),
+    () => REBAR_GAME && REBAR_GAME.state.active && (rebarHoldStart(), true),
+    () => FORMWORK_GAME && FORMWORK_GAME.state.active && (formworkHoldStart(), true),
+    () => PUMP_GAME && PUMP_GAME.state.active && (pumpHoldStart(), true),
+    () => POUR_ORDER_GAME && POUR_ORDER_GAME.state.active && (pourOrderHoldStart(), true),
+    () => SCAFFOLD_GAME && SCAFFOLD_GAME.state.active && (scaffoldHoldStart(), true),
+    () => LIFELINE_GAME && LIFELINE_GAME.state.active && (lifelineHoldStart(), true),
+    () => PANEL_GAME && PANEL_GAME.state.active && (panelHoldStart(), true),
+    () => ENV_SIGNAL_GAME && ENV_SIGNAL_GAME.state.active && (envSignalHoldStart(), true),
+    () => typeof LOTO_GAME !== 'undefined' && LOTO_GAME && LOTO_GAME.state.active && (lotoHoldStart(), true),
+  ];
+  for (const fn of holdGames) {
+    try { if (fn()) return true; } catch(e) {}
+  }
+  // 즉시 배치 패턴
+  if (typeof RAILING !== 'undefined' && RAILING.active) { tryPlaceRailing(); return true; }
+  if (typeof SIGNAL !== 'undefined' && SIGNAL.active)   { tryPlaceSignal();  return true; }
+  // 미니게임 미활성 — 일반 인터랙트
+  _handleE();
+  return false;
+}
+
+function _dispatchHoldEnd() {
+  const enders = [
+    () => typeof SHORING !== 'undefined' && SHORING.active && shoringHoldEnd(),
+    () => REBAR_GAME && REBAR_GAME.state.active && rebarHoldEnd(),
+    () => FORMWORK_GAME && FORMWORK_GAME.state.active && formworkHoldEnd(),
+    () => PUMP_GAME && PUMP_GAME.state.active && pumpHoldEnd(),
+    () => POUR_ORDER_GAME && POUR_ORDER_GAME.state.active && pourOrderHoldEnd(),
+    () => SCAFFOLD_GAME && SCAFFOLD_GAME.state.active && scaffoldHoldEnd(),
+    () => LIFELINE_GAME && LIFELINE_GAME.state.active && lifelineHoldEnd(),
+    () => PANEL_GAME && PANEL_GAME.state.active && panelHoldEnd(),
+    () => ENV_SIGNAL_GAME && ENV_SIGNAL_GAME.state.active && envSignalHoldEnd(),
+    () => typeof LOTO_GAME !== 'undefined' && LOTO_GAME && LOTO_GAME.state.active && lotoHoldEnd(),
+  ];
+  for (const fn of enders) {
+    try { fn(); } catch(e) {}
   }
 }
 
@@ -1251,8 +1289,9 @@ function openFoundPlanPanel() {
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 기초 작업계획서 서명 완료 — 철근 점검으로', 3500);
+    showActionNotif('✅ 기초 작업계획서 서명 완료 — 철근 점검 시작', 3500);
     _closePanel('found-plan-panel');
+    if (typeof startRebarInspection === 'function') startRebarInspection();
   };
   document.getElementById('found-plan-cancel').onclick = () => _closePanel('found-plan-panel');
 }
@@ -1274,8 +1313,9 @@ function openEnvPlanPanel() {
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 외장 작업계획서 서명 완료 — 비계 점검으로', 3500);
+    showActionNotif('✅ 외장 작업계획서 서명 완료 — 비계 점검 시작', 3500);
     _closePanel('env-plan-panel');
+    if (typeof startScaffoldInspection === 'function') startScaffoldInspection();
   };
   document.getElementById('env-plan-cancel').onclick = () => _closePanel('env-plan-panel');
 }
@@ -1308,8 +1348,9 @@ function openMepPlanPanel() {
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 설비·마감 작업계획서 서명 완료 — LOTO로', 3500);
+    showActionNotif('✅ 설비·마감 작업계획서 서명 완료 — LOTO 단계 시작', 3500);
     _closePanel('mep-plan-panel');
+    if (typeof startLoto === 'function') startLoto();
   };
   document.getElementById('mep-plan-cancel').onclick = () => _closePanel('mep-plan-panel');
 }
