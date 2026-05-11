@@ -751,6 +751,7 @@
 <script src="core/inspector.js"></script>
 <script src="core/juice.js"></script>
 <script src="core/tutorial.js"></script>
+<script src="core/npc_chat.js"></script>
 <script src="i18n/strings.js"></script>
 <script src="blueprints/lifting-plan.js"></script>
 <script src="blueprints/viewer.js"></script>
@@ -862,6 +863,7 @@
     }
     updateHUD();
     _openBriefing();
+    if (typeof showTutorialIfFirst === 'function') showTutorialIfFirst();
   }
 
   // ── Work briefing ─────────────────────────────────────────
@@ -919,7 +921,6 @@
   window.addEventListener('load', () => {
     if (typeof MINIMAP !== 'undefined') MINIMAP.init();
     if (typeof WEATHER !== 'undefined' && GAME._sun) WEATHER.init(GAME._sun);
-    if (typeof showTutorialIfFirst === 'function') showTutorialIfFirst();
   });
 </script>
 
