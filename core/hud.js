@@ -106,14 +106,14 @@ function updateHUD() {
   }
 
   // 누적 과태료 표시
-  const fEl = document.getElementById('hud-fines');
-  if (fEl) {
+  const finesEl = document.getElementById('hud-fines');
+  if (finesEl) {
     const krw = s.finesKrw || 0;
     if (krw > 0) {
-      fEl.textContent = '💰 ' + krw.toLocaleString('ko-KR') + '원';
-      fEl.classList.remove('hidden');
+      finesEl.textContent = '💰 ' + krw.toLocaleString('ko-KR') + '원';
+      finesEl.classList.remove('hidden');
     } else {
-      fEl.classList.add('hidden');
+      finesEl.classList.add('hidden');
     }
   }
 
