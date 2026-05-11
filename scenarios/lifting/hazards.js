@@ -46,6 +46,13 @@ function registerLiftingHazards() {
     phase: 4,
   });
 
+  // 사이클 리셋 시 참조용 (interaction.js _startNextLiftCycle 에서 사용)
+  GAME._riggingItems = {
+    sling: { mesh: slingMesh, actionId: 'inspect_sling', label: '슬링 점검',  phase: 4 },
+    pin:   { mesh: pinMesh,   actionId: 'secure_pin',    label: '안전핀 체결', phase: 4 },
+    angle: { mesh: angleMesh, actionId: 'measure_angle', label: '각도 측정',  phase: 4 },
+  };
+
   // ── 4. 크레인 사양서 — 운전실 전면 벽 ───────────────────────
   const specMesh = makeMesh(
     new THREE.BoxGeometry(0.52, 0.72, 0.04),

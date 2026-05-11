@@ -814,50 +814,151 @@ function exitCraneCab() {
 }
 
 // ── Lift animation (called from evaluateLift on success) ──────
+// 5층 목표: 매 사이클마다 한 층 인양. 사이클당 빔 1개.
 function animateLift() {
   const beam = GAME.liftBeam;
   if (!beam) { showCompletePanel(); return; }
 
-  const target = 8;
-  const speed  = 1.8;
+  // 현재 사이클(완료된 층 수)에 따라 목표 높이 조정
+  const floor = GAME.state.completedFloors || 0;
+  const baseTarget = 5.5;       // 1층 거치 높이
+  const floorRise  = 3.3;       // 층간 높이
+  const target = baseTarget + floor * floorRise;
+  const speed  = 2.2;
 
   (function rise() {
     if (GAME.state.gameOver) return;
     const dy = speed * 0.016;
 
-    // Move beam
     beam.position.y += dy;
 
-    // Move hook block + curve together with beam
     const h = GAME._craneHook;
     if (h) {
       if (h.block) h.block.position.y += dy;
       if (h.curve) h.curve.position.y += dy;
-
-      // Shorten hoist cable: keep top point fixed, lower point tracks hook block
       if (h.hoistCable) {
         const pos = h.hoistCable.geometry.attributes.position;
-        // index 1 = bottom endpoint (hook end)
         pos.setY(1, pos.getY(1) + dy);
         pos.needsUpdate = true;
       }
     }
 
-    // Move sling wires with the beam (both endpoints shift equally)
     const slArr = GAME._slingLines;
-    if (slArr) {
-      slArr.forEach(sl => { sl.position.y += dy; });
-    }
+    if (slArr) slArr.forEach(sl => { sl.position.y += dy; });
 
     if (beam.position.y < target) {
       requestAnimationFrame(rise);
     } else {
-      GAME.state.phase = 6;
-      updateHUD();
-      if (typeof spawnStructure === 'function') spawnStructure();
-      setTimeout(showCompletePanel, 700);
+      _onLiftCycleComplete();
     }
   })();
+}
+
+function _onLiftCycleComplete() {
+  // 빔을 현재 층 위치에 영구 고정
+  if (GAME.liftBeam) {
+    const floor = GAME.state.completedFloors || 0;
+    GAME.liftBeam.position.y = 5.5 + floor * 3.3;
+    GAME._placedBeams = GAME._placedBeams || [];
+    GAME._placedBeams.push(GAME.liftBeam);
+    GAME.liftBeam = null;
+  }
+  if (GAME._liftTarget) {
+    GAME.scene.remove(GAME._liftTarget);
+    GAME._liftTarget = null;
+  }
+
+  GAME.state.completedFloors = (GAME.state.completedFloors || 0) + 1;
+
+  // 건물 단계 한 칸 전진 (1F frame부터)
+  if (typeof advanceBuildingStage === 'function') advanceBuildingStage();
+
+  if (GAME.state.completedFloors >= (GAME.state.targetFloors || 5)) {
+    // 5층 완료 → 외벽·지붕 자동 + 엔딩
+    setTimeout(() => {
+      if (typeof advanceBuildingStage === 'function') advanceBuildingStage(); // walls
+      setTimeout(() => {
+        if (typeof advanceBuildingStage === 'function') advanceBuildingStage(); // roof
+        setTimeout(showCompletePanel, 1200);
+      }, 1400);
+    }, 1200);
+  } else {
+    // 다음 사이클 준비
+    setTimeout(_startNextLiftCycle, 1500);
+  }
+}
+
+function _startNextLiftCycle() {
+  // 1) 럭잉 체크 항목 리셋
+  LIFT_STATE.slingInspected = false;
+  LIFT_STATE.pinSecured     = false;
+  LIFT_STATE.angleMeasured  = false;
+  GAME.state.liftStarted    = false;
+
+  // 2) 운전석에서 자동 하차
+  if (GAME.state.craneBoarded && typeof exitCraneCab === 'function') exitCraneCab();
+
+  // 3) 새 빔 + 슬링 재생성
+  _respawnBeam();
+
+  // 4) 훅·케이블 원위치
+  const h = GAME._craneHook;
+  if (h) {
+    if (h.block) h.block.position.set(-2, 0.88, -8);
+    if (h.curve) h.curve.position.set(-2, 0.44, -8);
+    if (h.hoistCable) {
+      const pos = h.hoistCable.geometry.attributes.position;
+      pos.setY(0, 22.58);
+      pos.setY(1, 0.88);
+      pos.needsUpdate = true;
+    }
+  }
+  if (GAME._slingLines) GAME._slingLines.forEach(sl => { sl.position.y = 0; });
+
+  // 5) 럭잉 인터랙터블 복구 (밝기 + 인터랙트 가능)
+  const items = GAME._riggingItems;
+  if (items) {
+    Object.values(items).forEach(it => {
+      if (it.mesh && it.mesh.material) {
+        it.mesh.material.opacity = 1;
+        it.mesh.material.transparent = false;
+      }
+      // 중복 등록 방지
+      const exists = GAME.interactables.some(x => x.actionId === it.actionId);
+      if (!exists) {
+        GAME.interactables.push({
+          mesh: it.mesh, type: 'action', actionId: it.actionId, label: it.label, phase: it.phase,
+        });
+      }
+    });
+  }
+
+  // 6) Phase 4 로 되돌리고 안내
+  GAME.state.phase = 4;
+  if (typeof updateHUD === 'function') updateHUD();
+  if (typeof showActionNotif === 'function') {
+    const done = GAME.state.completedFloors;
+    const tot  = GAME.state.targetFloors || 5;
+    showActionNotif(`✅ ${done}/${tot}층 거치 — ${t('nextFloorReady')}`, 4000);
+  }
+}
+
+function _respawnBeam() {
+  const beamMat  = new THREE.MeshLambertMaterial({ color: 0xA8A49C });
+  const plateMat = new THREE.MeshLambertMaterial({ color: 0x585450 });
+
+  const beam = new THREE.Mesh(new THREE.BoxGeometry(7, 0.55, 0.55), beamMat);
+  beam.position.set(-2, 0.28, -8);
+  beam.castShadow = true;
+  beam.receiveShadow = true;
+  GAME.scene.add(beam);
+  GAME.liftBeam = beam;
+
+  [-3.55, 3.55].forEach(dx => {
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.65, 0.65), plateMat);
+    plate.position.set(-2 + dx, 0.28, -8);
+    GAME.scene.add(plate);
+  });
 }
 
 // ── NPC popup — kept for instruction.js monkey-patch ─────────

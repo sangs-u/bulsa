@@ -53,6 +53,14 @@ function updateHUD() {
   const siLbl = document.getElementById('hud-si-label');
   if (siLbl) siLbl.textContent = t('safetyIndex');
 
+  // 층수 진척
+  const fEl = document.getElementById('hud-floors');
+  if (fEl) {
+    const done = s.completedFloors || 0;
+    const tot  = s.targetFloors || 5;
+    fEl.textContent = `🏗 ${done}/${tot}${t('floorUnit')}`;
+  }
+
   // 작업반경 진입 위반 카운터
   const vEl = document.getElementById('hud-violations');
   if (vEl) {

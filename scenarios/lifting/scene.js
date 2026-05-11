@@ -101,7 +101,7 @@ function _buildStructure(scene) {
   const beamMat  = new THREE.MeshLambertMaterial({ color: 0xB8B2AA });
 
   const flH = 3.3;  // floor-to-floor height
-  const colH = 9.9; // 3 floors total
+  const colH = 16.5; // 5 floors total
 
   // ── Round Columns (CylinderGeometry, 24 seg) ──────────────
   const colPositions = [[-5, -12], [5, -12], [-5, -22], [5, -22]];
@@ -116,7 +116,7 @@ function _buildStructure(scene) {
     GAME.colliders.push(col);
 
     // Column caps at each floor level (beam seating zone)
-    [flH, flH * 2].forEach(fy => {
+    [flH, flH * 2, flH * 3, flH * 4].forEach(fy => {
       const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.30, 0.20, 24), concDark);
       cap.position.set(x, fy, z);
       scene.add(cap);
@@ -137,7 +137,7 @@ function _buildStructure(scene) {
   });
 
   // ── Floor Slabs ──────────────────────────────────────────
-  [0, flH, flH * 2].forEach((y, floorIdx) => {
+  [0, flH, flH * 2, flH * 3, flH * 4].forEach((y, floorIdx) => {
     const slab = new THREE.Mesh(new THREE.BoxGeometry(10.7, 0.22, 10.7), concDark);
     slab.position.set(0, y + 0.11, -17);
     slab.receiveShadow = true;
@@ -159,7 +159,7 @@ function _buildStructure(scene) {
   });
 
   // ── Floor Beams (connecting columns at each level) ──────
-  [flH, flH * 2].forEach(y => {
+  [flH, flH * 2, flH * 3, flH * 4].forEach(y => {
     // X-direction (front/back span)
     [[-12], [-22]].forEach(([z]) => {
       const bm = new THREE.Mesh(new THREE.BoxGeometry(10.7, 0.44, 0.36), beamMat);

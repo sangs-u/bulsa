@@ -89,30 +89,75 @@ function buildStageGroup(stageIdx) {
       break;
     }
     case 4: { // 3층 골조 — 3F frame
-      const mat = _bMats.steel();
-      const colGeo = new THREE.BoxGeometry(0.5, 3.6, 0.5);
+      const mat = _bMats.concrete();
+      const colGeo = new THREE.BoxGeometry(0.55, 3.6, 0.55);
       [[-5,9.4,-12],[5,9.4,-12],[-5,9.4,-22],[5,9.4,-22]].forEach(p=>{
         const c = new THREE.Mesh(colGeo, mat); c.position.set(...p); g.add(c);
+      });
+      const bGeo1 = new THREE.BoxGeometry(10.55, 0.45, 0.45);
+      const bGeo2 = new THREE.BoxGeometry(0.45, 0.45, 10.55);
+      [[-12],[-22]].forEach(([z]) => {
+        const b = new THREE.Mesh(bGeo1, mat); b.position.set(cx, 11.2, z); g.add(b);
+      });
+      [[-5],[5]].forEach(([x]) => {
+        const b = new THREE.Mesh(bGeo2, mat); b.position.set(x, 11.2, cz); g.add(b);
       });
       const s = new THREE.Mesh(new THREE.BoxGeometry(10.55, 0.25, 10.55), mat);
       s.position.set(cx, 11.35, cz); g.add(s);
       break;
     }
-    case 5: { // 외벽 — exterior walls
+    case 5: { // 4층 골조 — 4F frame
+      const mat = _bMats.concrete();
+      const colGeo = new THREE.BoxGeometry(0.55, 3.6, 0.55);
+      [[-5,13.2,-12],[5,13.2,-12],[-5,13.2,-22],[5,13.2,-22]].forEach(p=>{
+        const c = new THREE.Mesh(colGeo, mat); c.position.set(...p); g.add(c);
+      });
+      const bGeo1 = new THREE.BoxGeometry(10.55, 0.45, 0.45);
+      const bGeo2 = new THREE.BoxGeometry(0.45, 0.45, 10.55);
+      [[-12],[-22]].forEach(([z]) => {
+        const b = new THREE.Mesh(bGeo1, mat); b.position.set(cx, 15.0, z); g.add(b);
+      });
+      [[-5],[5]].forEach(([x]) => {
+        const b = new THREE.Mesh(bGeo2, mat); b.position.set(x, 15.0, cz); g.add(b);
+      });
+      const s = new THREE.Mesh(new THREE.BoxGeometry(10.55, 0.25, 10.55), mat);
+      s.position.set(cx, 15.15, cz); g.add(s);
+      break;
+    }
+    case 6: { // 5층 골조 — 5F frame
+      const mat = _bMats.steel();
+      const colGeo = new THREE.BoxGeometry(0.5, 3.6, 0.5);
+      [[-5,17.0,-12],[5,17.0,-12],[-5,17.0,-22],[5,17.0,-22]].forEach(p=>{
+        const c = new THREE.Mesh(colGeo, mat); c.position.set(...p); g.add(c);
+      });
+      const bGeo1 = new THREE.BoxGeometry(10.55, 0.45, 0.45);
+      const bGeo2 = new THREE.BoxGeometry(0.45, 0.45, 10.55);
+      [[-12],[-22]].forEach(([z]) => {
+        const b = new THREE.Mesh(bGeo1, mat); b.position.set(cx, 18.8, z); g.add(b);
+      });
+      [[-5],[5]].forEach(([x]) => {
+        const b = new THREE.Mesh(bGeo2, mat); b.position.set(x, 18.8, cz); g.add(b);
+      });
+      const s = new THREE.Mesh(new THREE.BoxGeometry(10.55, 0.25, 10.55), mat);
+      s.position.set(cx, 18.95, cz); g.add(s);
+      break;
+    }
+    case 7: { // 외벽 — exterior walls
       const mat = _bMats.brick();
       const glMat = _bMats.glass();
-      // North/South walls
-      const wallN = new THREE.Mesh(new THREE.BoxGeometry(10.55, 11.5, 0.28), mat);
-      wallN.position.set(cx, 5.75, -11.9); g.add(wallN);
-      const wallS = new THREE.Mesh(new THREE.BoxGeometry(10.55, 11.5, 0.28), mat);
-      wallS.position.set(cx, 5.75, -22.1); g.add(wallS);
-      // East/West walls
-      const wallE = new THREE.Mesh(new THREE.BoxGeometry(0.28, 11.5, 10.55), mat);
-      wallE.position.set(5.14, 5.75, cz); g.add(wallE);
-      const wallW = new THREE.Mesh(new THREE.BoxGeometry(0.28, 11.5, 10.55), mat);
-      wallW.position.set(-5.14, 5.75, cz); g.add(wallW);
-      // Windows
-      for (let fl = 0; fl < 3; fl++) {
+      // 5층 전체를 덮는 외벽 (높이 ≈ 19m, y중심 9.5)
+      const wallH = 18.8;
+      const wallY = 9.4;
+      const wallN = new THREE.Mesh(new THREE.BoxGeometry(10.55, wallH, 0.28), mat);
+      wallN.position.set(cx, wallY, -11.9); g.add(wallN);
+      const wallS = new THREE.Mesh(new THREE.BoxGeometry(10.55, wallH, 0.28), mat);
+      wallS.position.set(cx, wallY, -22.1); g.add(wallS);
+      const wallE = new THREE.Mesh(new THREE.BoxGeometry(0.28, wallH, 10.55), mat);
+      wallE.position.set(5.14, wallY, cz); g.add(wallE);
+      const wallW = new THREE.Mesh(new THREE.BoxGeometry(0.28, wallH, 10.55), mat);
+      wallW.position.set(-5.14, wallY, cz); g.add(wallW);
+      // 5층 분 창문
+      for (let fl = 0; fl < 5; fl++) {
         const wy = 2.2 + fl * 3.8;
         for (let wx = -3; wx <= 3; wx += 3) {
           const win = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.4), glMat);
@@ -122,15 +167,13 @@ function buildStageGroup(stageIdx) {
       }
       break;
     }
-    case 6: { // 지붕+마감 — roof + banner
+    case 8: { // 지붕+마감 — roof + banner
       const mat    = _bMats.roof();
       const banMat = _bMats.banner();
-      // Parapet
       const roof = new THREE.Mesh(new THREE.BoxGeometry(11, 0.5, 11), mat);
-      roof.position.set(cx, 11.75, cz); g.add(roof);
-      // Roof finish
+      roof.position.set(cx, 19.35, cz); g.add(roof);
       const cap = new THREE.Mesh(new THREE.BoxGeometry(11.4, 0.18, 11.4), mat);
-      cap.position.set(cx, 12.0, cz); g.add(cap);
+      cap.position.set(cx, 19.6, cz); g.add(cap);
       // 준공 현수막
       const banner = new THREE.Mesh(new THREE.PlaneGeometry(8, 1.4), banMat);
       banner.position.set(cx, 7.5, -11.8);
@@ -145,32 +188,23 @@ function buildStageGroup(stageIdx) {
 
 // ── Init ──────────────────────────────────────────────────────
 function initBuilding() {
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 9; i++) {
     BUILDING.groups[i] = buildStageGroup(i);
   }
 
-  // Show stages 0–2 immediately (matches scene.js existing structure)
-  for (let i = 0; i <= 2; i++) {
+  // 터파기 + 기초만 표시 — 1층부터 인양으로 짓는다
+  for (let i = 0; i <= 1; i++) {
     _setStageOpacity(i, 1);
   }
-  BUILDING.stage = 2;
-  GAME.state.buildingStage = 2;
+  BUILDING.stage = 1;
+  GAME.state.buildingStage = 1;
   _updateBuildingHUD();
-
-  // Hook into showCompletePanel to advance building on completion
-  const _orig = typeof showCompletePanel === 'function' ? showCompletePanel : null;
-  if (_orig) {
-    window.showCompletePanel = function() {
-      advanceBuildingStage();
-      _orig();
-    };
-  }
 }
 
 // ── Advance one stage ─────────────────────────────────────────
 function advanceBuildingStage() {
   const nextStage = BUILDING.stage + 1;
-  if (nextStage > 6) return;
+  if (nextStage > 8) return;
   BUILDING._animating = true;
   _fadeInStage(nextStage, () => {
     BUILDING.stage = nextStage;
@@ -215,15 +249,15 @@ function _updateBuildingHUD() {
   const el = document.getElementById('building-progress');
   if (!el) return;
   const labelMap = {
-    ko: ['터파기','기초','1층골조','2층골조','3층골조','외벽','준공'],
-    en: ['Excavation','Foundation','1F Frame','2F Frame','3F Frame','Walls','Complete'],
-    vi: ['Đào móng','Móng','Khung T1','Khung T2','Khung T3','Tường ngoài','Hoàn công'],
-    ar: ['الحفر','الأساس','هيكل ط1','هيكل ط2','هيكل ط3','الجدران','اكتمل'],
+    ko: ['터파기','기초','1층골조','2층골조','3층골조','4층골조','5층골조','외벽','준공'],
+    en: ['Excavation','Foundation','1F Frame','2F Frame','3F Frame','4F Frame','5F Frame','Walls','Complete'],
+    vi: ['Đào móng','Móng','Khung T1','Khung T2','Khung T3','Khung T4','Khung T5','Tường ngoài','Hoàn công'],
+    ar: ['الحفر','الأساس','هيكل ط1','هيكل ط2','هيكل ط3','هيكل ط4','هيكل ط5','الجدران','اكتمل'],
   };
   const prefixes = { ko: '건물 공정', en: 'Build', vi: 'Tiến độ', ar: 'البناء' };
   const labels = labelMap[currentLang] || labelMap.ko;
   const prefix = prefixes[currentLang] || prefixes.ko;
-  el.textContent = `${prefix} ${BUILDING.stage + 1}/7 · ${labels[BUILDING.stage] || ''}`;
+  el.textContent = `${prefix} ${BUILDING.stage + 1}/9 · ${labels[BUILDING.stage] || ''}`;
 }
 
 // ── Camera zoom out briefly on stage complete ─────────────────

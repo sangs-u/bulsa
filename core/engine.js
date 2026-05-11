@@ -25,6 +25,8 @@ const GAME = {
     liftStarted:     false,
     craneBoarded:    false,
     playerName:      '',
+    targetFloors:    5,
+    completedFloors: 0,
   },
 };
 
