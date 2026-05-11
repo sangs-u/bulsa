@@ -124,6 +124,10 @@ window.persistFines = persistFines;
   if (typeof initPauseMenu === 'function') initPauseMenu();
   if (typeof initAchievements === 'function') initAchievements();
   if (typeof initPerf === 'function') initPerf();
+  if (typeof initPickup === 'function') initPickup();
+  if (typeof spawnDemoPickups === 'function') spawnDemoPickups(GAME.scene, GAME.scenarioId);
+  if (typeof initWeatherFX === 'function') initWeatherFX();
+  if (typeof initEvents === 'function') initEvents();
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
@@ -170,6 +174,9 @@ function _loop() {
     if (typeof updateInspector === 'function')  updateInspector(delta);
     if (typeof updateJuice === 'function')       updateJuice(delta);
     if (typeof updateNpcChat === 'function')     updateNpcChat(delta);
+    if (typeof updateWeatherFX === 'function')   updateWeatherFX(delta);
+    if (typeof updateEvents === 'function')      updateEvents(delta);
+    if (typeof updateInteractGlow === 'function') updateInteractGlow(delta);
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();

@@ -5,8 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BULSA</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#1A2332">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="style_extensions.css">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      });
+    }
+  </script>
 </head>
 <body>
 
@@ -762,6 +771,10 @@
 <script src="core/perf.js"></script>
 <script src="core/crash.js"></script>
 <script src="core/seo.js"></script>
+<script src="core/pickup.js"></script>
+<script src="core/weather_fx.js"></script>
+<script src="core/events.js"></script>
+<script src="core/interact_glow.js"></script>
 <script src="i18n/strings.js"></script>
 <script src="blueprints/lifting-plan.js"></script>
 <script src="blueprints/viewer.js"></script>
