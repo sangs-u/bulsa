@@ -8,6 +8,9 @@
     let seen = false;
     try { seen = localStorage.getItem('bulsa_tutorial_seen') === '1'; } catch (e) {}
     if (seen) return;
+    // 게임 종료/사고/완료 패널 떠있으면 표시 안 함
+    if (typeof GAME !== 'undefined' && GAME.state && GAME.state.gameOver) return;
+    if (document.querySelector('#complete-panel:not(.hidden), #accident-panel:not(.hidden)')) return;
 
     const lang = (typeof getLang === 'function') ? getLang() : 'ko';
     const isKo = lang === 'ko';
