@@ -79,7 +79,7 @@ function registerLiftingHazards() {
   cabTrigger.position.set(14, 1.0, -4.8);
   scene.add(cabTrigger);
   GAME.interactables.push({
-    mesh: cabTrigger, type: 'crane_cab', label: '운전석 탑승',
+    mesh: cabTrigger, type: 'crane_cab', label: '크레인 운전원 호출 (E)',
   });
 
   // ── 6. 작업반경 내 근로자 (기하학 피규어) ─────────────────────

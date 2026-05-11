@@ -35,6 +35,6 @@ function registerExcavationHazards() {
   GAME.interactables.push({
     mesh: invisTrigger([-13, 2.0, -8], 1.8),
     type: 'excav_cab',
-    label: '굴착기 운전석 탑승 (E)',
+    label: '굴착기 운전원 호출 (E)',
   });
 }

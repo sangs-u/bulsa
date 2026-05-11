@@ -93,7 +93,8 @@ const GAME = {
   initAccident();
   if (typeof initUnsafe === 'function') initUnsafe();
   if (typeof initAvatar === 'function') initAvatar();
-  if (typeof initSkill  === 'function') initSkill();
+  if (typeof initSkill     === 'function') initSkill();
+  if (typeof initInventory === 'function') initInventory();
   if (typeof initBlueprintViewer === 'function') initBlueprintViewer();
   if (typeof initPostFX === 'function') initPostFX();
 

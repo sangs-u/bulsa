@@ -1045,6 +1045,7 @@ function boardCrane() {
   GAME.camera.lookAt(14, 1.3, -4.0);
 
   document.getElementById('crane-cab-overlay').classList.remove('hidden');
+  _setOperatorInfo('crane-operator-info', 'lifting', '계획서 매개변수 따라 인양 — 안전 항목 미충족 시 운전원이 거부합니다');
   hideInteractPrompt();
   if (typeof SOUND !== 'undefined') SOUND.craneFadeIn();
 }
@@ -1274,6 +1275,21 @@ function boardExcavator() {
 
   document.getElementById('excav-cab-overlay').classList.remove('hidden');
   hideInteractPrompt();
+}
+
+function _setOperatorInfo(panelId, trade, taskLabel) {
+  const el = document.getElementById(panelId);
+  if (!el) return;
+  // 동일 공종 NPC 중 스킬 최고 = 운전원 (없으면 가상 운전원)
+  const eligible = (GAME.npcs || []).filter(n => n.trade === trade);
+  let opName = '최기사', opExp = 15, opSkill = 0.8;
+  if (eligible.length) {
+    eligible.sort((a, b) => b.skill - a.skill);
+    opName = eligible[0].name;
+    opExp = eligible[0].experience;
+    opSkill = eligible[0].skill;
+  }
+  el.innerHTML = `👷 운전원: <b>${opName}</b> · 경력 ${opExp}년 · 스킬 ${(opSkill*100).toFixed(0)}%<br>📋 ${taskLabel}`;
 }
 
 // ── 기초공사 — 작업계획서 ──────────────────────────────────

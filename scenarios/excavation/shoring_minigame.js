@@ -18,6 +18,26 @@ const SHORING = {
 function startShoringInspection() {
   if (SHORING.active) return;
   SHORING.active = true;
+  // 위임 등록 (earthworks 공종)
+  if (typeof DELEGATION_CHOICE !== 'undefined') {
+    DELEGATION_CHOICE.current = {
+      config: { id: '흙막이점검', label: '흙막이 점검', trade: 'earthworks' },
+      game: {
+        delegateToNPC: (npcId) => assignTaskToNPC(npcId, '흙막이 점검', [0, 0, -17], 7.0, () => {
+          SHORING.spots.forEach(s => {
+            s.inspected = true;
+            if (s.marker) s.marker.ring.material.color.setHex(0x22C55E);
+          });
+          EXCAV_STATE.shoringInstalled = true;
+          endShoringInspection();
+          GAME.state.phase = getCurrentPhase();
+          updateHUD();
+          showActionNotif('🎉 흙막이 점검 완료 (위임) — 안전난간 단계', 4000);
+          setTimeout(() => { if (typeof startRailingInstall === 'function') startRailingInstall(); }, 1500);
+        }),
+      },
+    };
+  }
 
   // 4개 지점에 마커 (붉은 → 점검 시 진행 → 녹색)
   SHORING.spots.forEach(spot => {

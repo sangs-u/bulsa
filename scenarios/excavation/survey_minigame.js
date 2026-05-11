@@ -16,6 +16,23 @@ const SURVEY = {
 function startSurvey() {
   if (SURVEY.active) return;
   SURVEY.active = true;
+  // 위임 등록
+  if (typeof DELEGATION_CHOICE !== 'undefined') {
+    DELEGATION_CHOICE.current = {
+      config: { id: '매설물탐지', label: '매설물 사전조사', trade: 'earthworks' },
+      game: {
+        delegateToNPC: (npcId) => assignTaskToNPC(npcId, '매설물 사전조사', [0, 0, -5], 6.0, () => {
+          SURVEY.lines.forEach(l => { l.found = true; });
+          EXCAV_STATE.surveyDone = true;
+          endSurvey();
+          GAME.state.phase = getCurrentPhase();
+          updateHUD();
+          showActionNotif('🎉 매설물 사전조사 완료 (위임) — 흙막이 단계', 4000);
+          setTimeout(() => { if (typeof startShoringInspection === 'function') startShoringInspection(); }, 1500);
+        }),
+      },
+    };
+  }
   // 이전 발견 마커 초기화
   SURVEY.lines.forEach(l => {
     if (l.markerMesh) GAME.scene.remove(l.markerMesh);

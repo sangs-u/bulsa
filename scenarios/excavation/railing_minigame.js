@@ -15,6 +15,27 @@ const RAILING = {
 function startRailingInstall() {
   if (RAILING.active) return;
   RAILING.active = true;
+  if (typeof DELEGATION_CHOICE !== 'undefined') {
+    DELEGATION_CHOICE.current = {
+      config: { id: '안전난간', label: '안전난간 설치', trade: 'earthworks' },
+      game: {
+        delegateToNPC: (npcId) => assignTaskToNPC(npcId, '안전난간 설치', [0, 0, -17], 8.0, () => {
+          RAILING.slots.forEach(s => {
+            if (s.slotMarker) GAME.scene.remove(s.slotMarker);
+            s.placed = true;
+            const rail = _buildRailingMesh(s.pos);
+            GAME.scene.add(rail);
+          });
+          EXCAV_STATE.railingInstalled = true;
+          endRailingInstall();
+          GAME.state.phase = getCurrentPhase();
+          updateHUD();
+          showActionNotif('🎉 안전난간 설치 완료 (위임) — 신호수 단계', 4000);
+          setTimeout(() => { if (typeof startSignalPlacement === 'function') startSignalPlacement(); }, 1500);
+        }),
+      },
+    };
+  }
 
   RAILING.slots.forEach(slot => {
     if (slot.slotMarker) GAME.scene.remove(slot.slotMarker);

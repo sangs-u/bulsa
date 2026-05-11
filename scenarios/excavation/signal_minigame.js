@@ -16,6 +16,20 @@ function startSignalPlacement() {
   if (SIGNAL.active) return;
   SIGNAL.active = true;
   SIGNAL.placed = false;
+  if (typeof DELEGATION_CHOICE !== 'undefined') {
+    DELEGATION_CHOICE.current = {
+      config: { id: '신호수배치', label: '신호수 배치', trade: 'signal' },
+      game: {
+        delegateToNPC: (npcId) => assignTaskToNPC(npcId, '신호수 배치', [5, 0, 0], 5.0, () => {
+          EXCAV_STATE.signalAssigned = true;
+          endSignalPlacement();
+          GAME.state.phase = getCurrentPhase();
+          updateHUD();
+          showActionNotif('🎉 신호수 배치 완료 (위임) — 굴착기 운전원 호출', 4000);
+        }),
+      },
+    };
+  }
 
   // 고스트 신호수 NPC (반투명)
   if (SIGNAL.ghostMesh) GAME.scene.remove(SIGNAL.ghostMesh);
