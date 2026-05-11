@@ -23,12 +23,8 @@ function registerExcavationHazards() {
     label: '토공 작업계획서 작성 (E)',
   });
 
-  // Phase 2: 매설물 도면 마커 (가스관 표시 중앙)
-  GAME.interactables.push({
-    mesh: invisTrigger([0, 0.6, -5], 1.2),
-    type: 'action', actionId: 'survey_underground',
-    label: '매설물 사전조사 (E)', phase: 2,
-  });
+  // Phase 2: 매설물 탐지기 미니게임 (행동 기반)
+  // 별도 클릭 트리거 없음 — Phase 2 진입 시 자동 활성화, SPACE로 마킹
 
   // Phase 3: 흙막이 설치 트리거 (굴착 모서리 4곳 중 1곳)
   GAME.interactables.push({

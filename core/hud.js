@@ -75,6 +75,18 @@ function updateHUD() {
     fEl.textContent = `🏗 ${done}/${tot}${t('floorUnit')}`;
   }
 
+  // 숙련도 — survey 활성 시 매설물탐지 Lv 표시
+  const skEl = document.getElementById('hud-skill');
+  if (skEl) {
+    const lv = (s.skill && s.skill['매설물탐지']) || 0;
+    if (typeof SURVEY !== 'undefined' && SURVEY.active) {
+      skEl.textContent = `🎯 매설물탐지 Lv.${lv}`;
+      skEl.classList.remove('hidden');
+    } else {
+      skEl.classList.add('hidden');
+    }
+  }
+
   // 작업반경 진입 위반 카운터
   const vEl = document.getElementById('hud-violations');
   if (vEl) {

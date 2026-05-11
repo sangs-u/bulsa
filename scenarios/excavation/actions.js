@@ -80,8 +80,8 @@ const EXCAV_PHASE_NAMES = {
 const EXCAV_PHASE_MISSIONS = {
   1: { ko: '📋 사무실 책상에서 굴착 작업계획서를 작성하세요 (E)',
        en: '📋 Write excavation work plan at the office desk (E)' },
-  2: { ko: '🗺 매설물 도면 마커(노란 점선)에서 사전조사 확인 (E)',
-       en: '🗺 Confirm underground survey at utility markers (E)' },
+  2: { ko: '📡 탐지기 들고 부지 수색 — 신호 강할 때 SPACE 로 마크',
+       en: '📡 Sweep site with detector — press SPACE near buried lines' },
   3: { ko: '🔩 굴착 외곽 H-pile 위치에서 흙막이 설치 (E)',
        en: '🔩 Install shoring at H-pile positions (E)' },
   4: { ko: '🛡 굴착단부 안전난간 트리거에서 설치 (E)',

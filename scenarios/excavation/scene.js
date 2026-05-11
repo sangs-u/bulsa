@@ -53,8 +53,8 @@ function buildExcavationScene() {
   // ── 안전난간 (Edge guardrails) ─────────────────────────
   _buildEdgeGuardrails(scene);
 
-  // ── 매설물 표시기 (Underground utility markers) ────────
-  _buildUtilityMarkers(scene);
+  // ── 매설물 표시기 — 처음엔 안 보임 (탐지기로 발견 시 표시) ───
+  // _buildUtilityMarkers(scene);  // disabled — survey_minigame 가 깃발·점선으로 가시화
 
   // ── 작업반경 표시 (Excavator swing radius) ─────────────
   _buildSwingRadius(scene);

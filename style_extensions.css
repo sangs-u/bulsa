@@ -1142,6 +1142,13 @@
   color: #4ADE80; border-radius: 10px; font-size: 12px; font-weight: 700;
   vertical-align: middle;
 }
+#hud-skill {
+  display: inline-block; margin-left: 8px; padding: 2px 10px;
+  background: rgba(0,255,170,0.18); border: 1px solid rgba(0,255,170,0.45);
+  color: #00FFAA; border-radius: 10px; font-size: 12px; font-weight: 700;
+  vertical-align: middle;
+}
+#hud-skill.hidden { display: none; }
 
 /* Work-instruction form (Phase 1 패턴) */
 .panel-guide { font-size: 14px; color: #aaa; margin-bottom: 12px; }
@@ -1162,6 +1169,34 @@
 .wi-check { justify-content: flex-start; cursor: pointer; }
 .wi-check input { width: 18px; height: 18px; margin-right: 12px; cursor: pointer; }
 .wi-hint { font-size: 11px; color: #888; margin: -4px 14px 6px; font-style: italic; }
+
+/* Survey detector HUD (행동 기반 미니게임) */
+#survey-hud {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(15, 22, 32, 0.92);
+  border: 1px solid rgba(0, 255, 170, 0.45);
+  border-radius: 10px; padding: 10px 18px;
+  color: #E8EEF6; z-index: 750;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  min-width: 280px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 18px rgba(0,255,170,0.12);
+}
+#survey-hud.hidden { display: none; }
+#survey-hud .sh-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+#survey-hud .sh-icon { font-size: 18px; }
+#survey-hud .sh-title { font-weight: 700; letter-spacing: 0.02em; }
+#survey-hud .sh-bar-outer {
+  height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;
+  margin-bottom: 5px;
+}
+#survey-hud .sh-bar { height: 100%; width: 0%; transition: width 0.12s, background 0.2s; }
+#survey-hud .sh-readout {
+  display: flex; justify-content: space-between; font-size: 12px; color: #A8B0BC;
+  font-family: 'Consolas', monospace; margin-bottom: 4px;
+}
+#survey-hud .sh-hint {
+  font-size: 11px; color: #00FFAA; text-align: center; font-weight: 600; letter-spacing: 0.05em;
+}
 
 /* Overload limiter tester */
 #overload-tester { margin-top: 4px; }

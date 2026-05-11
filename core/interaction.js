@@ -24,6 +24,12 @@ function initInteraction() {
       _handleE();
     }
 
+    // SPACE — 미니게임 마킹 (현재 매설물 탐지기만)
+    if (e.code === 'Space' && typeof SURVEY !== 'undefined' && SURVEY.active) {
+      e.preventDefault();
+      if (typeof tryMarkSurvey === 'function') tryMarkSurvey();
+    }
+
     if (e.code === 'Escape') {
       if (INTERACTION.specOpen) { closeSpecPopup(); return; }
       if (GAME.state.craneBoarded) { exitCraneCab(); return; }
@@ -220,18 +226,8 @@ function performAction(actionId) {
       openExcavPlanPanel();
       break;
 
-    case 'survey_underground':
-      if (EXCAV_STATE.surveyDone) return;
-      if (!EXCAV_STATE.planWritten) {
-        showActionNotif('먼저 작업계획서를 작성하세요', 2000);
-        break;
-      }
-      EXCAV_STATE.surveyDone = true;
-      _dimActionMesh('survey_underground');
-      GAME.state.phase = getCurrentPhase();
-      updateHUD();
-      showActionNotif('✅ 매설물 사전조사 완료', 2500);
-      break;
+    // survey_underground 는 미니게임으로 대체됨 (survey_minigame.js)
+    // — 작업계획서 서명 시 startSurvey 자동 호출, SPACE 마킹
 
     case 'install_shoring':
       if (EXCAV_STATE.shoringInstalled) return;
@@ -1195,8 +1191,11 @@ function openExcavPlanPanel() {
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 작업계획서 서명 완료 — 매설물 조사로 이동', 3500);
+    showActionNotif('✅ 작업계획서 서명 완료 — 탐지기 들고 부지 수색 시작', 3500);
     _closePanel('excav-plan-panel');
+
+    // Phase 2 자동 진입 → 탐지기 활성화
+    if (typeof startSurvey === 'function') startSurvey();
   };
   document.getElementById('excav-plan-cancel').onclick = () => _closePanel('excav-plan-panel');
 }
