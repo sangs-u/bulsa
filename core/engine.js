@@ -148,6 +148,7 @@ function _loop() {
     if (typeof updateDelegation === 'function')     updateDelegation(delta);
     if (typeof updatePhysics === 'function')    updatePhysics(delta);
     if (typeof updateInspector === 'function')  updateInspector(delta);
+    if (typeof updateJuice === 'function')       updateJuice(delta);
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();

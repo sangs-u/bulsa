@@ -78,6 +78,22 @@
           try { opts.onLand(mesh, body); } catch (e) { console.warn('[physics] onLand err', e); }
         }
       }
+      // 첫 지면 강타 — 작은 셰이크 + 먼지
+      if (!entry._impacted) {
+        const wasFalling = body.previousPosition && body.previousPosition.y > body.position.y + 0.05;
+        if (body.position.y < 0.5 && Math.abs(body.velocity.y) < 0.8 && wasFalling) {
+          entry._impacted = true;
+          if (typeof cameraShake === 'function') {
+            const dist = Math.hypot(body.position.x - (PLAYER && PLAYER.worldPos ? PLAYER.worldPos.x : 0),
+                                    body.position.z - (PLAYER && PLAYER.worldPos ? PLAYER.worldPos.z : 0));
+            const intensity = Math.max(0, 0.5 - dist * 0.04);
+            if (intensity > 0.05) cameraShake(intensity, 0.25);
+          }
+          if (typeof spawnImpactDust === 'function') {
+            spawnImpactDust(body.position.x, body.position.y, body.position.z, 5);
+          }
+        }
+      }
     });
     if (remove.length) {
       for (let i = remove.length - 1; i >= 0; i--) removePhysicsBody(remove[i]);

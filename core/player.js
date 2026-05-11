@@ -326,6 +326,7 @@ function _applyVerticalPhysics(delta) {
           showActionNotif(`💥 경상 — 안전지수 -${severity} (충격 ${v.toFixed(1)} m/s)`, 2800);
         }
         _flashFallImpact();
+        if (typeof cameraShake === 'function') cameraShake(0.7, 0.45);
       }
     }
   } else {
