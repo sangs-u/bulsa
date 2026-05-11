@@ -187,6 +187,7 @@ function _loop() {
     if (typeof updateWeatherFX === 'function')   updateWeatherFX(delta);
     if (typeof updateEvents === 'function')      updateEvents(delta);
     if (typeof updateInteractGlow === 'function') updateInteractGlow(delta);
+    if (typeof updateObjectiveMarker === 'function') updateObjectiveMarker(delta);
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();
