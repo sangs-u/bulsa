@@ -31,23 +31,33 @@ function preloadCharacter(onReady) {
 
   _setGlbLoadingVisible(true);
 
+  // 12초 안에 응답 없으면 강제로 폴백 (CDN 늦거나 차단된 경우)
+  let resolved = false;
+  const _resolve = (gltf) => {
+    if (resolved) return;
+    resolved = true;
+    _setGlbLoadingVisible(false);
+    _workerGLB = gltf;
+    const pending = _loadPending.slice();
+    _loadPending  = [];
+    pending.forEach(cb => cb(gltf));
+  };
+  const timeoutId = setTimeout(() => {
+    if (!resolved) {
+      console.warn('[character] GLB 12초 타임아웃 — 기하학 폴백 사용');
+      _resolve(null);
+    }
+  }, 12000);
+
   const loader = new THREE.GLTFLoader();
   loader.load(
     WORKER_GLB_URL,
-    (gltf) => {
-      _setGlbLoadingVisible(false);
-      _workerGLB = gltf;
-      const pending = _loadPending.slice();
-      _loadPending  = [];
-      pending.forEach(cb => cb(gltf));
-    },
+    (gltf) => { clearTimeout(timeoutId); _resolve(gltf); },
     undefined,
     (err) => {
-      _setGlbLoadingVisible(false);
+      clearTimeout(timeoutId);
       console.warn('[character] GLB 로드 실패 — 기하학 폴백 사용:', err.message || err);
-      const pending = _loadPending.slice();
-      _loadPending  = [];
-      pending.forEach(cb => cb(null));
+      _resolve(null);
     }
   );
 }

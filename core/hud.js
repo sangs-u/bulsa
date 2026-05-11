@@ -124,22 +124,22 @@ function updateHUD() {
   }
 }
 
-// ── 컴퍼스 렌더 (21자 윈도우, 중앙에 현재 방위) ───────────────
+// ── 컴퍼스 렌더 (11자 윈도우 ≈ 165° 시야) ──────────────────
 function _renderCompass(yaw) {
-  // -π .. π → 0..360 deg, 0=N(player facing -Z)
-  // three.js camera 의 yaw 는 회전. 플레이어가 -Z 향할 때 yaw=0 이고 그때가 북쪽이라 가정.
   let deg = -yaw * 180 / Math.PI;
   while (deg < 0) deg += 360;
   while (deg >= 360) deg -= 360;
-  const TICKS = ['N','·','·','E','·','·','S','·','·','W','·','·']; // 12 ticks → 30° 간격
-  const head = Math.round(deg / 30) % 12;
-  // 21자 윈도우: 중앙 인덱스 10. 양쪽으로 10개 보임.
+  // 8 방위 → 12 tick (30°/tick). NESW 강조, 그 사이에 NE/SE/SW/NW 표기
+  const TICKS = ['N','·','NE','·','E','·','SE','·','S','·','SW','·','W','·','NW','·']; // 16 tick × 22.5°
+  // 22.5° 보정
+  const head = Math.round(deg / 22.5) % 16;
+  const half = 4;          // 좌우 4개 + 중앙 = 9자 (좁고 깔끔)
   const out = [];
-  for (let i = -10; i <= 10; i++) {
-    const idx = ((head + i) % 12 + 12) % 12;
+  for (let i = -half; i <= half; i++) {
+    const idx = ((head + i) % 16 + 16) % 16;
     out.push(TICKS[idx]);
   }
-  out[10] = '▲'; // 중앙 화살표
+  out[half] = '▲';
   return out.join(' ');
 }
 

@@ -131,8 +131,18 @@ window.persistFines = persistFines;
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
-  if (bScenario) bScenario.textContent = t('s01Title');
+  const scenarioTitles = {
+    excavation: '토공사 · 굴착·흙막이',
+    foundation: '기초공사 · 거푸집·철근·타설',
+    lifting:    '골조 양중 · 줄걸이·인양',
+    envelope:   '외장공사 · 비계·창호',
+    mep_finish: '설비·마감 · 전기·배관',
+  };
+  if (bScenario) bScenario.textContent = scenarioTitles[GAME.scenarioId] || t('s01Title');
   if (bControls) bControls.textContent = t('blockerControls');
+  // 이름 입력 패널의 부제목도 갱신
+  const nameSub = document.querySelector('.name-input-sub');
+  if (nameSub) nameSub.textContent = (scenarioTitles[GAME.scenarioId] || '안전 시뮬레이터') + ' 시나리오';
 
   GAME.clock.start();
   _loop();

@@ -886,7 +886,8 @@
     }
     updateHUD();
     _openBriefing();
-    if (typeof showTutorialIfFirst === 'function') showTutorialIfFirst();
+    // 튜토리얼은 브리핑 닫힌 후로 지연 (4초)
+    if (typeof showTutorialIfFirst === 'function') setTimeout(showTutorialIfFirst, 4500);
     if (typeof playScenarioIntro === 'function') playScenarioIntro();
     if (typeof startBGM === 'function') startBGM(GAME.scenarioId);
     if (typeof applyDifficulty === 'function') {
