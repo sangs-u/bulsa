@@ -1,7 +1,7 @@
 // Service Worker — 오프라인 플레이 (PWA).
 // 처음 방문 후 핵심 자산을 캐시 → 네트워크 없어도 게임 동작.
 
-const CACHE = 'bulsa-v1';
+const CACHE = 'bulsa-v3';   // 캐시 키 갱신 시 자동 무효화
 const PRECACHE = [
   './',
   './game.html',
@@ -22,24 +22,20 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Stale-while-revalidate: 캐시에서 즉시 반환 + 백그라운드 갱신
+// Network-first: 네트워크 우선, 오프라인 시 캐시 fallback. JS 자동 업데이트.
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
-  // 외부 CDN 은 캐시하지 않고 그냥 통과
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
 
   e.respondWith(
-    caches.match(req).then(cached => {
-      const network = fetch(req).then(res => {
-        if (res && res.status === 200) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(req, clone).catch(() => {}));
-        }
-        return res;
-      }).catch(() => cached);
-      return cached || network;
-    })
+    fetch(req).then(res => {
+      if (res && res.status === 200) {
+        const clone = res.clone();
+        caches.open(CACHE).then(c => c.put(req, clone).catch(() => {}));
+      }
+      return res;
+    }).catch(() => caches.match(req))
   );
 });
