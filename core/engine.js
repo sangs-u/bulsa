@@ -92,6 +92,7 @@ const GAME = {
   initHUD();
   initAccident();
   if (typeof initUnsafe === 'function') initUnsafe();
+  if (typeof initAvatar === 'function') initAvatar();
   if (typeof initBlueprintViewer === 'function') initBlueprintViewer();
   if (typeof initPostFX === 'function') initPostFX();
 
@@ -115,6 +116,7 @@ function _loop() {
     updateHUD();
     if (typeof updateUnsafe === 'function')      updateUnsafe();
     if (typeof updateSurvey === 'function')      updateSurvey();
+    if (typeof updateAvatar === 'function')      updateAvatar();
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();

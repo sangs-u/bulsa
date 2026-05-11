@@ -56,7 +56,7 @@ const STRINGS = {
     mobileStart: '화면을 탭하여 시작',
 
     blockerTitle:    '클릭하여 시작',
-    blockerControls: 'WASD 이동 · 마우스 시점 · E 상호작용',
+    blockerControls: 'WASD 이동 · 마우스 시점 · E 상호작용 · V 1·3인칭 전환',
     blockerEsc:      'ESC: 일시정지',
 
     hazard_sling_name:     '슬링 손상 (킹크)',
@@ -251,7 +251,7 @@ const STRINGS = {
     mobileStart: 'Tap to start',
 
     blockerTitle:    'Click to Start',
-    blockerControls: 'WASD Move · Mouse Look · E Interact',
+    blockerControls: 'WASD Move · Mouse Look · E Interact · V Toggle 1st/3rd Person',
     blockerEsc:      'ESC: Pause',
 
     hazard_sling_name:     'Damaged Sling (Kink)',
@@ -446,7 +446,7 @@ const STRINGS = {
     mobileStart: 'Chạm để bắt đầu',
 
     blockerTitle:    'Nhấn để bắt đầu',
-    blockerControls: 'WASD Di chuyển · Chuột Nhìn · E Tương tác',
+    blockerControls: 'WASD Di chuyển · Chuột Nhìn · E Tương tác · V Chuyển góc nhìn',
     blockerEsc:      'ESC: Tạm dừng',
 
     hazard_sling_name:     'Dây đai hỏng (gãy xoắn)',
@@ -641,7 +641,7 @@ const STRINGS = {
     mobileStart: 'انقر للبدء',
 
     blockerTitle:    'انقر للبدء',
-    blockerControls: 'WASD للتحرك · الماوس للنظر · E للتفاعل',
+    blockerControls: 'WASD للتحرك · الماوس للنظر · E للتفاعل · V للتبديل بين المنظور',
     blockerEsc:      'ESC: إيقاف مؤقت',
 
     hazard_sling_name:     'حبل ربط تالف (انكماش)',
