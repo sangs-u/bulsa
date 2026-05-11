@@ -896,21 +896,53 @@
     }
   }
 
-  // ── Work briefing ─────────────────────────────────────────
+  // ── Work briefing — 시나리오별 ──────────────────────────────
   function _openBriefing() {
     const ov = document.getElementById('briefing-overlay');
     if (!ov) return;
+    const sid = GAME.scenarioId;
+    const briefings = {
+      excavation: {
+        title: '토공사 · 굴착 작업',
+        context: '오늘 작업은 부지 굴착 + 흙막이 가시설 설치입니다. 매설물 사전조사 → 작업계획서 작성 → 안전난간·신호수 배치 후 굴착을 시작합니다.',
+        steps: ['📋 작업계획서 작성 — 깊이/구배/흙막이 종류 결정', '📡 매설물 사전조사 + 흙막이 점검 + 안전난간 설치', '🦺 신호수 배치 후 굴착 실행'],
+        kosha: 'KOSHA GUIDE C-39-2011 · 산안법 시행규칙 별표 3-39',
+      },
+      foundation: {
+        title: '기초공사 · 매트 타설',
+        context: '매트 기초 콘크리트 타설을 위한 거푸집·동바리·철근·펌프카 준비. 모든 자재 점검 후 타설 순서를 작업반과 합의하세요.',
+        steps: ['📋 작업계획서 — 매트 면적 / 강도 / 배근간격 결정', '🛠 철근 보호캡·거푸집 결속·펌프카 아웃트리거 점검', '🪣 타설 순서 합의 후 콘크리트 타설'],
+        kosha: 'KOSHA GUIDE C-67-2018 · 산안법 시행규칙 별표 3-25,26',
+      },
+      lifting: {
+        title: '골조 양중 · 줄걸이·인양',
+        context: '현장 감독관 지시에 따라 금일, RC 보(3,000 kg)를 타워크레인으로 5층까지 인양합니다. 현장을 직접 이동하며 필요한 조치를 수행하세요.',
+        steps: ['🔧 슬링 점검·안전핀 체결·사양서 확인·각도 측정', '🦺 신호수 위치 지정·위험구역 근로자 대피 지시', '🏗 모든 조치 후 크레인 운전석 탑승 → 인양 시작'],
+        kosha: 'KOSHA GUIDE G-133-2020 · 산안규칙 제163~167조',
+      },
+      envelope: {
+        title: '외장공사 · 비계·창호',
+        context: '5층 골조 완성 → 시스템 비계 설치 → 외벽 패널·창호 인양 및 결속. 추락방지망과 안전대 부착설비가 핵심입니다.',
+        steps: ['📋 작업계획서 — 비계 종류/높이/안전난간 단수 결정', '🪜 비계 조립검사 + 안전대 부착설비 + 외장재 결속 점검', '🦺 신호수 배치 후 외장 시공'],
+        kosha: 'KOSHA GUIDE G-110-2020 · 산안법 시행규칙 별표 3-20',
+      },
+      mep_finish: {
+        title: '설비·마감 · 전기·배관',
+        context: '전기 배선·배관 설치 및 내부 마감. LOTO(잠금/표지) 절차로 활선을 차단한 후 작업하며, 용제 사용 시 국소배기를 반드시 가동합니다.',
+        steps: ['📋 작업계획서 — 차단기 용량·배관 경로·LOTO 절차 결정', '🔒 LOTO 적용 + 가스 누설 점검 + 환기 가동', '🧯 소화기 배치 확인 → 시공 시작'],
+        kosha: 'KOSHA GUIDE G-82-2018 · 산안법 시행규칙 별표 3-15',
+      },
+    };
+    const b = briefings[sid] || briefings.lifting;
     document.getElementById('briefing-badge').textContent    = t('briefingBadge');
-    document.getElementById('briefing-scenario').textContent = t('briefingTitle');
+    document.getElementById('briefing-scenario').textContent = b.title;
     document.getElementById('briefing-lbl-ctx').textContent  = t('briefingLabelContext');
-    document.getElementById('briefing-context').textContent  = t('briefingContext');
+    document.getElementById('briefing-context').textContent  = b.context;
     document.getElementById('briefing-lbl-steps').textContent = t('briefingLabelSteps');
     const ol = document.getElementById('briefing-steps');
     ol.innerHTML = '';
-    ['briefingStep1','briefingStep2','briefingStep3'].forEach(k => {
-      const li = document.createElement('li'); li.textContent = t(k); ol.appendChild(li);
-    });
-    document.getElementById('briefing-kosha').textContent = t('briefingKosha');
+    b.steps.forEach(s => { const li = document.createElement('li'); li.textContent = s; ol.appendChild(li); });
+    document.getElementById('briefing-kosha').textContent = b.kosha;
     document.getElementById('briefing-btn').textContent   = t('briefingBtn');
     ov.classList.remove('hidden');
   }
