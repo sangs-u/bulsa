@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-05-11T12:28:30.329Z",
+  "base": "http://127.0.0.1:4173/game.html",
+  "results": [
+    {
+      "id": "excavation",
+      "outcome": "complete",
+      "detail": "",
+      "errors": [],
+      "warnings": [
+        "[.WebGL-0x4a1c001a0a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+        "[.WebGL-0x4a1c001a0a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+      ],
+      "failed404": [],
+      "pass": true
+    },
+    {
+      "id": "foundation",
+      "outcome": "complete",
+      "detail": "",
+      "errors": [],
+      "warnings": [],
+      "failed404": [],
+      "pass": true
+    },
+    {
+      "id": "lifting",
+      "outcome": "complete",
+      "detail": "",
+      "errors": [],
+      "warnings": [],
+      "failed404": [],
+      "pass": true
+    },
+    {
+      "id": "envelope",
+      "outcome": "complete",
+      "detail": "",
+      "errors": [],
+      "warnings": [],
+      "failed404": [],
+      "pass": true
+    },
+    {
+      "id": "mep_finish",
+      "outcome": "complete",
+      "detail": "",
+      "errors": [],
+      "warnings": [],
+      "failed404": [],
+      "pass": true
+    }
+  ],
+  "totals": {
+    "err": 0,
+    "n404": 0,
+    "pass": 5
+  }
+}
