@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
-    "qa": "node qa/visual-test.js",
-    "poll": "node poll.js"
+    "qa": "node qa/visual-test.js"
   },
   "repository": {
     "type": "git",
