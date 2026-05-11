@@ -200,6 +200,53 @@
   </div>
 </div>
 
+<!-- Envelope Work Plan Panel (Phase 1) -->
+<div id="env-plan-panel" class="panel hidden">
+  <div class="panel-header">
+    <span class="panel-icon">📋</span>
+    <h2 id="env-plan-title">외장 작업계획서</h2>
+    <span class="panel-phase">Phase 1/6</span>
+    <button class="panel-close-btn" id="env-plan-cancel" title="닫기">✕</button>
+  </div>
+  <div class="panel-body">
+    <p class="panel-guide">비계 사양과 외장재를 결정하세요. 안전난간 단수 부족 시 비계 붕괴 위험.</p>
+    <div class="wi-form">
+      <label class="wi-row">
+        <span class="wi-label">비계 종류</span>
+        <select id="env-scaffold-type">
+          <option value="system" selected>시스템 비계 (표준)</option>
+          <option value="tubular">강관 비계</option>
+          <option value="cantilever">외팔 비계 (위험)</option>
+        </select>
+      </label>
+      <label class="wi-row">
+        <span class="wi-label">비계 높이 (m)</span>
+        <input type="number" id="env-scaffold-height" min="5" max="25" step="0.5" value="19">
+      </label>
+      <label class="wi-row">
+        <span class="wi-label">안전난간 단수</span>
+        <select id="env-guardrails">
+          <option value="1">1단 (상단만) — 위험</option>
+          <option value="2">2단 (상·중)</option>
+          <option value="3" selected>3단 (상·중·발끝막이)</option>
+        </select>
+      </label>
+      <label class="wi-row">
+        <span class="wi-label">외장 패널 사양</span>
+        <select id="env-panel-type">
+          <option value="acm" selected>ACM 알루미늄 복합</option>
+          <option value="glass">유리 커튼월</option>
+          <option value="stone">석재 패널</option>
+        </select>
+      </label>
+      <p class="wi-hint">안전난간 1단 선택 시 산안법 §42 위반 — 비계 붕괴 확률 ↑</p>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn-primary" id="env-plan-sign">서명·제출</button>
+  </div>
+</div>
+
 <!-- Foundation Work Plan Panel (Phase 1) -->
 <div id="found-plan-panel" class="panel hidden">
   <div class="panel-header">
@@ -659,6 +706,10 @@
 <script src="scenarios/foundation/scene.js"></script>
 <script src="scenarios/foundation/hazards.js"></script>
 <script src="scenarios/foundation/actions.js"></script>
+<script src="scenarios/envelope/data.js"></script>
+<script src="scenarios/envelope/scene.js"></script>
+<script src="scenarios/envelope/hazards.js"></script>
+<script src="scenarios/envelope/actions.js"></script>
 <script src="core/hud.js"></script>
 <script src="core/accident.js"></script>
 <script src="core/unsafe.js"></script>

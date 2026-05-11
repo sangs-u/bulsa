@@ -59,12 +59,13 @@ const GAME = {
     lifting:    { build: 'buildLiftingScene',    register: 'registerLiftingHazards' },
     excavation: { build: 'buildExcavationScene', register: 'registerExcavationHazards' },
     foundation: { build: 'buildFoundationScene', register: 'registerFoundationHazards' },
+    envelope:   { build: 'buildEnvelopeScene',   register: 'registerEnvelopeHazards' },
   };
   const _active = _scenarios[_scenarioId] || _scenarios.lifting;
   GAME.scenarioId = _scenarioId in _scenarios ? _scenarioId : 'lifting';
 
   // 공정 시퀀스 — showCompletePanel 에서 "다음 공정" 버튼 노출
-  GAME.scenarioOrder = ['excavation', 'foundation', 'lifting'];
+  GAME.scenarioOrder = ['excavation', 'foundation', 'lifting', 'envelope'];
   GAME.nextScenarioId = (() => {
     const idx = GAME.scenarioOrder.indexOf(GAME.scenarioId);
     return idx >= 0 && idx < GAME.scenarioOrder.length - 1

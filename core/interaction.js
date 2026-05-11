@@ -111,7 +111,8 @@ function _handleE() {
     case 'blueprint':    openBlueprintPanel();           break;
     case 'crane_cab':    boardCrane();                   break;
     case 'excav_cab':    if (typeof boardExcavator === 'function') boardExcavator(); break;
-    case 'pump_console': openPumpConsole();              break;
+    case 'pump_console':     openPumpConsole();     break;
+    case 'envelope_console': openEnvelopeConsole(); break;
     case 'npc':          openPopup(target);              break;
   }
 }
@@ -123,6 +124,9 @@ function getCurrentPhase() {
   }
   if (GAME.scenarioId === 'foundation' && typeof getCurrentFoundPhase === 'function') {
     return getCurrentFoundPhase();
+  }
+  if (GAME.scenarioId === 'envelope' && typeof getCurrentEnvPhase === 'function') {
+    return getCurrentEnvPhase();
   }
   if (!LIFT_STATE.planWritten)       return 1;
   if (!LIFT_STATE.safetyChecked)     return 2;
@@ -299,6 +303,52 @@ function performAction(actionId) {
       GAME.state.phase = getCurrentPhase();
       updateHUD();
       showActionNotif('✅ 타설 순서 합의 완료 — 제어반으로', 3000);
+      break;
+
+    // ── Envelope (외장) actions ─────────────────────────────
+    case 'write_env_plan':
+      if (ENV_STATE.planWritten) { showActionNotif('작업계획서 이미 작성됨', 2000); break; }
+      openEnvPlanPanel();
+      break;
+
+    case 'inspect_scaffold':
+      if (ENV_STATE.scaffoldInspected) return;
+      if (!ENV_STATE.planWritten) { showActionNotif('계획서 먼저', 2000); break; }
+      ENV_STATE.scaffoldInspected = true;
+      _dimActionMesh('inspect_scaffold');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 비계 조립검사 완료', 2500);
+      break;
+
+    case 'install_lifeline':
+      if (ENV_STATE.lifelineInstalled) return;
+      if (!ENV_STATE.scaffoldInspected) { showActionNotif('비계 점검 먼저', 2000); break; }
+      ENV_STATE.lifelineInstalled = true;
+      _dimActionMesh('install_lifeline');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 안전대 부착설비 설치 완료', 2500);
+      break;
+
+    case 'check_panel_secure':
+      if (ENV_STATE.panelSecured) return;
+      if (!ENV_STATE.lifelineInstalled) { showActionNotif('안전대 먼저', 2000); break; }
+      ENV_STATE.panelSecured = true;
+      _dimActionMesh('check_panel_secure');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 외장재 결속 점검 완료', 2500);
+      break;
+
+    case 'assign_signal_env':
+      if (ENV_STATE.signalAssigned) return;
+      if (!ENV_STATE.panelSecured) { showActionNotif('결속 먼저', 2000); break; }
+      ENV_STATE.signalAssigned = true;
+      _dimActionMesh('assign_signal_env');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 신호수 배치 완료 — 인양 트리거로', 3000);
       break;
   }
 }
@@ -1146,6 +1196,40 @@ function openFoundPlanPanel() {
     _closePanel('found-plan-panel');
   };
   document.getElementById('found-plan-cancel').onclick = () => _closePanel('found-plan-panel');
+}
+
+// ── 외장공사 — 작업계획서 ───────────────────────────────
+function openEnvPlanPanel() {
+  document.exitPointerLock();
+  INTERACTION.popupOpen = true;
+  const panel = document.getElementById('env-plan-panel');
+  if (!panel) return;
+  panel.classList.remove('hidden');
+
+  document.getElementById('env-plan-sign').onclick = () => {
+    ENV_STATE.planScaffoldType    = document.getElementById('env-scaffold-type').value;
+    ENV_STATE.planScaffoldHeight  = parseFloat(document.getElementById('env-scaffold-height').value);
+    ENV_STATE.planGuardrailLevels = parseInt(document.getElementById('env-guardrails').value, 10);
+    ENV_STATE.planPanelType       = document.getElementById('env-panel-type').value;
+    ENV_STATE.planWritten = true;
+
+    GAME.state.phase = getCurrentPhase();
+    updateHUD();
+    showActionNotif('✅ 외장 작업계획서 서명 완료 — 비계 점검으로', 3500);
+    _closePanel('env-plan-panel');
+  };
+  document.getElementById('env-plan-cancel').onclick = () => _closePanel('env-plan-panel');
+}
+
+// ── 외장공사 — 인양 트리거 ─────────────────────────────────
+function openEnvelopeConsole() {
+  if (GAME.state.liftStarted || GAME.state.gameOver) return;
+  if (typeof ENV_STATE === 'undefined') return;
+  if (!ENV_STATE.signalAssigned) {
+    showActionNotif('신호수 배치 먼저', 2500);
+    return;
+  }
+  evaluateEnvelope();
 }
 
 // ── 기초공사 — 타설 제어반 ────────────────────────────────

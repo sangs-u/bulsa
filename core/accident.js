@@ -120,6 +120,8 @@ function showAccidentPanel(accidentId) {
     dataset = EXCAVATION_DATA;
   } else if (GAME.scenarioId === 'foundation' && typeof FOUNDATION_DATA !== 'undefined') {
     dataset = FOUNDATION_DATA;
+  } else if (GAME.scenarioId === 'envelope' && typeof ENVELOPE_DATA !== 'undefined') {
+    dataset = ENVELOPE_DATA;
   }
   const data = dataset.accidents[accidentId];
   if (!data) return;
@@ -213,6 +215,7 @@ function showCompletePanel() {
         excavation: '🏗 다음: 토공사 →',
         foundation: '🏗 다음: 기초공사 →',
         lifting:    '🏗 다음: 골조 양중 →',
+        envelope:   '🏗 다음: 외장공사 →',
       };
       nextBtn.textContent = nextLabels[GAME.nextScenarioId] || `다음 공정 →`;
       nextBtn.style.display = '';
