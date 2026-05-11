@@ -400,24 +400,24 @@ const NPC_DEFS_BY_SCENARIO = {
     { id: 'nguyen', role: '보조작업자', trade: 'formwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0,  -4] },
   ],
   excavation: [
-    { id: 'kim_op',  role: '굴착기운전원', trade: 'excavator', language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-8, 0, -6] },
-    { id: 'lee_sg',  role: '신호수',       trade: 'signal',    language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [ 4, 0, -2] },
-    { id: 'nguyen2', role: '굴착작업자',   trade: 'earthwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-2, 0, -10] },
+    { id: 'kim_op',  role: '굴착기운전원', trade: 'excavator', language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-14, 0, -8] },
+    { id: 'lee_sg',  role: '신호수',       trade: 'signal',    language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [  9, 0,  2] },
+    { id: 'nguyen2', role: '굴착작업자',   trade: 'earthwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [ -3, 0,-18] },
   ],
   foundation: [
-    { id: 'park_fw', role: '형틀목공',    trade: 'formwork',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-5, 0, -8] },
-    { id: 'cho_rb',  role: '철근공',      trade: 'rebar',     language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [ 3, 0, -6] },
-    { id: 'ahmad2',  role: '타설공',      trade: 'pour',      language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 0, 0, -12] },
+    { id: 'park_fw', role: '형틀목공',    trade: 'formwork',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-12, 0, -6] },
+    { id: 'cho_rb',  role: '철근공',      trade: 'rebar',     language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [  8, 0,  3] },
+    { id: 'ahmad2',  role: '타설공',      trade: 'pour',      language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [  2, 0,-16] },
   ],
   envelope: [
-    { id: 'kim_sc',  role: '비계공',      trade: 'scaffold',  language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-6, 0, -10] },
-    { id: 'lee_en',  role: '외장공',      trade: 'envelope',  language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [ 5, 0, -8] },
-    { id: 'nguyen3', role: '보조작업자',  trade: 'helper',    language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [ 0, 0, -4] },
+    { id: 'kim_sc',  role: '비계공',      trade: 'scaffold',  language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-10, 0,-15] },
+    { id: 'lee_en',  role: '외장공',      trade: 'envelope',  language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [ 11, 0,-12] },
+    { id: 'nguyen3', role: '보조작업자',  trade: 'helper',    language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [ -2, 0,  3] },
   ],
   mep_finish: [
-    { id: 'kim_el',  role: '전기공',      trade: 'electric',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-4, 0, -6] },
-    { id: 'park_mp', role: '설비공',      trade: 'plumbing',  language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [ 3, 0, -9] },
-    { id: 'ahmad3',  role: '도장공',      trade: 'painting',  language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 0, 0, -3] },
+    { id: 'kim_el',  role: '전기공',      trade: 'electric',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-9, 0, -3] },
+    { id: 'park_mp', role: '설비공',      trade: 'plumbing',  language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [ 7, 0,-13] },
+    { id: 'ahmad3',  role: '도장공',      trade: 'painting',  language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [-3, 0,  4] },
   ],
 };
 // 후방호환: lifting 의 기존 NPC_DEFS 참조하는 코드를 위해 별칭 유지

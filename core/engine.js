@@ -128,6 +128,7 @@ window.persistFines = persistFines;
   if (typeof spawnDemoPickups === 'function') spawnDemoPickups(GAME.scene, GAME.scenarioId);
   if (typeof initWeatherFX === 'function') initWeatherFX();
   if (typeof initEvents === 'function') initEvents();
+  if (typeof spawnSceneDecor === 'function') spawnSceneDecor(GAME.scene, GAME.scenarioId);
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
