@@ -249,17 +249,19 @@ function showCompletePanel() {
       div.textContent = (done ? '✓ ' : '✗ ') + (c[L] || c.ko);
       listEl.appendChild(div);
     });
-    // 누적 과태료 표시
-    const fines = GAME.state.finesKrw || 0;
-    if (fines > 0) {
-      const fDiv = document.createElement('div');
-      fDiv.className = 'check-item check-missed';
-      fDiv.style.marginTop = '8px';
-      fDiv.style.borderTop = '1px solid #4A5568';
-      fDiv.style.paddingTop = '8px';
-      fDiv.textContent = `💰 누적 과태료 ₩${fines.toLocaleString('ko-KR')}`;
-      listEl.appendChild(fDiv);
-    }
+    // 점수 요약 — 안전지수 / 과태료 / 등급
+    const fines  = GAME.state.finesKrw || 0;
+    const si     = GAME.state.safetyIndex || 0;
+    const grade  = _calcGrade(si, fines, allDone);
+
+    const sumDiv = document.createElement('div');
+    sumDiv.style.cssText = 'margin-top:12px;border-top:1px solid #4A5568;padding-top:10px;font-size:13px;line-height:1.7';
+    sumDiv.innerHTML = `
+      <div>🛡 안전지수: <b style="color:${si >= 80 ? '#48BB78' : si >= 50 ? '#ED8936' : '#F56565'}">${si}/100</b></div>
+      <div>💰 누적 과태료: <b style="color:${fines === 0 ? '#48BB78' : '#F56565'}">₩${fines.toLocaleString('ko-KR')}</b></div>
+      <div style="margin-top:6px">🏅 종합 등급: <b style="color:${grade.color};font-size:16px">${grade.label}</b></div>
+    `;
+    listEl.appendChild(sumDiv);
   }
 
   // 다음 공정 버튼 노출 (있을 때만)
@@ -373,6 +375,19 @@ function _shakeCamera(duration) {
     );
     requestAnimationFrame(shake);
   })();
+}
+
+// 종합 등급 산정 (S/A/B/C/D) — 안전지수 + 과태료 + 모든 체크리스트 통과 여부
+function _calcGrade(si, fines, allDone) {
+  let score = si;
+  if (fines > 0) score -= Math.min(40, fines / 200000);   // 과태료 200만원 당 -10
+  if (!allDone) score -= 15;
+  score = Math.max(0, Math.min(100, score));
+  if (score >= 92) return { label: 'S — 안전 모범 작업장', color: '#FFD700' };
+  if (score >= 80) return { label: 'A — 우수',             color: '#48BB78' };
+  if (score >= 65) return { label: 'B — 양호',             color: '#4DB8E0' };
+  if (score >= 50) return { label: 'C — 보통',             color: '#ED8936' };
+  return                     { label: 'D — 개선 필요',     color: '#F56565' };
 }
 
 function applySafetyPenalty(points) {
