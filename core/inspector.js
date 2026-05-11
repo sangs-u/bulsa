@@ -61,6 +61,7 @@
     if (typeof showActionNotif === 'function') {
       showActionNotif('🟦 안전관리자 도착 — 작업장 점검 중', 3000);
     }
+    if (typeof sfx === 'function') sfx('inspector');
   }
 
   function _buildInspectorMesh() {
@@ -154,10 +155,12 @@
       return;
     }
 
-    const total = violations.reduce((s, v) => s + (v.krw || 0), 0);
+    const mult = GAME.state.fineMultiplier || 1.0;
+    const total = Math.round(violations.reduce((s, v) => s + (v.krw || 0), 0) * mult);
     GAME.state.finesKrw  = (GAME.state.finesKrw || 0) + total;
     GAME.state.fineHistory.push({ scenarioId: sid, at: Date.now(), items: violations, totalKrw: total });
     if (typeof persistFines === 'function') persistFines();
+    if (typeof sfx === 'function') sfx('ticket');
 
     _showPanel({
       title: lang === 'ko' ? '⚠ 안전관리자 적발' : '⚠ Inspector Findings',

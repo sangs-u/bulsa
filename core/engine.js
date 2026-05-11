@@ -121,6 +121,9 @@ window.persistFines = persistFines;
   if (typeof initPhysics === 'function') initPhysics();
   if (typeof spawnDemoHazards === 'function') spawnDemoHazards(GAME.scene, GAME.scenarioId);
   if (typeof initInspector === 'function') initInspector();
+  if (typeof initPauseMenu === 'function') initPauseMenu();
+  if (typeof initAchievements === 'function') initAchievements();
+  if (typeof initPerf === 'function') initPerf();
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
@@ -133,10 +136,11 @@ window.persistFines = persistFines;
 
 function _loop() {
   requestAnimationFrame(_loop);
+  if (typeof perfFrame === 'function') perfFrame();
   const delta   = Math.min(GAME.clock.getDelta(), 0.05);
   const elapsed = GAME.clock.elapsedTime;
 
-  if (GAME.state.gameStarted && !GAME.state.gameOver) {
+  if (GAME.state.gameStarted && !GAME.state.gameOver && !GAME.state.paused) {
     if (!GAME.state.craneBoarded) updatePlayer(delta);
     updateInteraction();
     updateHUD();

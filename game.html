@@ -752,6 +752,16 @@
 <script src="core/juice.js"></script>
 <script src="core/tutorial.js"></script>
 <script src="core/npc_chat.js"></script>
+<script src="core/pause_menu.js"></script>
+<script src="core/achievements.js"></script>
+<script src="core/bgm.js"></script>
+<script src="core/sfx_ext.js"></script>
+<script src="core/loading.js"></script>
+<script src="core/intro.js"></script>
+<script src="core/stats.js"></script>
+<script src="core/perf.js"></script>
+<script src="core/crash.js"></script>
+<script src="core/seo.js"></script>
 <script src="i18n/strings.js"></script>
 <script src="blueprints/lifting-plan.js"></script>
 <script src="blueprints/viewer.js"></script>
@@ -864,6 +874,12 @@
     updateHUD();
     _openBriefing();
     if (typeof showTutorialIfFirst === 'function') showTutorialIfFirst();
+    if (typeof playScenarioIntro === 'function') playScenarioIntro();
+    if (typeof startBGM === 'function') startBGM(GAME.scenarioId);
+    if (typeof applyDifficulty === 'function') {
+      let d = 'normal'; try { d = localStorage.getItem('bulsa_difficulty') || 'normal'; } catch (e) {}
+      applyDifficulty(d);
+    }
   }
 
   // ── Work briefing ─────────────────────────────────────────

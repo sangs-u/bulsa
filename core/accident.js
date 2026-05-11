@@ -262,6 +262,12 @@ function showCompletePanel() {
       <div style="margin-top:6px">🏅 종합 등급: <b style="color:${grade.color};font-size:16px">${grade.label}</b></div>
     `;
     listEl.appendChild(sumDiv);
+
+    // 통계 + 업적 기록
+    const ctx = { allDone, accident: false, fines, safetyIndex: si, grade, cumulativeFines: fines };
+    if (typeof recordCompletion === 'function') recordCompletion(GAME.scenarioId, ctx);
+    if (typeof evalAchievementsOnComplete === 'function') evalAchievementsOnComplete(GAME.scenarioId, ctx);
+    if (typeof sfx === 'function') sfx('achievement');
   }
 
   // 다음 공정 버튼 노출 (있을 때만)
