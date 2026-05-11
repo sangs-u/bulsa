@@ -56,7 +56,7 @@ const STRINGS = {
     mobileStart: '화면을 탭하여 시작',
 
     blockerTitle:    '클릭하여 시작',
-    blockerControls: 'WASD 이동 · 마우스 시점 · SPACE 점프 · E 상호작용 · V 1·3인칭',
+    blockerControls: 'WASD 이동 · SHIFT 달리기 · SPACE 점프 · 마우스 시점 · E 상호작용 · V 시점전환',
     blockerEsc:      'ESC: 일시정지',
 
     hazard_sling_name:     '슬링 손상 (킹크)',
@@ -251,7 +251,7 @@ const STRINGS = {
     mobileStart: 'Tap to start',
 
     blockerTitle:    'Click to Start',
-    blockerControls: 'WASD Move · Mouse Look · SPACE Jump · E Interact · V 1st/3rd Person',
+    blockerControls: 'WASD Move · SHIFT Sprint · SPACE Jump · Mouse Look · E Interact · V View',
     blockerEsc:      'ESC: Pause',
 
     hazard_sling_name:     'Damaged Sling (Kink)',

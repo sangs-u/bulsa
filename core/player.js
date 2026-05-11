@@ -24,7 +24,14 @@ const PLAYER = {
   jumpSpeed: 7.5,     // m/s
   gravity:   22,      // m/s²
   eyeHeight: 1.7,     // 카메라 높이 (발 기준)
+  bodyRadius: 0.22,   // 몸 반경 (multi-ray sampling)
+  terminalVelocity: -55,
+  coyoteTime: 0.15,   // 발 벗어난 후 점프 허용 시간
+  jumpBuffer: 0.15,   // 점프 키를 미리 누른 후 인식 시간
+  _coyoteT: 0,
+  _bufferT: 0,
   _downRay: null,
+  _upRay:   null,
 };
 
 // Fixed camera presets — populated in initPlayer after Three.js is ready
@@ -35,6 +42,7 @@ function initPlayer() {
   PLAYER.worldPos = new THREE.Vector3(0, 0, 12);
   PLAYER._collisionRay = new THREE.Raycaster();
   PLAYER._downRay      = new THREE.Raycaster();
+  PLAYER._upRay        = new THREE.Raycaster();
 
   FIXED_CAMS = [
     { pos: new THREE.Vector3(18,  9,  5),  target: new THREE.Vector3(0,  3, -10) }, // 전체 조망
@@ -79,12 +87,11 @@ function initPlayer() {
     }
     if (GAME.state.gameStarted && e.code === 'KeyV') _toggleCamFpsTps();
     if (GAME.state.gameStarted && e.code === 'KeyC') _cycleFixedCam();
-    // 점프: SPACE — 미니게임이 SPACE 안 쓸 때만 (현재 survey 만 사용)
-    if (GAME.state.gameStarted && e.code === 'Space' && PLAYER.onGround) {
+    // 점프 버퍼 — SPACE 입력 시 짧은 시간 동안 점프 의도 유지
+    if (GAME.state.gameStarted && e.code === 'Space') {
       const surveyUsesSpace = (typeof SURVEY !== 'undefined' && SURVEY.active);
       if (!surveyUsesSpace) {
-        PLAYER.velocityY = PLAYER.jumpSpeed;
-        PLAYER.onGround = false;
+        PLAYER._bufferT = PLAYER.jumpBuffer;
       }
     }
   });
@@ -218,52 +225,126 @@ function updatePlayer(delta) {
 }
 
 // ── Vertical physics ──────────────────────────────────────
-// 중력 + 바닥 감지 (raycast 아래 방향). 비계 plank·건물 슬라브 위에 설 수 있음.
+// 중력 + 다중 raycast 바닥 감지 + 헤드범프 + 코요테/점프버퍼.
 function _applyVerticalPhysics(delta) {
-  // 1) 중력 적용
+  // 1) 타이머 감소
+  PLAYER._coyoteT = Math.max(0, PLAYER._coyoteT - delta);
+  PLAYER._bufferT = Math.max(0, PLAYER._bufferT - delta);
+
+  // 2) 점프 시도 — 버퍼가 살아있고 (지면 위 OR 코요테 시간 내)
+  const canJump = PLAYER.onGround || PLAYER._coyoteT > 0;
+  if (PLAYER._bufferT > 0 && canJump) {
+    PLAYER.velocityY = PLAYER.jumpSpeed;
+    PLAYER.onGround = false;
+    PLAYER._coyoteT = 0;
+    PLAYER._bufferT = 0;
+  }
+
+  // 3) 중력 적용 + 종속속도 제한
   PLAYER.velocityY -= PLAYER.gravity * delta;
+  if (PLAYER.velocityY < PLAYER.terminalVelocity) {
+    PLAYER.velocityY = PLAYER.terminalVelocity;
+  }
   PLAYER.worldPos.y += PLAYER.velocityY * delta;
 
-  // 2) 바닥 감지 — 머리 위치에서 아래로 raycast
-  const origin = new THREE.Vector3(
-    PLAYER.worldPos.x,
-    PLAYER.worldPos.y + PLAYER.eyeHeight + 0.3,  // 머리 위 살짝
-    PLAYER.worldPos.z
-  );
-  PLAYER._downRay.set(origin, new THREE.Vector3(0, -1, 0));
-  PLAYER._downRay.near = 0;
-  PLAYER._downRay.far  = 30;
+  // 4) 충돌 대상 — 씬 메시 (avatar/viewmodel 제외)
+  const targets = _collectStandables();
 
-  // 모든 메시 대상 (avatar/viewmodel 제외)
-  const targets = [];
-  GAME.scene.traverse(obj => {
-    if (!obj.isMesh) return;
-    if (AVATAR && AVATAR.group && _isDescendantOf(obj, AVATAR.group)) return;
-    if (AVATAR && AVATAR.vmDetector && _isDescendantOf(obj, AVATAR.vmDetector)) return;
-    targets.push(obj);
-  });
-
-  const hits = PLAYER._downRay.intersectObjects(targets, false);
-
-  // 3) 가장 높은 (가까운) hit 의 표면 Y 를 ground 로 채택
-  let groundY = -100; // 무한대 아래
-  for (const h of hits) {
-    if (h.point.y < origin.y + 0.01) {
-      groundY = h.point.y;
-      break;  // 첫 번째 hit 이 가장 가까움
+  // 5) 헤드범프 — 위로 이동 중이면 천장 검사
+  if (PLAYER.velocityY > 0) {
+    const headOrigin = new THREE.Vector3(
+      PLAYER.worldPos.x,
+      PLAYER.worldPos.y + PLAYER.eyeHeight - 0.05,
+      PLAYER.worldPos.z
+    );
+    PLAYER._upRay.set(headOrigin, new THREE.Vector3(0, 1, 0));
+    PLAYER._upRay.near = 0;
+    PLAYER._upRay.far  = 0.25;
+    const upHits = PLAYER._upRay.intersectObjects(targets, false);
+    if (upHits.length > 0) {
+      PLAYER.velocityY = 0;
+      PLAYER.worldPos.y -= 0.02; // 약간 밀어내림
     }
   }
-  // ground 가 없으면 절대 바닥 0 으로
-  if (groundY < -50) groundY = 0;
 
-  // 4) 발이 ground 아래로 가면 표면에 맞춤
-  if (PLAYER.worldPos.y <= groundY) {
+  // 6) 다중 ray 바닥 감지 (몸 둘레 5점 — 엣지 안정)
+  const r = PLAYER.bodyRadius;
+  const samples = [
+    [ 0, 0 ],
+    [ r, 0 ], [-r, 0 ],
+    [ 0, r ], [ 0, -r ],
+  ];
+  let groundY = -1000;
+  for (const [dx, dz] of samples) {
+    const o = new THREE.Vector3(
+      PLAYER.worldPos.x + dx,
+      PLAYER.worldPos.y + PLAYER.eyeHeight + 0.3,
+      PLAYER.worldPos.z + dz
+    );
+    PLAYER._downRay.set(o, new THREE.Vector3(0, -1, 0));
+    PLAYER._downRay.near = 0;
+    PLAYER._downRay.far  = 40;
+    const hits = PLAYER._downRay.intersectObjects(targets, false);
+    if (hits.length > 0) {
+      // 머리보다 낮은 첫 hit
+      for (const h of hits) {
+        if (h.point.y <= o.y) {
+          if (h.point.y > groundY) groundY = h.point.y;
+          break;
+        }
+      }
+    }
+  }
+  if (groundY < -500) groundY = 0;
+
+  // 7) 발이 ground 아래면 표면에 맞춤 + 추락 데미지
+  const wasOnGround = PLAYER.onGround;
+  const impactVelY  = PLAYER.velocityY;
+  if (PLAYER.worldPos.y <= groundY + 0.01) {
     PLAYER.worldPos.y = groundY;
     if (PLAYER.velocityY < 0) PLAYER.velocityY = 0;
     PLAYER.onGround = true;
+    PLAYER._coyoteT = PLAYER.coyoteTime;
+
+    // 착지 데미지 (안전대 미착용 가정) — 충격속도 따라
+    if (!wasOnGround && impactVelY < -15) {
+      const severity = Math.min(40, Math.round(-impactVelY * 1.4));
+      if (typeof applySafetyPenalty === 'function') applySafetyPenalty(severity);
+      if (typeof showActionNotif === 'function') {
+        showActionNotif(`💥 추락 충격 — 안전지수 -${severity}`, 2500);
+      }
+      _flashFallImpact();
+    }
   } else {
+    if (wasOnGround) {
+      PLAYER._coyoteT = PLAYER.coyoteTime;
+    }
     PLAYER.onGround = false;
   }
+}
+
+function _flashFallImpact() {
+  const overlay = document.getElementById('flash-overlay');
+  if (!overlay) return;
+  overlay.style.background = 'rgba(220,38,38,0.45)';
+  overlay.style.opacity = '0.65';
+  setTimeout(() => {
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.style.background = ''; }, 400);
+  }, 200);
+}
+
+function _collectStandables() {
+  const out = [];
+  GAME.scene.traverse(obj => {
+    if (!obj.isMesh) return;
+    if (typeof AVATAR !== 'undefined') {
+      if (AVATAR.group && _isDescendantOf(obj, AVATAR.group)) return;
+      if (AVATAR.vmDetector && _isDescendantOf(obj, AVATAR.vmDetector)) return;
+    }
+    out.push(obj);
+  });
+  return out;
 }
 
 function _isDescendantOf(child, parent) {
