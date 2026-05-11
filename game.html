@@ -143,6 +143,28 @@
   </div>
 </div>
 
+<!-- Crane Operator Refusal Popup -->
+<div id="operator-refusal-popup" class="hidden">
+  <div class="op-refusal-box">
+    <div class="op-refusal-header">
+      <div class="op-refusal-avatar">👷</div>
+      <div class="op-refusal-meta">
+        <div class="op-refusal-name" id="op-refusal-name">크레인 운전원</div>
+        <div class="op-refusal-role" id="op-refusal-role">Crane Operator</div>
+      </div>
+      <button class="op-refusal-x" id="op-refusal-x" onclick="closeOperatorRefusal()">✕</button>
+    </div>
+    <div class="op-refusal-body">
+      <div class="op-refusal-quote" id="op-refusal-quote">"안전 점검 미완료. 작업을 거부합니다."</div>
+      <p class="op-refusal-intro" id="op-refusal-intro">아래 항목을 먼저 완료하세요:</p>
+      <ul class="op-refusal-list" id="op-refusal-list"></ul>
+    </div>
+    <div class="op-refusal-footer">
+      <button class="btn-primary" id="op-refusal-close" onclick="closeOperatorRefusal()">알겠습니다</button>
+    </div>
+  </div>
+</div>
+
 <!-- Spec Sheet Popup -->
 <div id="spec-popup" class="hidden">
   <div class="spec-box">

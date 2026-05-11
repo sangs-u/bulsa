@@ -27,6 +27,8 @@ function initInteraction() {
     if (e.code === 'Escape') {
       if (INTERACTION.specOpen) { closeSpecPopup(); return; }
       if (GAME.state.craneBoarded) { exitCraneCab(); return; }
+      const refusal = document.getElementById('operator-refusal-popup');
+      if (refusal && !refusal.classList.contains('hidden')) { closeOperatorRefusal(); return; }
       if (INTERACTION.popupOpen) {
         // Close whichever phase panel is open
         ['plan-panel','safety-panel','equipment-panel'].forEach(id => {
@@ -721,16 +723,61 @@ function closeSpecPopup() {
 }
 
 // ── Crane cab ─────────────────────────────────────────────────
+// 운전원 거부권: 안전 점검 미완료 시 탑승 거부 + 운전원 팝업
+const _OPERATOR_CHECKLIST = [
+  { key: 'planWritten',       labelKey: 'opItemPlanWritten' },
+  { key: 'safetyChecked',     labelKey: 'opItemSafetyChecked' },
+  { key: 'outriggerExtended', labelKey: 'opItemOutriggerExtended' },
+  { key: 'slingInspected',    labelKey: 'opItemSlingInspected' },
+  { key: 'pinSecured',        labelKey: 'opItemPinSecured' },
+  { key: 'angleMeasured',     labelKey: 'opItemAngleMeasured' },
+  { key: 'specChecked',       labelKey: 'opItemSpecChecked' },
+  { key: 'signalAssigned',    labelKey: 'opItemSignalAssigned' },
+  { key: 'workerEvacuated',   labelKey: 'opItemWorkerEvacuated' },
+];
+
+function _getMissingSafetyItems() {
+  return _OPERATOR_CHECKLIST.filter(item => !LIFT_STATE[item.key]);
+}
+
+function showOperatorRefusal(missing) {
+  if (document.pointerLockElement) document.exitPointerLock();
+  INTERACTION.popupOpen = true;
+
+  document.getElementById('op-refusal-name').textContent  = t('opRefusalName');
+  document.getElementById('op-refusal-role').textContent  = t('opRefusalRole');
+  document.getElementById('op-refusal-quote').textContent = t('opRefusalQuote');
+  document.getElementById('op-refusal-intro').textContent = t('opRefusalIntro');
+  document.getElementById('op-refusal-close').textContent = t('opRefusalClose');
+
+  const list = document.getElementById('op-refusal-list');
+  list.innerHTML = '';
+  missing.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = t(item.labelKey);
+    list.appendChild(li);
+  });
+
+  document.getElementById('operator-refusal-popup').classList.remove('hidden');
+}
+
+function closeOperatorRefusal() {
+  INTERACTION.popupOpen = false;
+  document.getElementById('operator-refusal-popup').classList.add('hidden');
+  if (GAME.state.gameStarted && !GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
+    GAME.renderer.domElement.requestPointerLock();
+  }
+}
+
 function boardCrane() {
   if (GAME.state.craneBoarded || GAME.state.liftStarted) return;
-  if (!LIFT_STATE.signalAssigned || !LIFT_STATE.workerEvacuated) {
-    showActionNotif(t('notifSignalEvacFirst'));
+
+  const missing = _getMissingSafetyItems();
+  if (missing.length > 0) {
+    showOperatorRefusal(missing);
     return;
   }
-  if (!LIFT_STATE.specChecked) {
-    showActionNotif(t('notifSpecFirst'), 3000);
-    return;
-  }
+
   GAME.state.craneBoarded = true;
   INTERACTION.popupOpen   = true;
   if (document.pointerLockElement) document.exitPointerLock();

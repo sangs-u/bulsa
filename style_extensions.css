@@ -1056,6 +1056,57 @@
 #level-indicator.hidden,
 #overload-tester.hidden { display: none; }
 
+/* Crane operator refusal popup */
+#operator-refusal-popup {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.55); z-index: 8500;
+  display: flex; align-items: center; justify-content: center;
+}
+#operator-refusal-popup.hidden { display: none; }
+.op-refusal-box {
+  background: #1F2530; border: 1px solid rgba(255,200,80,0.35);
+  border-radius: 10px; width: min(440px, 92vw); color: #E8EEF6;
+  box-shadow: 0 12px 50px rgba(0,0,0,0.6);
+  font-family: 'Pretendard', -apple-system, sans-serif;
+}
+.op-refusal-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,200,80,0.08);
+}
+.op-refusal-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #FFCC00; display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+}
+.op-refusal-meta { flex: 1; }
+.op-refusal-name { font-size: 15px; font-weight: 700; }
+.op-refusal-role { font-size: 11px; color: #A8B0BC; margin-top: 2px; }
+.op-refusal-x {
+  background: none; border: none; color: #A8B0BC; cursor: pointer;
+  font-size: 18px; padding: 4px 8px;
+}
+.op-refusal-x:hover { color: #fff; }
+.op-refusal-body { padding: 16px; }
+.op-refusal-quote {
+  font-size: 14px; color: #FFCC66; font-style: italic;
+  background: rgba(255,200,80,0.07); padding: 10px 12px;
+  border-left: 3px solid #FFCC00; border-radius: 4px; margin-bottom: 12px;
+}
+.op-refusal-intro { font-size: 13px; color: #A8B0BC; margin-bottom: 8px; }
+.op-refusal-list { list-style: none; padding: 0; margin: 0; }
+.op-refusal-list li {
+  padding: 8px 12px; margin-bottom: 6px; font-size: 13px;
+  background: rgba(239,68,68,0.10); border-left: 3px solid #EF4444;
+  border-radius: 4px; color: #E8EEF6;
+}
+.op-refusal-list li::before { content: '✗  '; color: #EF4444; font-weight: 700; }
+.op-refusal-footer {
+  padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex; justify-content: flex-end;
+}
+#op-refusal-close { padding: 8px 18px; font-size: 13px; }
+
 /* Overload limiter tester */
 #overload-tester { margin-top: 4px; }
 .oll-display { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; font-family: 'Consolas', monospace; }
