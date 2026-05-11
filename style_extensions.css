@@ -1039,8 +1039,35 @@
 .eq-item.done .eq-status { color: #22C55E; }
 
 /* Bubble level indicator */
-.bubble-container { width: 100px; height: 100px; border: 2px solid #7B9EE0; border-radius: 50%; margin: 0 auto 12px; position: relative; background: rgba(123,158,224,0.1); }
-.bubble { width: 20px; height: 20px; background: #7B9EE0; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: top 0.3s, left 0.3s; }
+.bubble-container { width: 120px; height: 120px; border: 2px solid #7B9EE0; border-radius: 50%; margin: 0 auto 10px; position: relative; background: rgba(123,158,224,0.1); overflow: hidden; }
+.bubble-tolerance { position: absolute; top: 50%; left: 50%; width: 28px; height: 28px; border: 1px dashed rgba(34,197,94,0.55); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+.bubble-crosshair { position: absolute; background: rgba(255,255,255,0.18); pointer-events: none; }
+.bubble-crosshair-h { top: 50%; left: 8%; right: 8%; height: 1px; transform: translateY(-50%); }
+.bubble-crosshair-v { left: 50%; top: 8%; bottom: 8%; width: 1px; transform: translateX(-50%); }
+.bubble { width: 22px; height: 22px; background: #EF4444; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: top 0.18s ease-out, left 0.18s ease-out, background 0.2s; box-shadow: 0 0 8px rgba(0,0,0,0.4) inset; }
+.bubble.centered { background: #22C55E; box-shadow: 0 0 12px rgba(34,197,94,0.7), 0 0 6px rgba(0,0,0,0.3) inset; }
+.bubble-controls { display: grid; grid-template-columns: 1fr; justify-items: center; gap: 4px; margin: 0 auto 10px; width: 120px; }
+.bubble-nudge-row { display: flex; gap: 32px; }
+.bubble-nudge { width: 36px; height: 28px; background: rgba(123,158,224,0.18); border: 1px solid rgba(123,158,224,0.4); color: #B8CEF0; border-radius: 6px; cursor: pointer; font-size: 14px; line-height: 1; transition: background 0.15s; }
+.bubble-nudge:hover { background: rgba(123,158,224,0.35); }
+.bubble-nudge:active { background: rgba(123,158,224,0.55); }
+
+/* Equipment panel sub-sections hidden state */
+#level-indicator.hidden,
+#overload-tester.hidden { display: none; }
+
+/* Overload limiter tester */
+#overload-tester { margin-top: 4px; }
+.oll-display { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; font-family: 'Consolas', monospace; }
+.oll-row { display: flex; justify-content: space-between; font-size: 13px; color: #aaa; margin-bottom: 4px; }
+.oll-val { color: #E8EEF6; font-weight: 600; }
+.oll-bar { height: 10px; background: rgba(255,255,255,0.06); border-radius: 5px; overflow: hidden; margin: 8px 0; }
+.oll-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #22C55E 0%, #22C55E 76%, #F59E0B 76%, #F59E0B 95%, #EF4444 95%); transition: width 0.08s linear; }
+.oll-status { text-align: center; font-size: 13px; padding: 6px; border-radius: 6px; background: rgba(255,255,255,0.04); color: #aaa; }
+.oll-status.warn { background: rgba(245,158,11,0.15); color: #F59E0B; }
+.oll-status.alarm { background: rgba(239,68,68,0.18); color: #EF4444; animation: ollPulse 0.45s infinite alternate; font-weight: 700; letter-spacing: 0.04em; }
+@keyframes ollPulse { from { opacity: 0.55; } to { opacity: 1; } }
+#oll-test-btn, #oll-confirm-btn { width: 100%; }
 
 /* Structure complete toast */
 .structure-toast {

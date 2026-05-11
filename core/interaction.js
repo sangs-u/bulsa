@@ -350,6 +350,10 @@ function _localizePanels() {
     'equip-bubble-guide':  'equipBubbleGuide',
     'level-confirm-btn':   'equipLevelConfirm',
     'equipment-btn-confirm':'equipBtnConfirm',
+    'oll-lbl-rated':       'ollLblRated',
+    'oll-lbl-current':     'ollLblCurrent',
+    'oll-test-btn':        'ollBtnTest',
+    'oll-confirm-btn':     'ollBtnConfirm',
   };
   Object.entries(ids).forEach(([id, key]) => {
     const el = document.getElementById(id);
@@ -362,6 +366,10 @@ function _closePanel(panelId) {
   const p = document.getElementById(panelId);
   if (p) p.classList.add('hidden');
   INTERACTION.popupOpen = false;
+  if (panelId === 'equipment-panel' && INTERACTION._bubbleTimer) {
+    clearInterval(INTERACTION._bubbleTimer);
+    INTERACTION._bubbleTimer = null;
+  }
   if (GAME.state.gameStarted && !GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
     document.getElementById('gameCanvas').requestPointerLock();
   }
@@ -466,55 +474,49 @@ function openEquipmentPanel() {
     const el = document.getElementById(id);
     if (el) {
       el.classList.remove('done');
+      const icon = el.querySelector('.eq-icon');
+      if (icon) icon.textContent = '⬜';
       el.querySelector('.eq-status').textContent = t('statusWaiting');
     }
   });
   document.getElementById('level-indicator').classList.add('hidden');
+  document.getElementById('overload-tester').classList.add('hidden');
   document.getElementById('equipment-btn-confirm').disabled = true;
 
   let outriggerDone = false;
   let levelDone     = false;
   let overloadDone  = false;
 
+  const markStep = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('done');
+    el.querySelector('.eq-icon').textContent = '✅';
+    el.querySelector('.eq-status').textContent = t('statusDone');
+  };
+
   const updateEquipment = () => {
     document.getElementById('equipment-btn-confirm').disabled = !(outriggerDone && levelDone && overloadDone);
   };
 
   _animateOutriggers(() => {
-    const eqOut = document.getElementById('eq-outrigger');
-    if (eqOut) {
-      eqOut.classList.add('done');
-      eqOut.querySelector('.eq-icon').textContent = '✅';
-      eqOut.querySelector('.eq-status').textContent = t('statusDone');
-    }
+    markStep('eq-outrigger');
     outriggerDone = true;
     document.getElementById('level-indicator').classList.remove('hidden');
+    _startBubbleLevel(() => {
+      markStep('eq-level');
+      levelDone = true;
+      document.getElementById('level-indicator').classList.add('hidden');
+      document.getElementById('overload-tester').classList.remove('hidden');
+      _startOverloadTest(() => {
+        markStep('eq-overload');
+        overloadDone = true;
+        updateEquipment();
+      });
+      updateEquipment();
+    });
     updateEquipment();
   });
-
-  document.getElementById('level-confirm-btn').onclick = () => {
-    const eqLvl = document.getElementById('eq-level');
-    if (eqLvl) {
-      eqLvl.classList.add('done');
-      eqLvl.querySelector('.eq-icon').textContent = '✅';
-      eqLvl.querySelector('.eq-status').textContent = t('statusDone');
-    }
-    document.getElementById('level-indicator').classList.add('hidden');
-    levelDone = true;
-
-    setTimeout(() => {
-      const eqOl = document.getElementById('eq-overload');
-      if (eqOl) {
-        eqOl.classList.add('done');
-        eqOl.querySelector('.eq-icon').textContent = '✅';
-        eqOl.querySelector('.eq-status').textContent = t('statusDone');
-      }
-      overloadDone = true;
-      updateEquipment();
-    }, 1500);
-
-    updateEquipment();
-  };
 
   document.getElementById('equipment-btn-confirm').onclick = () => {
     LIFT_STATE.outriggerExtended = true;
@@ -525,6 +527,142 @@ function openEquipmentPanel() {
     _closePanel('equipment-panel');
   };
   document.getElementById('equipment-btn-cancel').onclick = () => _closePanel('equipment-panel');
+}
+
+// ── Bubble level mini-game ────────────────────────────────────
+// 버블을 ▲▼◀▶ 버튼으로 중앙(허용범위) 안으로 이동시켜야 확인 가능.
+function _startBubbleLevel(onComplete) {
+  const bubble  = document.getElementById('bubble-dot');
+  const confirm = document.getElementById('level-confirm-btn');
+  if (!bubble || !confirm) { onComplete(); return; }
+
+  // 이전 인스턴스 타이머가 살아있다면 정리
+  if (INTERACTION._bubbleTimer) {
+    clearInterval(INTERACTION._bubbleTimer);
+    INTERACTION._bubbleTimer = null;
+  }
+
+  // 시작 위치: 가장자리 근처 무작위 (허용범위 밖)
+  const startAngle = Math.random() * Math.PI * 2;
+  const startR     = 36 + Math.random() * 8;
+  let dx = Math.cos(startAngle) * startR;
+  let dy = Math.sin(startAngle) * startR;
+  const TOL = 12;           // 허용 반경 (px)
+  const STEP = 4;           // 한 번 클릭당 이동량
+  const DRIFT = 0.55;       // 매 프레임 미세 표류
+
+  const render = () => {
+    bubble.style.left = `calc(50% + ${dx}px)`;
+    bubble.style.top  = `calc(50% + ${dy}px)`;
+    const inTol = Math.hypot(dx, dy) <= TOL;
+    bubble.classList.toggle('centered', inTol);
+    confirm.disabled = !inTol;
+  };
+
+  // 약한 표류 — 너무 쉽게 가만히 있지 않게
+  INTERACTION._bubbleTimer = setInterval(() => {
+    dx += (Math.random() - 0.5) * DRIFT;
+    dy += (Math.random() - 0.5) * DRIFT;
+    // 컨테이너 안에 가두기
+    const r = Math.hypot(dx, dy);
+    const MAX = 48;
+    if (r > MAX) { dx *= MAX / r; dy *= MAX / r; }
+    render();
+  }, 120);
+
+  const nudge = (dir) => {
+    if (dir === 'up')    dy -= STEP;
+    if (dir === 'down')  dy += STEP;
+    if (dir === 'left')  dx -= STEP;
+    if (dir === 'right') dx += STEP;
+    render();
+  };
+
+  const nudgeBtns = document.querySelectorAll('#level-indicator .bubble-nudge');
+  const onNudgeClick = (e) => {
+    const btn = e.currentTarget;
+    nudge(btn.dataset.dir);
+  };
+  nudgeBtns.forEach(b => {
+    b.replaceWith(b.cloneNode(true)); // drop old listeners
+  });
+  document.querySelectorAll('#level-indicator .bubble-nudge').forEach(b => {
+    b.addEventListener('click', onNudgeClick);
+  });
+
+  confirm.onclick = () => {
+    if (confirm.disabled) return;
+    if (INTERACTION._bubbleTimer) {
+      clearInterval(INTERACTION._bubbleTimer);
+      INTERACTION._bubbleTimer = null;
+    }
+    onComplete();
+  };
+
+  render();
+}
+
+// ── Overload limiter test ─────────────────────────────────────
+// 테스트 부하 인가 → 80% 경고 → 105% 알람 → 정상작동 확인.
+function _startOverloadTest(onComplete) {
+  const testBtn   = document.getElementById('oll-test-btn');
+  const confBtn   = document.getElementById('oll-confirm-btn');
+  const fillEl    = document.getElementById('oll-fill');
+  const currEl    = document.getElementById('oll-current');
+  const statusEl  = document.getElementById('oll-status');
+  if (!testBtn || !confBtn || !fillEl || !currEl || !statusEl) { onComplete(); return; }
+
+  const RATED = 5.0;    // ton
+  const PEAK  = 1.06;   // 정격의 106%까지 시험
+  let running = false;
+
+  // reset
+  testBtn.classList.remove('hidden');
+  testBtn.disabled = false;
+  confBtn.classList.add('hidden');
+  confBtn.disabled = true;
+  fillEl.style.width = '0%';
+  currEl.textContent = '0.0 ton';
+  statusEl.className = 'oll-status';
+  statusEl.textContent = t('ollStatusIdle');
+
+  testBtn.onclick = () => {
+    if (running) return;
+    running = true;
+    testBtn.disabled = true;
+    let pct = 0;
+    const step = () => {
+      pct += 0.014;  // ~ 4초에 105% 도달
+      if (pct >= PEAK) pct = PEAK;
+      const load = RATED * pct;
+      fillEl.style.width = `${Math.min(pct, 1) * 100}%`;
+      currEl.textContent = load.toFixed(2) + ' ton';
+
+      if (pct >= 1.0) {
+        statusEl.className = 'oll-status alarm';
+        statusEl.textContent = t('ollStatusAlarm');
+      } else if (pct >= 0.8) {
+        statusEl.className = 'oll-status warn';
+        statusEl.textContent = t('ollStatusWarn');
+      }
+
+      if (pct < PEAK) {
+        requestAnimationFrame(step);
+      } else {
+        // 알람 작동 확인 → 확인 버튼 노출
+        testBtn.classList.add('hidden');
+        confBtn.classList.remove('hidden');
+        confBtn.disabled = false;
+      }
+    };
+    requestAnimationFrame(step);
+  };
+
+  confBtn.onclick = () => {
+    if (confBtn.disabled) return;
+    confBtn.disabled = true;
+    onComplete();
+  };
 }
 
 function _animateOutriggers(onComplete) {

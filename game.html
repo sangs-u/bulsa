@@ -364,10 +364,31 @@
     </div>
     <div id="level-indicator" class="hidden">
       <div class="bubble-container">
+        <div class="bubble-tolerance"></div>
+        <div class="bubble-crosshair bubble-crosshair-h"></div>
+        <div class="bubble-crosshair bubble-crosshair-v"></div>
         <div class="bubble" id="bubble-dot"></div>
       </div>
       <p id="equip-bubble-guide">버블을 중앙으로 맞추세요</p>
-      <button id="level-confirm-btn" class="btn-secondary">수평 확인 완료</button>
+      <div class="bubble-controls">
+        <button class="bubble-nudge" data-dir="up">▲</button>
+        <div class="bubble-nudge-row">
+          <button class="bubble-nudge" data-dir="left">◀</button>
+          <button class="bubble-nudge" data-dir="right">▶</button>
+        </div>
+        <button class="bubble-nudge" data-dir="down">▼</button>
+      </div>
+      <button id="level-confirm-btn" class="btn-secondary" disabled>수평 확인 완료</button>
+    </div>
+    <div id="overload-tester" class="hidden">
+      <div class="oll-display">
+        <div class="oll-row"><span id="oll-lbl-rated">정격하중</span><span class="oll-val">5.0 ton</span></div>
+        <div class="oll-row"><span id="oll-lbl-current">시험하중</span><span class="oll-val" id="oll-current">0.0 ton</span></div>
+        <div class="oll-bar"><div class="oll-bar-fill" id="oll-fill"></div></div>
+        <div class="oll-status" id="oll-status">대기</div>
+      </div>
+      <button id="oll-test-btn" class="btn-secondary">테스트 부하 인가</button>
+      <button id="oll-confirm-btn" class="btn-secondary hidden" disabled>정상 작동 확인</button>
     </div>
   </div>
   <div class="panel-footer">
