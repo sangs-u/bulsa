@@ -157,6 +157,7 @@
     const total = violations.reduce((s, v) => s + (v.krw || 0), 0);
     GAME.state.finesKrw  = (GAME.state.finesKrw || 0) + total;
     GAME.state.fineHistory.push({ scenarioId: sid, at: Date.now(), items: violations, totalKrw: total });
+    if (typeof persistFines === 'function') persistFines();
 
     _showPanel({
       title: lang === 'ko' ? '⚠ 안전관리자 적발' : '⚠ Inspector Findings',

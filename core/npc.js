@@ -390,13 +390,38 @@ class NPC {
 }
 
 // ── NPC Definitions (ID·역할·스킬·위치만 고정, 이름·경력은 랜덤) ──
-const NPC_DEFS = [
-  { id: 'gimc',   role: '신호수',     trade: 'signal',   language: 'ko', skill: 0.90, vestColor: 0xCC5018, position: [ 7,  0,  -6] },
-  { id: 'park',   role: '슬링작업자', trade: 'lifting',  language: 'ko', skill: 0.75, vestColor: 0xD4A217, position: [-4,  0,  -8] },
-  { id: 'lee',    role: '고소작업자', trade: 'scaffold', language: 'ko', skill: 0.80, vestColor: 0xCC5018, position: [ 0,  0, -14] },
-  { id: 'ahmad',  role: '보조작업자', trade: 'rebar',    language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 5,  0, -12] },
-  { id: 'nguyen', role: '보조작업자', trade: 'formwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0,  -4] },
-];
+// 시나리오별 — lifting 은 기존 5명. 그 외 시나리오는 분위기용 작업자 2~3명.
+const NPC_DEFS_BY_SCENARIO = {
+  lifting: [
+    { id: 'gimc',   role: '신호수',     trade: 'signal',   language: 'ko', skill: 0.90, vestColor: 0xCC5018, position: [ 7,  0,  -6] },
+    { id: 'park',   role: '슬링작업자', trade: 'lifting',  language: 'ko', skill: 0.75, vestColor: 0xD4A217, position: [-4,  0,  -8] },
+    { id: 'lee',    role: '고소작업자', trade: 'scaffold', language: 'ko', skill: 0.80, vestColor: 0xCC5018, position: [ 0,  0, -14] },
+    { id: 'ahmad',  role: '보조작업자', trade: 'rebar',    language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 5,  0, -12] },
+    { id: 'nguyen', role: '보조작업자', trade: 'formwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0,  -4] },
+  ],
+  excavation: [
+    { id: 'kim_op',  role: '굴착기운전원', trade: 'excavator', language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-8, 0, -6] },
+    { id: 'lee_sg',  role: '신호수',       trade: 'signal',    language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [ 4, 0, -2] },
+    { id: 'nguyen2', role: '굴착작업자',   trade: 'earthwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-2, 0, -10] },
+  ],
+  foundation: [
+    { id: 'park_fw', role: '형틀목공',    trade: 'formwork',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-5, 0, -8] },
+    { id: 'cho_rb',  role: '철근공',      trade: 'rebar',     language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [ 3, 0, -6] },
+    { id: 'ahmad2',  role: '타설공',      trade: 'pour',      language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 0, 0, -12] },
+  ],
+  envelope: [
+    { id: 'kim_sc',  role: '비계공',      trade: 'scaffold',  language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-6, 0, -10] },
+    { id: 'lee_en',  role: '외장공',      trade: 'envelope',  language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [ 5, 0, -8] },
+    { id: 'nguyen3', role: '보조작업자',  trade: 'helper',    language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [ 0, 0, -4] },
+  ],
+  mep_finish: [
+    { id: 'kim_el',  role: '전기공',      trade: 'electric',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-4, 0, -6] },
+    { id: 'park_mp', role: '설비공',      trade: 'plumbing',  language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [ 3, 0, -9] },
+    { id: 'ahmad3',  role: '도장공',      trade: 'painting',  language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 0, 0, -3] },
+  ],
+};
+// 후방호환: lifting 의 기존 NPC_DEFS 참조하는 코드를 위해 별칭 유지
+const NPC_DEFS = NPC_DEFS_BY_SCENARIO.lifting;
 
 // 언어별 이름 풀 — 매 세션 랜덤 선택
 const NPC_NAMES = {
@@ -432,7 +457,8 @@ function _initYuka() {
 
 function initNPCs() {
   _initYuka();
-  NPC_DEFS.forEach(def => {
+  const defs = NPC_DEFS_BY_SCENARIO[GAME.scenarioId] || NPC_DEFS_BY_SCENARIO.lifting;
+  defs.forEach(def => {
     // 매 세션 동적 인스턴스화 — 이름·경력·위치 미세 변동
     const runtimeDef = Object.assign({}, def);
     runtimeDef.name       = _randomName(def.language);

@@ -29,11 +29,27 @@ const GAME = {
     completedFloors: 0,
     // 작업계획서 (시나리오별 확정 — 사전 수립, 이후 실제 작업의 근거)
     workPlans:       {},
-    // 누적 과태료 (감독관 적발 시 부과)
-    finesKrw:        0,
-    fineHistory:     [],
+    // 누적 과태료 (감독관 적발 시 부과) — localStorage 에서 복원
+    finesKrw:        _loadCumulativeFines(),
+    fineHistory:     _loadFineHistory(),
   },
 };
+
+function _loadCumulativeFines() {
+  try { return parseInt(localStorage.getItem('bulsa_finesKrw') || '0', 10); }
+  catch (e) { return 0; }
+}
+function _loadFineHistory() {
+  try { return JSON.parse(localStorage.getItem('bulsa_fineHistory') || '[]'); }
+  catch (e) { return []; }
+}
+function persistFines() {
+  try {
+    localStorage.setItem('bulsa_finesKrw', String(GAME.state.finesKrw || 0));
+    localStorage.setItem('bulsa_fineHistory', JSON.stringify(GAME.state.fineHistory || []));
+  } catch (e) {}
+}
+window.persistFines = persistFines;
 
 (function initEngine() {
   GAME.scene = new THREE.Scene();

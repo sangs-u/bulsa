@@ -847,7 +847,8 @@
         BLUEPRINT_MANAGER.init().then(() => BLUEPRINT_MANAGER.setActive('warehouse'));
       }
     } else {
-      // 비-lifting: ending(컷씬·수료증) 만 활성, NPC·건물.js·TBM 제외
+      // 비-lifting: 분위기 NPC 2~3명 + ending(컷씬·수료증) 활성. 건물.js·TBM 제외
+      initNPCs();
       initEnding();
       // HUD 양중 전용 표시 숨김
       const f = document.getElementById('hud-floors'); if (f) f.classList.add('hidden');
