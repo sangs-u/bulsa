@@ -116,6 +116,7 @@ function _loop() {
     updateHUD();
     if (typeof updateUnsafe === 'function')      updateUnsafe();
     if (typeof updateSurvey === 'function')      updateSurvey();
+    if (typeof updateShoring === 'function')     updateShoring(delta);
     if (typeof updateAvatar === 'function')      updateAvatar();
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);

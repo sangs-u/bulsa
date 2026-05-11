@@ -103,7 +103,11 @@ function tryMarkSurvey() {
     endSurvey();
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('🎉 모든 매설물 발견 — 흙막이 설치 단계로', 4000);
+    showActionNotif('🎉 모든 매설물 발견 — 흙막이 점검 단계 시작', 4000);
+    // Phase 3 자동 진입 — 흙막이 점검 미니게임 시작
+    setTimeout(() => {
+      if (typeof startShoringInspection === 'function') startShoringInspection();
+    }, 1500);
   }
   return true;
 }

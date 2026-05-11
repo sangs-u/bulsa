@@ -21,7 +21,12 @@ function initInteraction() {
 
     if (e.code === 'KeyE' && !INTERACTION._eDown) {
       INTERACTION._eDown = true;
-      _handleE();
+      // 흙막이 점검 활성 시 — 클릭 인터랙트 대신 홀드 시작
+      if (typeof SHORING !== 'undefined' && SHORING.active) {
+        if (typeof shoringHoldStart === 'function') shoringHoldStart();
+      } else {
+        _handleE();
+      }
     }
 
     // SPACE — 미니게임 마킹 (현재 매설물 탐지기만)
@@ -46,7 +51,12 @@ function initInteraction() {
     }
   });
   document.addEventListener('keyup', e => {
-    if (e.code === 'KeyE') INTERACTION._eDown = false;
+    if (e.code === 'KeyE') {
+      INTERACTION._eDown = false;
+      if (typeof SHORING !== 'undefined' && SHORING.active && typeof shoringHoldEnd === 'function') {
+        shoringHoldEnd();
+      }
+    }
   });
 
   // Mobile tap on interact prompt
