@@ -28,13 +28,14 @@ const STATE_SPEED = {
 
 // ── NPC Class ──────────────────────────────────────────────────
 class NPC {
-  constructor({ id, name, role, language, skill, position, vestColor, experience }) {
+  constructor({ id, name, role, trade, language, skill, position, vestColor, experience }) {
     this.id         = id;
     this.name       = name;
     this.role       = role;
+    this.trade      = trade || 'misc';   // 공종 (signal/lifting/...)
     this.language   = language;
     this.skill      = skill;
-    this.experience = experience || 0;  // 경력 (년)
+    this.experience = experience || 0;
     this.fatigue    = 0;
     this.state    = NPC_STATES.IDLE;
     this.hasInstruction = false;
@@ -88,13 +89,30 @@ class NPC {
     this.group = new THREE.Group();
     this.group.position.set(...this.position);
 
+    // 외모 랜덤화 (매 NPC 인스턴스마다)
+    const HELMETS = [0xDEBB14, 0xE8E8E8, 0xCC4010, 0x2B6CB0, 0xFFFFFF, 0x22A858, 0xFFAA00];
+    const SKINS   = [0xE8B894, 0xD49A6A, 0xC8845A, 0xA66B44, 0x7C4D2A];
+    const PANTS   = [0x2C3A48, 0x1A1F2A, 0x3B3528, 0x2A2620];
+    const heightMul = 0.92 + Math.random() * 0.16;  // 0.92~1.08
+    this._heightMul = heightMul;
+    const helmetColor = HELMETS[Math.floor(Math.random() * HELMETS.length)];
+    const skinColor   = SKINS[Math.floor(Math.random() * SKINS.length)];
+    const pantColor   = PANTS[Math.floor(Math.random() * PANTS.length)];
+    const hasGlasses  = Math.random() < 0.35;
+    const hasBeard    = Math.random() < 0.25;
+    this._helmetColor = helmetColor;
+
     const mats = {
       vest:   new THREE.MeshLambertMaterial({ color: this._vestColor }),
-      skin:   new THREE.MeshLambertMaterial({ color: 0xC8845A }),
-      helmet: new THREE.MeshLambertMaterial({ color: 0xDEBB14 }),
-      pant:   new THREE.MeshLambertMaterial({ color: 0x2C3A48 }),
+      skin:   new THREE.MeshLambertMaterial({ color: skinColor }),
+      helmet: new THREE.MeshLambertMaterial({ color: helmetColor }),
+      pant:   new THREE.MeshLambertMaterial({ color: pantColor }),
       boot:   new THREE.MeshLambertMaterial({ color: 0x1C1814 }),
+      glass:  new THREE.MeshLambertMaterial({ color: 0x202020 }),
+      beard:  new THREE.MeshLambertMaterial({ color: 0x2A2018 }),
     };
+    // 키 변동을 group 전체에 적용
+    this.group.scale.y = heightMul;
 
     const add = (geo, mat, x, y, z, rx = 0, rz = 0) => {
       const m = new THREE.Mesh(geo, mat);
@@ -122,6 +140,22 @@ class NPC {
     this._bodyParts.head   = add(new THREE.SphereGeometry(0.115, 28, 20), mats.skin, 0, 1.56, 0);
     this._bodyParts.helmet = add(new THREE.SphereGeometry(0.132, 28, 16, 0, Math.PI * 2, 0, Math.PI * 0.58), mats.helmet, 0, 1.625, 0);
     add(new THREE.CylinderGeometry(0.165, 0.148, 0.024, 28), mats.helmet, 0, 1.568, 0);
+
+    // 안경 (35% 확률)
+    if (hasGlasses) {
+      const frame = new THREE.Mesh(new THREE.TorusGeometry(0.028, 0.005, 8, 12), mats.glass);
+      frame.position.set(-0.04, 1.555, 0.105); frame.rotation.x = Math.PI / 2;
+      this.group.add(frame);
+      const frame2 = frame.clone(); frame2.position.x = 0.04; this.group.add(frame2);
+      const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.005, 0.005), mats.glass);
+      bridge.position.set(0, 1.555, 0.105); this.group.add(bridge);
+    }
+    // 수염 (25% 확률)
+    if (hasBeard) {
+      const beard = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.04, 0.025), mats.beard);
+      beard.position.set(0, 1.495, 0.105);
+      this.group.add(beard);
+    }
 
     const armGeoL = new THREE.CylinderGeometry(0.048, 0.038, 0.64, 14);
     armGeoL.translate(0, -0.32, 0);
@@ -357,11 +391,11 @@ class NPC {
 
 // ── NPC Definitions (ID·역할·스킬·위치만 고정, 이름·경력은 랜덤) ──
 const NPC_DEFS = [
-  { id: 'gimc',   role: '신호수',     language: 'ko', skill: 0.90, vestColor: 0xCC5018, position: [ 7,  0,  -6] },
-  { id: 'park',   role: '슬링작업자', language: 'ko', skill: 0.75, vestColor: 0xD4A217, position: [-4,  0,  -8] },
-  { id: 'lee',    role: '고소작업자', language: 'ko', skill: 0.80, vestColor: 0xCC5018, position: [ 0,  0, -14] },
-  { id: 'ahmad',  role: '보조작업자', language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 5,  0, -12] },
-  { id: 'nguyen', role: '보조작업자', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0,  -4] },
+  { id: 'gimc',   role: '신호수',     trade: 'signal',   language: 'ko', skill: 0.90, vestColor: 0xCC5018, position: [ 7,  0,  -6] },
+  { id: 'park',   role: '슬링작업자', trade: 'lifting',  language: 'ko', skill: 0.75, vestColor: 0xD4A217, position: [-4,  0,  -8] },
+  { id: 'lee',    role: '고소작업자', trade: 'scaffold', language: 'ko', skill: 0.80, vestColor: 0xCC5018, position: [ 0,  0, -14] },
+  { id: 'ahmad',  role: '보조작업자', trade: 'rebar',    language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 5,  0, -12] },
+  { id: 'nguyen', role: '보조작업자', trade: 'formwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0,  -4] },
 ];
 
 // 언어별 이름 풀 — 매 세션 랜덤 선택
@@ -403,6 +437,7 @@ function initNPCs() {
     const runtimeDef = Object.assign({}, def);
     runtimeDef.name       = _randomName(def.language);
     runtimeDef.experience = _randomExperience();
+    runtimeDef.trade      = def.trade;
     runtimeDef.position   = [
       def.position[0] + (Math.random() - 0.5) * 1.5,
       def.position[1],

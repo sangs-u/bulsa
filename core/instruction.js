@@ -69,10 +69,13 @@ function openInstructionPopup(item) {
 
   _currentPanelNpcId = npc.id;
 
-  // NPC header — 이름 + 역할 + 경력
+  // NPC header — 이름 + 역할(공종) + 경력
   document.getElementById('inst-name').textContent = npc.name;
+  const tradeName = (typeof TRADES !== 'undefined' && npc.trade && TRADES[npc.trade])
+    ? TRADES[npc.trade].ko : '';
   const expSuffix = npc.experience ? ` · 경력 ${npc.experience}년` : '';
-  document.getElementById('inst-role').textContent = `· ${npc.role}${expSuffix}`;
+  const tradeSuffix = tradeName ? ` · ${tradeName}` : '';
+  document.getElementById('inst-role').textContent = `· ${npc.role}${tradeSuffix}${expSuffix}`;
 
   // Language badge
   const langBadge = document.getElementById('inst-lang-badge');
