@@ -60,12 +60,13 @@ const GAME = {
     excavation: { build: 'buildExcavationScene', register: 'registerExcavationHazards' },
     foundation: { build: 'buildFoundationScene', register: 'registerFoundationHazards' },
     envelope:   { build: 'buildEnvelopeScene',   register: 'registerEnvelopeHazards' },
+    mep_finish: { build: 'buildMepFinishScene',  register: 'registerMepFinishHazards' },
   };
   const _active = _scenarios[_scenarioId] || _scenarios.lifting;
   GAME.scenarioId = _scenarioId in _scenarios ? _scenarioId : 'lifting';
 
   // 공정 시퀀스 — showCompletePanel 에서 "다음 공정" 버튼 노출
-  GAME.scenarioOrder = ['excavation', 'foundation', 'lifting', 'envelope'];
+  GAME.scenarioOrder = ['excavation', 'foundation', 'lifting', 'envelope', 'mep_finish'];
   GAME.nextScenarioId = (() => {
     const idx = GAME.scenarioOrder.indexOf(GAME.scenarioId);
     return idx >= 0 && idx < GAME.scenarioOrder.length - 1

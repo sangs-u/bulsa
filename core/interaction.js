@@ -112,7 +112,8 @@ function _handleE() {
     case 'crane_cab':    boardCrane();                   break;
     case 'excav_cab':    if (typeof boardExcavator === 'function') boardExcavator(); break;
     case 'pump_console':     openPumpConsole();     break;
-    case 'envelope_console': openEnvelopeConsole(); break;
+    case 'envelope_console':  openEnvelopeConsole();  break;
+    case 'final_inspection':  openFinalInspection();  break;
     case 'npc':          openPopup(target);              break;
   }
 }
@@ -127,6 +128,9 @@ function getCurrentPhase() {
   }
   if (GAME.scenarioId === 'envelope' && typeof getCurrentEnvPhase === 'function') {
     return getCurrentEnvPhase();
+  }
+  if (GAME.scenarioId === 'mep_finish' && typeof getCurrentMepPhase === 'function') {
+    return getCurrentMepPhase();
   }
   if (!LIFT_STATE.planWritten)       return 1;
   if (!LIFT_STATE.safetyChecked)     return 2;
@@ -349,6 +353,52 @@ function performAction(actionId) {
       GAME.state.phase = getCurrentPhase();
       updateHUD();
       showActionNotif('✅ 신호수 배치 완료 — 인양 트리거로', 3000);
+      break;
+
+    // ── MEP & Finishing (설비·마감) actions ────────────────
+    case 'write_mep_plan':
+      if (MEP_STATE.planWritten) { showActionNotif('작업계획서 이미 작성됨', 2000); break; }
+      openMepPlanPanel();
+      break;
+
+    case 'apply_loto':
+      if (MEP_STATE.lotoApplied) return;
+      if (!MEP_STATE.planWritten) { showActionNotif('계획서 먼저', 2000); break; }
+      MEP_STATE.lotoApplied = true;
+      _dimActionMesh('apply_loto');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ LOTO 잠금·표지 부착 완료', 2500);
+      break;
+
+    case 'check_gas_leak':
+      if (MEP_STATE.gasChecked) return;
+      if (!MEP_STATE.lotoApplied) { showActionNotif('LOTO 먼저', 2000); break; }
+      MEP_STATE.gasChecked = true;
+      _dimActionMesh('check_gas_leak');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 가스누설 점검 완료', 2500);
+      break;
+
+    case 'activate_ventilation':
+      if (MEP_STATE.ventActivated) return;
+      if (!MEP_STATE.gasChecked) { showActionNotif('가스 점검 먼저', 2000); break; }
+      MEP_STATE.ventActivated = true;
+      _dimActionMesh('activate_ventilation');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 환기·국소배기 가동 완료', 2500);
+      break;
+
+    case 'verify_extinguishers':
+      if (MEP_STATE.extVerified) return;
+      if (!MEP_STATE.ventActivated) { showActionNotif('환기 먼저', 2000); break; }
+      MEP_STATE.extVerified = true;
+      _dimActionMesh('verify_extinguishers');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 소화기 배치 점검 완료 — 준공검사로', 3000);
       break;
   }
 }
@@ -1230,6 +1280,40 @@ function openEnvelopeConsole() {
     return;
   }
   evaluateEnvelope();
+}
+
+// ── 설비·마감 — 작업계획서 ──────────────────────────────
+function openMepPlanPanel() {
+  document.exitPointerLock();
+  INTERACTION.popupOpen = true;
+  const panel = document.getElementById('mep-plan-panel');
+  if (!panel) return;
+  panel.classList.remove('hidden');
+
+  document.getElementById('mep-plan-sign').onclick = () => {
+    MEP_STATE.planBreaker       = parseInt(document.getElementById('mep-breaker').value, 10);
+    MEP_STATE.planPipeDiameter  = parseInt(document.getElementById('mep-pipe').value, 10);
+    MEP_STATE.planFinishType    = document.getElementById('mep-finish-type').value;
+    MEP_STATE.planLotoProcedure = document.getElementById('mep-loto').checked;
+    MEP_STATE.planWritten = true;
+
+    GAME.state.phase = getCurrentPhase();
+    updateHUD();
+    showActionNotif('✅ 설비·마감 작업계획서 서명 완료 — LOTO로', 3500);
+    _closePanel('mep-plan-panel');
+  };
+  document.getElementById('mep-plan-cancel').onclick = () => _closePanel('mep-plan-panel');
+}
+
+// ── 설비·마감 — 준공검사 ──────────────────────────────────
+function openFinalInspection() {
+  if (GAME.state.liftStarted || GAME.state.gameOver) return;
+  if (typeof MEP_STATE === 'undefined') return;
+  if (!MEP_STATE.extVerified) {
+    showActionNotif('소화기 점검 먼저', 2500);
+    return;
+  }
+  evaluateMepFinish();
 }
 
 // ── 기초공사 — 타설 제어반 ────────────────────────────────

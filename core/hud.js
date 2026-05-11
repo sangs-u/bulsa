@@ -48,6 +48,9 @@ function updateHUD() {
   } else if (GAME.scenarioId === 'envelope' && typeof ENV_PHASE_NAMES !== 'undefined') {
     namesTbl   = ENV_PHASE_NAMES;
     missionTbl = ENV_PHASE_MISSIONS;
+  } else if (GAME.scenarioId === 'mep_finish' && typeof MEP_PHASE_NAMES !== 'undefined') {
+    namesTbl   = MEP_PHASE_NAMES;
+    missionTbl = MEP_PHASE_MISSIONS;
   }
   const phaseName = (namesTbl[phase] && namesTbl[phase][currentLang]) ||
                     (namesTbl[phase] && namesTbl[phase].ko) || '';

@@ -200,6 +200,56 @@
   </div>
 </div>
 
+<!-- MEP & Finishing Work Plan Panel (Phase 1) -->
+<div id="mep-plan-panel" class="panel hidden">
+  <div class="panel-header">
+    <span class="panel-icon">📋</span>
+    <h2 id="mep-plan-title">설비·마감 작업계획서</h2>
+    <span class="panel-phase">Phase 1/6</span>
+    <button class="panel-close-btn" id="mep-plan-cancel" title="닫기">✕</button>
+  </div>
+  <div class="panel-body">
+    <p class="panel-guide">설비·마감 매개변수와 안전 절차를 결정하세요. LOTO 미체크 시 감전 사고 확률 ↑.</p>
+    <div class="wi-form">
+      <label class="wi-row">
+        <span class="wi-label">차단기 용량 (A)</span>
+        <select id="mep-breaker">
+          <option value="20">20A (분기)</option>
+          <option value="30">30A (콘센트)</option>
+          <option value="50" selected>50A (조명·분전반)</option>
+          <option value="100">100A (메인)</option>
+        </select>
+      </label>
+      <label class="wi-row">
+        <span class="wi-label">배관 구경 (mm)</span>
+        <select id="mep-pipe">
+          <option value="15">15mm (세면대)</option>
+          <option value="20" selected>20mm (분기)</option>
+          <option value="25">25mm (메인)</option>
+          <option value="32">32mm (대형)</option>
+        </select>
+      </label>
+      <label class="wi-row">
+        <span class="wi-label">마감재 종류</span>
+        <select id="mep-finish-type">
+          <option value="paint" selected>수성 페인트 (저독성)</option>
+          <option value="solvent">유성 페인트 (유기용제)</option>
+          <option value="epoxy">에폭시 (고독성)</option>
+          <option value="tile">타일 (무용제)</option>
+        </select>
+      </label>
+      <label class="wi-row wi-check">
+        <input type="checkbox" id="mep-loto">
+        <span>LOTO 절차 준수 — 잠금/표지/검전</span>
+      </label>
+      <p class="wi-hint">유성·에폭시 마감재 선택 시 국소배기 의무 · LOTO 미체크 시 산안법 §310 위반</p>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn-primary" id="mep-plan-sign">서명·제출</button>
+  </div>
+</div>
+
 <!-- Envelope Work Plan Panel (Phase 1) -->
 <div id="env-plan-panel" class="panel hidden">
   <div class="panel-header">
@@ -710,6 +760,10 @@
 <script src="scenarios/envelope/scene.js"></script>
 <script src="scenarios/envelope/hazards.js"></script>
 <script src="scenarios/envelope/actions.js"></script>
+<script src="scenarios/mep_finish/data.js"></script>
+<script src="scenarios/mep_finish/scene.js"></script>
+<script src="scenarios/mep_finish/hazards.js"></script>
+<script src="scenarios/mep_finish/actions.js"></script>
 <script src="core/hud.js"></script>
 <script src="core/accident.js"></script>
 <script src="core/unsafe.js"></script>
