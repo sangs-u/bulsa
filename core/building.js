@@ -226,19 +226,128 @@ function _setStageOpacity(stageIdx, opacity) {
   });
 }
 
+// stage 자식 메시들의 최종 y를 저장하고 -drop만큼 아래에서 시작하도록 세팅
+function _captureFinalY(stageIdx, dropFrom) {
+  const g = BUILDING.groups[stageIdx];
+  if (!g || g._riseInited) return;
+  g._riseInited = true;
+  g.traverse(obj => {
+    if (obj.isMesh) {
+      obj._finalY = obj.position.y;
+      obj.position.y = obj._finalY - dropFrom;
+    }
+  });
+}
+
+function _easeOutBack(t) {
+  const c1 = 1.4, c3 = c1 + 1;
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+}
+
+function _spawnConstructionDust(stageIdx) {
+  const g = BUILDING.groups[stageIdx];
+  if (!g) return;
+  // stage 중심부 근사
+  const cx = 0, cz = -17;
+  const dustMat = new THREE.MeshBasicMaterial({ color: 0xC9B68F, transparent: true, opacity: 0.55, depthWrite: false });
+  const particles = [];
+  for (let i = 0; i < 14; i++) {
+    const s = 0.18 + Math.random() * 0.22;
+    const p = new THREE.Mesh(new THREE.SphereGeometry(s, 6, 5), dustMat.clone());
+    const ang = Math.random() * Math.PI * 2;
+    const r = 3 + Math.random() * 2.5;
+    p.position.set(cx + Math.cos(ang) * r, 0.4 + Math.random() * 0.5, cz + Math.sin(ang) * r);
+    p._v = new THREE.Vector3((Math.random() - 0.5) * 0.6, 0.7 + Math.random() * 0.4, (Math.random() - 0.5) * 0.6);
+    p._life = 0;
+    p._max = 0.9 + Math.random() * 0.4;
+    GAME.scene.add(p);
+    particles.push(p);
+  }
+  let last = performance.now();
+  function step(now) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    let alive = false;
+    for (const p of particles) {
+      p._life += dt;
+      if (p._life >= p._max) {
+        if (p.parent) p.parent.remove(p);
+        continue;
+      }
+      alive = true;
+      p.position.addScaledVector(p._v, dt);
+      p._v.y *= 0.96;
+      p.scale.setScalar(1 + p._life * 1.4);
+      p.material.opacity = 0.55 * (1 - p._life / p._max);
+    }
+    if (alive) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function _shakeCamera(intensity, duration) {
+  if (!GAME.camera) return;
+  const cam = GAME.camera;
+  if (cam._shakeT) return; // 이미 진행 중
+  cam._shakeT = 0;
+  const baseY = 0;
+  let last = performance.now();
+  function step(now) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    cam._shakeT += dt;
+    const t = cam._shakeT / duration;
+    if (t >= 1) {
+      cam._shakeT = 0;
+      return;
+    }
+    const k = (1 - t) * intensity;
+    cam.position.x += (Math.random() - 0.5) * k * 0.4;
+    cam.position.y += (Math.random() - 0.5) * k * 0.4;
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 function _fadeInStage(stageIdx, onDone) {
+  const DROP = 4.5;
+  _captureFinalY(stageIdx, DROP);
+  _spawnConstructionDust(stageIdx);
+  _shakeCamera(0.06, 0.5);
+  // 사운드 큐 (있을 때만)
+  try {
+    if (window.SFX_LIB && SFX_LIB.drop) SFX_LIB.drop();
+    else if (window.playSFX) playSFX('drop');
+  } catch (e) {}
+
+  const g = BUILDING.groups[stageIdx];
   let progress = 0;
-  const duration = 0.5; // seconds
+  const duration = 1.1;
   let last = 0;
   function step(now) {
     const delta = Math.min((now - last) / 1000, 0.05);
     last = now;
     progress += delta / duration;
-    _setStageOpacity(stageIdx, Math.min(1, progress));
+    const t = Math.min(1, progress);
+    _setStageOpacity(stageIdx, Math.min(1, t * 1.8));
+    const e = _easeOutBack(t);
+    if (g) {
+      g.traverse(obj => {
+        if (obj.isMesh && obj._finalY !== undefined) {
+          obj.position.y = obj._finalY - DROP * (1 - e);
+        }
+      });
+    }
     if (progress < 1) {
       requestAnimationFrame(step);
     } else {
       _setStageOpacity(stageIdx, 1);
+      if (g) {
+        g.traverse(obj => {
+          if (obj.isMesh && obj._finalY !== undefined) obj.position.y = obj._finalY;
+        });
+      }
+      _shakeCamera(0.12, 0.25); // 착지 임팩트
       if (onDone) onDone();
     }
   }

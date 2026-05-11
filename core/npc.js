@@ -235,6 +235,9 @@ class NPC {
 
     this.fatigue = Math.min(100, this.fatigue + delta * 0.8);
 
+    // 플레이어 회피 — 사고 중이 아닐 때만, 1.4m 내 접근 시 옆으로 밀려남
+    this._avoidPlayer(delta);
+
     // _targetPos 이동 처리
     const moving = this._moveToTarget(delta);
 
@@ -254,6 +257,35 @@ class NPC {
       this._animateGeometry(elapsed);
     }
     this._syncTriggerMesh();
+  }
+
+  // ── Player avoidance ─────────────────────────────────────────
+  _avoidPlayer(delta) {
+    if (this.state === NPC_STATES.ACCIDENT) return;
+    if (!window.PLAYER || !PLAYER.position) return;
+    const px = PLAYER.position.x, pz = PLAYER.position.z;
+    const dx = this.group.position.x - px;
+    const dz = this.group.position.z - pz;
+    const d2 = dx * dx + dz * dz;
+    const R  = 1.4;
+    if (d2 > R * R || d2 < 0.0001) {
+      this._dodgeNudge = 0;
+      return;
+    }
+    const d = Math.sqrt(d2);
+    const k = (R - d) / R; // 0~1, 가까울수록 큼
+    const nx = dx / d, nz = dz / d;
+    // 살짝 옆으로 밀려나는 효과 (사이드스텝, 1.0 m/s × k)
+    this.group.position.x += nx * delta * 1.0 * k;
+    this.group.position.z += nz * delta * 1.0 * k;
+    // 플레이어 쪽으로 머리 살짝 돌림 ("인식" 효과)
+    const wantY = Math.atan2(-nx, -nz) + (this._char ? Math.PI : 0);
+    const cur   = this.group.rotation.y;
+    let diff = wantY - cur;
+    while (diff > Math.PI)  diff -= Math.PI * 2;
+    while (diff < -Math.PI) diff += Math.PI * 2;
+    this.group.rotation.y += diff * Math.min(1, delta * 4) * 0.6;
+    this._dodgeNudge = k;
   }
 
   // ── Ragdoll trigger (공개 API) ───────────────────────────────
@@ -289,10 +321,36 @@ class NPC {
         if (parts.body) parts.body.rotation.z = Math.sin(t * 0.8) * 0.02;
         break;
       case NPC_STATES.WORKING:
-        if (parts.armL) parts.armL.rotation.x =  Math.sin(t * 2) * 0.5;
-        if (parts.armR) parts.armR.rotation.x = -Math.sin(t * 2) * 0.5;
-        if (parts.legL) parts.legL.rotation.x = -Math.sin(t * 2) * 0.25;
-        if (parts.legR) parts.legR.rotation.x =  Math.sin(t * 2) * 0.25;
+        // trade별 작업 모션
+        if (this.trade === 'signal') {
+          // 신호수 — 오른팔 위로 들고 좌우로 흔들기
+          if (parts.armR) { parts.armR.rotation.x = -1.6 + Math.sin(t * 3.5) * 0.25; parts.armR.rotation.z = -0.4; }
+          if (parts.armL) parts.armL.rotation.x = Math.sin(t * 1.2) * 0.15;
+          if (parts.body) parts.body.rotation.z = Math.sin(t * 1.2) * 0.04;
+        } else if (this.trade === 'rebar' || this.trade === 'formwork' || this.trade === 'lifting') {
+          // 망치질 — 오른팔 큰 다운스윙
+          const swing = Math.max(0, Math.sin(t * 3.2));
+          if (parts.armR) { parts.armR.rotation.x = -1.3 + swing * 1.8; parts.armR.rotation.z = -0.2; }
+          if (parts.armL) parts.armL.rotation.x = -0.4;
+          if (parts.body) parts.body.rotation.x = swing * 0.12;
+        } else if (this.trade === 'electric' || this.trade === 'plumbing' || this.trade === 'painting') {
+          // 정밀 작업 — 양팔 앞으로 고정 + 미세 떨림
+          if (parts.armR) { parts.armR.rotation.x = -1.0 + Math.sin(t * 12) * 0.06; parts.armR.rotation.z = -0.3; }
+          if (parts.armL) { parts.armL.rotation.x = -1.0 + Math.cos(t * 12) * 0.06; parts.armL.rotation.z = 0.3; }
+          if (parts.head) parts.head.rotation.x = -0.25;
+        } else if (this.trade === 'excavator' || this.trade === 'earthwork' || this.trade === 'pour') {
+          // 중량 작업 — 양팔 들어올리기 반복
+          const lift = Math.sin(t * 1.6);
+          if (parts.armR) parts.armR.rotation.x = -0.6 + lift * 0.5;
+          if (parts.armL) parts.armL.rotation.x = -0.6 - lift * 0.5;
+          if (parts.body) parts.body.rotation.x = lift * 0.08;
+        } else {
+          // 기본 — 걸음/팔 흔들기 (기존 동작)
+          if (parts.armL) parts.armL.rotation.x =  Math.sin(t * 2) * 0.5;
+          if (parts.armR) parts.armR.rotation.x = -Math.sin(t * 2) * 0.5;
+          if (parts.legL) parts.legL.rotation.x = -Math.sin(t * 2) * 0.25;
+          if (parts.legR) parts.legR.rotation.x =  Math.sin(t * 2) * 0.25;
+        }
         break;
       case NPC_STATES.UNSAFE:
       case NPC_STATES.DANGER:

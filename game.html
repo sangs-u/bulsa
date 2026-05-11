@@ -823,7 +823,9 @@
 <script src="core/engine.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="core/assets.js"></script>
 <script src="core/character.js"></script>
+<script src="core/timepressure.js"></script>
 <script src="core/sound.js"></script>
 <script src="core/minimap.js"></script>
 <script src="core/weather.js"></script>
@@ -886,6 +888,7 @@
       const f = document.getElementById('hud-floors'); if (f) f.classList.add('hidden');
       const b = document.getElementById('building-progress'); if (b) b.style.display = 'none';
     }
+    if (typeof initTimePressure === 'function') initTimePressure();
     updateHUD();
     _openBriefing();
     // 튜토리얼은 브리핑 닫힌 후로 지연 (4초)
