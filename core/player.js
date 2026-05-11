@@ -69,7 +69,8 @@ function initPlayer() {
   // ── Mouse look (fps + tps) ─────────────────────────────
   document.addEventListener('mousemove', e => {
     if (!PLAYER.isLocked || PLAYER.camMode === 'fixed') return;
-    const sens = 0.0018;
+    let sens = 0.0018;
+    try { const s = parseFloat(localStorage.getItem('bulsa_sens')); if (!isNaN(s) && s > 0) sens = s; } catch (err) {}
     PLAYER.euler.y -= e.movementX * sens;
     PLAYER.euler.x -= e.movementY * sens;
     PLAYER.euler.x = Math.max(-Math.PI * 0.46, Math.min(Math.PI * 0.46, PLAYER.euler.x));
@@ -135,13 +136,30 @@ function _cycleFixedCam() {
 }
 
 function updatePlayer(delta) {
-  if (GAME.state.gameOver) return;
+  if (GAME.state.gameOver || GAME.state.paused) return;
 
   // Movement (disabled in fixed cam mode)
   const canMove = (PLAYER.isLocked || PLAYER.mobileActive) && PLAYER.camMode !== 'fixed';
 
+  // 가속도 보간 — 시작/정지 시 부드러운 가속
+  PLAYER._curSpeed = PLAYER._curSpeed || 0;
+  const isSprint = (PLAYER.keys['ShiftLeft'] || PLAYER.keys['ShiftRight']);
+  const targetSpeed = isSprint ? PLAYER.sprint : PLAYER.speed;
+
+  // 카메라 보브 누적
+  PLAYER._bobT = PLAYER._bobT || 0;
+
+  // 스프린트 FOV 보간
+  if (GAME.camera) {
+    PLAYER._fovBase = PLAYER._fovBase || GAME.camera.fov || 72;
+    const fovTarget = isSprint && canMove && (PLAYER.keys['KeyW']||PLAYER.keys['ArrowUp']) ? (PLAYER._fovBase + 6) : PLAYER._fovBase;
+    if (Math.abs(GAME.camera.fov - fovTarget) > 0.1) {
+      GAME.camera.fov += (fovTarget - GAME.camera.fov) * Math.min(1, 8 * delta);
+      GAME.camera.updateProjectionMatrix();
+    }
+  }
+
   if (canMove) {
-    const speed  = (PLAYER.keys['ShiftLeft'] || PLAYER.keys['ShiftRight']) ? PLAYER.sprint : PLAYER.speed;
     const yaw    = PLAYER.euler.y;
     const fwd    = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
     const right  = new THREE.Vector3( Math.cos(yaw), 0, -Math.sin(yaw));
@@ -154,8 +172,15 @@ function updatePlayer(delta) {
     if (PLAYER.joyY !== 0) move.addScaledVector(fwd,   PLAYER.joyY);
     if (PLAYER.joyX !== 0) move.addScaledVector(right, PLAYER.joyX);
 
-    if (move.lengthSq() > 0) {
-      move.normalize().multiplyScalar(speed * delta);
+    // 가속/감속 — 입력 있으면 목표로 보간, 없으면 0으로 감속
+    const inputting = move.lengthSq() > 0;
+    PLAYER._curSpeed += ((inputting ? targetSpeed : 0) - PLAYER._curSpeed) * Math.min(1, 10 * delta);
+    if (Math.abs(PLAYER._curSpeed) < 0.05) PLAYER._curSpeed = 0;
+
+    if (inputting && PLAYER._curSpeed > 0.05) {
+      move.normalize().multiplyScalar(PLAYER._curSpeed * delta);
+      // 보브 타이머 누적 (속도 비례)
+      PLAYER._bobT += delta * (PLAYER._curSpeed / PLAYER.speed) * 8;
 
       // ── Collision detection (raycaster-based wall slide) ──
       const colliders = GAME.colliders;
@@ -200,7 +225,15 @@ function updatePlayer(delta) {
 
   // ── Camera positioning by mode ─────────────────────────
   if (PLAYER.camMode === 'fps') {
-    GAME.camera.position.set(PLAYER.worldPos.x, PLAYER.worldPos.y + PLAYER.eyeHeight, PLAYER.worldPos.z);
+    // 카메라 보브 — 걸을 때 수직/좌우 미세한 진동 (현실감)
+    const bobAmp = Math.min(1, PLAYER._curSpeed / PLAYER.sprint) * 0.045;
+    const bobY = PLAYER.onGround ? Math.sin(PLAYER._bobT) * bobAmp : 0;
+    const bobX = PLAYER.onGround ? Math.sin(PLAYER._bobT * 0.5) * bobAmp * 0.4 : 0;
+    GAME.camera.position.set(
+      PLAYER.worldPos.x + bobX,
+      PLAYER.worldPos.y + PLAYER.eyeHeight + bobY,
+      PLAYER.worldPos.z
+    );
 
   } else if (PLAYER.camMode === 'tps') {
     const yaw = PLAYER.euler.y;

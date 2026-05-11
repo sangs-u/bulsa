@@ -72,6 +72,11 @@
             </select>
           </label>
           <label class="pause-set-row">
+            <span>🖱 마우스 감도</span>
+            <input type="range" id="pause-sens" min="5" max="40" value="18" style="flex:1;margin:0 12px">
+            <span id="pause-sens-num" style="min-width:32px;text-align:right">1.8</span>
+          </label>
+          <label class="pause-set-row">
             <span>⚙ 난이도</span>
             <select id="pause-difficulty" style="flex:1;margin-left:12px;padding:4px;background:#1F2937;color:#F0F0F0;border:1px solid #2A3344;border-radius:4px">
               <option value="easy">쉬움 (Inspector 늦게, 과태료 ½)</option>
@@ -152,6 +157,15 @@
       try { localStorage.setItem('bulsa_lang', lang.value); } catch (e) {}
       if (typeof setLang === 'function') setLang(lang.value);
     });
+    const sens = panel.querySelector('#pause-sens');
+    const sensNum = panel.querySelector('#pause-sens-num');
+    try { const stored = parseFloat(localStorage.getItem('bulsa_sens')); if (!isNaN(stored)) { sens.value = String(Math.round(stored * 10000)); sensNum.textContent = (stored * 1000).toFixed(1); } } catch (e) {}
+    sens.addEventListener('input', () => {
+      const v = parseFloat(sens.value) / 10000;
+      sensNum.textContent = (v * 1000).toFixed(1);
+      try { localStorage.setItem('bulsa_sens', String(v)); } catch (e) {}
+    });
+
     const diff = panel.querySelector('#pause-difficulty');
     try { diff.value = localStorage.getItem('bulsa_difficulty') || 'normal'; } catch (e) {}
     diff.addEventListener('change', () => {
