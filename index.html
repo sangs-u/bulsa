@@ -651,12 +651,12 @@
     win:  which exterior walls have windows
   */
   const SCENARIOS = [
-    { id:'s01', num:'S-01', room:'ROOM A', dim:'18.0×24.0', titleKey:'s01Title', descKey:'s01Desc', koshaKey:'s01Kosha', ready:true,  url:'game.html?s=lifting', door:'door-br', win:['top','left'] },
-    { id:'s02', num:'S-02', room:'ROOM B', dim:'7.5×12.0',  titleKey:'s02Title', descKey:'s02Desc', koshaKey:'s02Kosha', ready:false, door:'door-bl', win:['top'] },
-    { id:'s03', num:'S-03', room:'ROOM C', dim:'7.5×12.0',  titleKey:'s03Title', descKey:'s03Desc', koshaKey:'s03Kosha', ready:false, door:'door-br', win:['top','right'] },
-    { id:'s04', num:'S-04', room:'ROOM D', dim:'7.5×12.0',  titleKey:'s04Title', descKey:'s04Desc', koshaKey:'s04Kosha', ready:false, door:'door-bl', win:[] },
-    { id:'s05', num:'S-05', room:'ROOM E', dim:'7.5×12.0',  titleKey:'s05Title', descKey:'s05Desc', koshaKey:'s05Kosha', ready:false, door:'door-br', win:['right'] },
-    { id:'s06', num:'S-06', room:'ROOM F', dim:'33.0×8.5',  titleKey:'s06Title', descKey:'s06Desc', koshaKey:'s06Kosha', ready:false, door:'door-tl', win:['bottom'] },
+    { id:'s01', num:'S-01', room:'ROOM A', dim:'18.0×24.0', title:'토공사 · 굴착',           desc:'부지 굴착 + 흙막이 가시설 + 매설물 사전조사',         kosha:'KOSHA C-39-2011', ready:true, url:'game.html?s=excavation', door:'door-br', win:['top','left'] },
+    { id:'s02', num:'S-02', room:'ROOM B', dim:'7.5×12.0',  title:'기초공사 · 매트 타설',     desc:'동바리·거푸집·철근·콘크리트 타설',                     kosha:'KOSHA C-67-2018', ready:true, url:'game.html?s=foundation', door:'door-bl', win:['top'] },
+    { id:'s03', num:'S-03', room:'ROOM C', dim:'7.5×12.0',  title:'골조 양중 · 줄걸이·인양',  desc:'5층 RC 보 크레인 인양 (3,000 kg)',                    kosha:'KOSHA G-133-2020', ready:true, url:'game.html?s=lifting', door:'door-br', win:['top','right'] },
+    { id:'s04', num:'S-04', room:'ROOM D', dim:'7.5×12.0',  title:'외장공사 · 비계·창호',     desc:'시스템 비계 + 외벽 패널 + 안전대 부착설비',           kosha:'KOSHA G-110-2020', ready:true, url:'game.html?s=envelope', door:'door-bl', win:[] },
+    { id:'s05', num:'S-05', room:'ROOM E', dim:'7.5×12.0',  title:'설비·마감 · LOTO',        desc:'전기 LOTO + 배관 + 가스 점검 + 환기',                  kosha:'KOSHA G-82-2018',  ready:true, url:'game.html?s=mep_finish', door:'door-br', win:['right'] },
+    { id:'s06', num:'S-06', room:'ROOM F', dim:'33.0×8.5',  title:'밀폐공간 / 전기 / 화재',   desc:'추가 시나리오 (v2 — 무사이 담당)',                     kosha:'-',                ready:false, door:'door-tl', win:['bottom'] },
   ];
 
   function makeRoom(s) {
@@ -682,9 +682,9 @@
             ${s.ready ? t('scenarioReady') : t('scenarioSoon')}
           </span>
         </div>
-        <div class="fp-room-title">${t(s.titleKey)}</div>
-        <div class="fp-room-desc">${t(s.descKey)}</div>
-        <div class="fp-room-kosha">${t(s.koshaKey)}</div>
+        <div class="fp-room-title">${s.title || t(s.titleKey)}</div>
+        <div class="fp-room-desc">${s.desc || t(s.descKey)}</div>
+        <div class="fp-room-kosha">${s.kosha || t(s.koshaKey)}</div>
         ${btnHtml}
       </div>
       <span class="fp-dim-ann">${s.dim} m</span>
