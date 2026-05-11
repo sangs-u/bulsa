@@ -5,7 +5,7 @@ let REBAR_GAME = null;
 function startRebarInspection() {
   if (typeof createInspectionMinigame !== 'function') return;
   REBAR_GAME = createInspectionMinigame({
-    id: '철근보호캡',
+    id: '철근보호캡', trade: 'rebar',
     label: '철근 보호캡 점검',
     holdTime: 1.5, range: 2.0,
     spots: [
@@ -35,7 +35,7 @@ let FORMWORK_GAME = null;
 function startFormworkInspection() {
   if (typeof createInspectionMinigame !== 'function') return;
   FORMWORK_GAME = createInspectionMinigame({
-    id: '거푸집점검',
+    id: '거푸집점검', trade: 'formwork',
     label: '거푸집·동바리 점검',
     holdTime: 1.8, range: 2.0,
     spots: [
@@ -65,7 +65,7 @@ let PUMP_GAME = null;
 function startPumpInspection() {
   if (typeof createInspectionMinigame !== 'function') return;
   PUMP_GAME = createInspectionMinigame({
-    id: '펌프카점검',
+    id: '펌프카점검', trade: 'concrete',
     label: '펌프카 호스·아웃트리거 점검',
     holdTime: 2.0, range: 2.5,
     spots: [
@@ -92,7 +92,7 @@ let POUR_ORDER_GAME = null;
 function startPourOrder() {
   if (typeof createInspectionMinigame !== 'function') return;
   POUR_ORDER_GAME = createInspectionMinigame({
-    id: '타설순서',
+    id: '타설순서', trade: 'concrete',
     label: '타설 순서·신호 합의',
     holdTime: 1.5, range: 2.0,
     spots: [

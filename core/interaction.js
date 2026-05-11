@@ -29,6 +29,10 @@ function initInteraction() {
       e.preventDefault();
       if (typeof tryMarkSurvey === 'function') tryMarkSurvey();
     }
+    // Q — 현재 활성 미니게임 동료 위임
+    if (e.code === 'KeyQ' && typeof tryDelegateCurrent === 'function') {
+      tryDelegateCurrent();
+    }
 
     if (e.code === 'Escape') {
       if (INTERACTION.specOpen) { closeSpecPopup(); return; }

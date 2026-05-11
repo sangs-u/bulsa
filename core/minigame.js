@@ -96,17 +96,28 @@ function fillSlotMarker(slotMarker, placedMesh) {
   }
 }
 
-// ── 점검 미니게임 팩토리 (E 키 홀드 패턴) ────────────────────
-// config: { id, label, holdTime, range, spots[{label, pos[]}], onComplete }
+// ── 점검 미니게임 팩토리 (E 키 홀드 패턴 + Q 위임) ────────────
+// config: { id, label, holdTime, range, trade, spots[{label, pos[]}], onComplete }
 function createInspectionMinigame(config) {
+  // 숙련도 기반 홀드시간 단축
+  const baseHold = config.holdTime || 1.8;
+  const baseRange = config.range || 2.0;
   const state = {
     active: false,
     holding: false,
     spots: config.spots.map(s => ({ ...s, inspected: false, progress: 0, marker: null })),
     currentIdx: -1,
+    config,
   };
-  const HOLD_TIME = config.holdTime || 1.8;
-  const RANGE = config.range || 2.0;
+
+  function _effectiveHold() {
+    return typeof applySkillToHold === 'function'
+      ? applySkillToHold(baseHold, config.id) : baseHold;
+  }
+  function _effectiveRange() {
+    return typeof applySkillToRange === 'function'
+      ? applySkillToRange(baseRange, config.id) : baseRange;
+  }
 
   function start() {
     if (state.active) return;
@@ -119,17 +130,41 @@ function createInspectionMinigame(config) {
       spot.inspected = false; spot.progress = 0;
       spot.marker = buildProgressArc(spot.pos[0], spot.pos[2], 0xFF3322);
     });
-    showActionNotif(`🔍 ${config.label} — 마커로 가서 E 키 ${HOLD_TIME}초 홀드`, 4500);
+    const lvHint = typeof getSkillLevel === 'function'
+      ? ` (Lv.${getSkillLevel(config.id)} 적용 ${_effectiveHold().toFixed(1)}s)` : '';
+    showActionNotif(`🔍 ${config.label} — [E] 직접 ${baseHold.toFixed(1)}s${lvHint} · [Q] 동료 위임`, 5500);
+    // 위임 선택지 활성화 (이 mini-game이 현재 활성이므로 dispatcher가 인식)
+    DELEGATION_CHOICE.current = { game: api, config };
   }
 
   function end() {
     state.active = false;
     state.holding = false;
     state.currentIdx = -1;
+    if (DELEGATION_CHOICE.current && DELEGATION_CHOICE.current.game === api) {
+      DELEGATION_CHOICE.current = null;
+    }
+  }
+
+  // 동료 위임 — 모든 spot 을 NPC 가 순차 처리한다고 가정 (총 시간 = spot수 × hold)
+  function delegateToNPC(npcId) {
+    if (!state.active) return false;
+    const baseTime = state.spots.length * baseHold + state.spots.length * 1.0; // 점검 + 이동시간
+    return assignTaskToNPC(npcId, config.label, state.spots[0].pos, baseTime, () => {
+      // 위임 완료 — 모든 spot 즉시 완료 처리 (시각적으로만)
+      state.spots.forEach(s => {
+        s.inspected = true;
+        if (s.marker && s.marker.ring) s.marker.ring.material.color.setHex(0x22C55E);
+      });
+      end();
+      if (config.onComplete) config.onComplete();
+    });
   }
 
   function update(delta) {
     if (!state.active || !PLAYER || !PLAYER.worldPos) return;
+    const HOLD = _effectiveHold();
+    const RANGE = _effectiveRange();
     let nearestIdx = -1, nearestDist = Infinity;
     state.spots.forEach((spot, i) => {
       if (spot.inspected) return;
@@ -140,14 +175,14 @@ function createInspectionMinigame(config) {
 
     if (state.holding && nearestIdx >= 0) {
       const spot = state.spots[nearestIdx];
-      spot.progress = Math.min(HOLD_TIME, spot.progress + delta);
-      updateProgressArc(spot.marker.arc, spot.progress / HOLD_TIME);
-      if (spot.progress >= HOLD_TIME) {
+      spot.progress = Math.min(HOLD, spot.progress + delta);
+      updateProgressArc(spot.marker.arc, spot.progress / HOLD);
+      if (spot.progress >= HOLD) {
         spot.inspected = true;
         spot.marker.ring.material.color.setHex(0x22C55E);
         showActionNotif(`✅ ${spot.label} 점검 완료`, 2000);
         if (state.spots.every(s => s.inspected)) {
-          bumpSkill(config.id);
+          bumpSkill(config.id, 10);
           end();
           if (config.onComplete) config.onComplete();
         }
@@ -156,19 +191,52 @@ function createInspectionMinigame(config) {
       const spot = state.spots[nearestIdx];
       if (spot.progress > 0 && !spot.inspected) {
         spot.progress = Math.max(0, spot.progress - delta * 1.5);
-        updateProgressArc(spot.marker.arc, spot.progress / HOLD_TIME);
+        updateProgressArc(spot.marker.arc, spot.progress / HOLD);
       }
     }
     if (nearestIdx >= 0) {
       const done = state.spots.filter(s => s.inspected).length;
-      showTaskHint(`🔍 ${state.spots[nearestIdx].label} — E 키 홀드 (${done}/${state.spots.length})`, '#00FFAA');
+      showTaskHint(`🔍 ${state.spots[nearestIdx].label} — [E] 직접·[Q] 위임 (${done}/${state.spots.length})`, '#00FFAA');
+    } else {
+      showTaskHint(`[Q] 동료 위임 가능 (${state.spots.filter(s => s.inspected).length}/${state.spots.length})`, '#FFAA00');
     }
   }
 
-  return {
+  const api = {
     state,
-    start, end, update,
+    start, end, update, delegateToNPC,
     holdStart: () => { if (state.active) state.holding = true; },
     holdEnd:   () => { if (state.active) state.holding = false; },
   };
+  return api;
+}
+
+// ── 위임 선택 시스템 ─────────────────────────────────────────
+// 현재 활성 mini-game 을 추적해서 Q 키로 NPC 매칭 시도
+const DELEGATION_CHOICE = { current: null };
+
+function tryDelegateCurrent() {
+  if (!DELEGATION_CHOICE.current) {
+    if (typeof showActionNotif === 'function') showActionNotif('위임할 작업이 없습니다', 2000);
+    return false;
+  }
+  const { config } = DELEGATION_CHOICE.current;
+  const trade = config.trade;
+  if (!trade) {
+    if (typeof showActionNotif === 'function') showActionNotif('이 작업은 공종 정보가 없어 위임 불가', 2500);
+    return false;
+  }
+  // 같은 공종 NPC 중 스킬 최고
+  const eligible = (GAME.npcs || []).filter(n => n.trade === trade);
+  if (eligible.length === 0) {
+    if (typeof showActionNotif === 'function') showActionNotif(`${trade} 공종 동료가 없습니다 — 직접 수행 필요`, 2800);
+    return false;
+  }
+  eligible.sort((a, b) => b.skill - a.skill);
+  const best = eligible[0];
+  const ok = DELEGATION_CHOICE.current.game.delegateToNPC(best.id);
+  if (ok && typeof showActionNotif === 'function') {
+    showActionNotif(`👷 ${best.name} (${best.role}·경력 ${best.experience}년) 에게 ${config.label} 지시`, 3500);
+  }
+  return ok;
 }

@@ -4,7 +4,7 @@ let LOTO_GAME = null;
 function startLoto() {
   if (typeof createInspectionMinigame !== 'function') return;
   LOTO_GAME = createInspectionMinigame({
-    id: 'LOTO',
+    id: 'LOTO', trade: 'electric',
     label: 'LOTO 잠금·표지 부착',
     holdTime: 2.0, range: 2.0,
     spots: [
@@ -28,7 +28,7 @@ let GAS_GAME = null;
 function startGasCheck() {
   if (typeof createInspectionMinigame !== 'function') return;
   GAS_GAME = createInspectionMinigame({
-    id: '가스점검',
+    id: '가스점검', trade: 'plumbing',
     label: '가스누설 점검',
     holdTime: 1.5, range: 2.0,
     spots: [
@@ -52,7 +52,7 @@ let VENT_GAME = null;
 function startVentActivation() {
   if (typeof createInspectionMinigame !== 'function') return;
   VENT_GAME = createInspectionMinigame({
-    id: '환기',
+    id: '환기', trade: 'plumbing',
     label: '환기·국소배기 가동',
     holdTime: 1.5, range: 2.0,
     spots: [
@@ -79,7 +79,7 @@ let EXT_GAME = null;
 function startExtCheck() {
   if (typeof createInspectionMinigame !== 'function') return;
   EXT_GAME = createInspectionMinigame({
-    id: '소화기',
+    id: '소화기', trade: 'finishing',
     label: '소화기 배치 점검',
     holdTime: 1.0, range: 2.0,
     spots: [

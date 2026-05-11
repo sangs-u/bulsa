@@ -7,7 +7,7 @@ let SCAFFOLD_GAME = null;
 function startScaffoldInspection() {
   if (typeof createInspectionMinigame !== 'function') return;
   SCAFFOLD_GAME = createInspectionMinigame({
-    id: '비계점검',
+    id: '비계점검', trade: 'scaffold',
     label: '비계 조립검사',
     holdTime: 1.8, range: 2.0,
     spots: [
@@ -34,7 +34,7 @@ let LIFELINE_GAME = null;
 function startLifelineInstall() {
   if (typeof createInspectionMinigame !== 'function') return;
   LIFELINE_GAME = createInspectionMinigame({
-    id: '안전대설비',
+    id: '안전대설비', trade: 'scaffold',
     label: '안전대 부착설비 설치',
     holdTime: 1.8, range: 2.0,
     spots: [
@@ -59,7 +59,7 @@ let PANEL_GAME = null;
 function startPanelSecure() {
   if (typeof createInspectionMinigame !== 'function') return;
   PANEL_GAME = createInspectionMinigame({
-    id: '외장결속',
+    id: '외장결속', trade: 'scaffold',
     label: '외장재 결속 점검',
     holdTime: 1.5, range: 2.0,
     spots: [
@@ -85,7 +85,7 @@ let ENV_SIGNAL_GAME = null;
 function startEnvSignal() {
   if (typeof createInspectionMinigame !== 'function') return;
   ENV_SIGNAL_GAME = createInspectionMinigame({
-    id: '외장신호수',
+    id: '외장신호수', trade: 'signal',
     label: '신호수 배치',
     holdTime: 1.2, range: 2.0,
     spots: [
