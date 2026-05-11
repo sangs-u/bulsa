@@ -65,6 +65,7 @@ const GAME = {
   initInteraction();
   initHUD();
   initAccident();
+  if (typeof initUnsafe === 'function') initUnsafe();
   if (typeof initBlueprintViewer === 'function') initBlueprintViewer();
   if (typeof initPostFX === 'function') initPostFX();
 
@@ -86,6 +87,7 @@ function _loop() {
     if (!GAME.state.craneBoarded) updatePlayer(delta);
     updateInteraction();
     updateHUD();
+    if (typeof updateUnsafe === 'function')      updateUnsafe();
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();

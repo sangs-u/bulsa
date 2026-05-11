@@ -1107,6 +1107,36 @@
 }
 #op-refusal-close { padding: 8px 18px; font-size: 13px; }
 
+/* Unsafe behavior detection */
+#unsafe-flash {
+  position: fixed; inset: 0; pointer-events: none; z-index: 7900;
+  background: radial-gradient(ellipse at center, rgba(239,68,68,0) 50%, rgba(239,68,68,0.45) 100%);
+  opacity: 0; transition: opacity 0.18s ease-out;
+}
+#unsafe-flash.active { opacity: 1; }
+#unsafe-flash.hidden { display: none; }
+#unsafe-toast {
+  position: fixed; top: 18%; left: 50%; transform: translateX(-50%);
+  background: rgba(239,68,68,0.92); color: #fff;
+  padding: 12px 22px; border-radius: 8px; font-weight: 700; font-size: 15px;
+  letter-spacing: 0.02em; z-index: 8100; pointer-events: none;
+  box-shadow: 0 6px 22px rgba(239,68,68,0.55);
+  border: 1px solid rgba(255,255,255,0.25);
+  animation: unsafePop 0.25s ease;
+}
+#unsafe-toast.hidden { display: none; }
+@keyframes unsafePop {
+  from { transform: translate(-50%, -8px); opacity: 0; }
+  to   { transform: translate(-50%, 0);    opacity: 1; }
+}
+#hud-violations {
+  display: inline-block; margin-left: 8px; padding: 2px 8px;
+  background: rgba(239,68,68,0.85); color: #fff;
+  border-radius: 10px; font-size: 12px; font-weight: 700;
+  vertical-align: middle;
+}
+#hud-violations.hidden { display: none; }
+
 /* Overload limiter tester */
 #overload-tester { margin-top: 4px; }
 .oll-display { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; font-family: 'Consolas', monospace; }

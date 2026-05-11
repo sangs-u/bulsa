@@ -52,6 +52,19 @@ function updateHUD() {
 
   const siLbl = document.getElementById('hud-si-label');
   if (siLbl) siLbl.textContent = t('safetyIndex');
+
+  // 작업반경 진입 위반 카운터
+  const vEl = document.getElementById('hud-violations');
+  if (vEl) {
+    const n = s.unsafeViolations || 0;
+    if (n > 0) {
+      vEl.textContent = '⚠ ' + n;
+      vEl.title = t('unsafeViolationsTip');
+      vEl.classList.remove('hidden');
+    } else {
+      vEl.classList.add('hidden');
+    }
+  }
 }
 
 // ── Interact prompt ──────────────────────────────────────────

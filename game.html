@@ -23,6 +23,7 @@
     <span class="hud-si-label" id="hud-si-label">안전지수</span>
     <div class="hud-si-bar-outer"><div id="hud-si-bar"></div></div>
     <span id="hud-si-num">100</span>
+    <span id="hud-violations" class="hidden" title="작업반경 진입 위반">⚠ 0</span>
   </div>
   <div id="hud-crosshair"></div>
   <div id="hud-interact"></div>
@@ -103,6 +104,10 @@
 
 <!-- Action notification (brief, no feedback) -->
 <div id="hud-action-notif"></div>
+
+<!-- Unsafe behavior detection -->
+<div id="unsafe-flash" class="hidden"></div>
+<div id="unsafe-toast" class="hidden">🚨 작업반경 진입! 즉시 대피</div>
 
 <!-- Crane Cab Overlay -->
 <div id="crane-cab-overlay" class="hidden">
@@ -525,6 +530,7 @@
 <script src="scenarios/lifting/hazards.js"></script>
 <script src="core/hud.js"></script>
 <script src="core/accident.js"></script>
+<script src="core/unsafe.js"></script>
 <script src="scenarios/lifting/actions.js"></script>
 <script src="core/interaction.js"></script>
 <script src="core/player.js"></script>
