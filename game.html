@@ -824,15 +824,26 @@
     document.getElementById('blocker').style.display = 'none';
     GAME.state.gameStarted = true;
     GAME.state.phase = 1;
-    initNPCs();
-    initInstructions();
-    initBuilding();
-    if (typeof initStructure === 'function') initStructure();
-    initSignboard();
-    initEnding();
-    initTBM();
-    if (typeof BLUEPRINT_MANAGER !== 'undefined') {
-      BLUEPRINT_MANAGER.init().then(() => BLUEPRINT_MANAGER.setActive('warehouse'));
+    // ── 시나리오별 전용 시스템 초기화 ──
+    // lifting 시나리오 전용: NPC + 건물 단계 + 도면 + TBM + signboard
+    const isLifting = GAME.scenarioId === 'lifting';
+    if (isLifting) {
+      initNPCs();
+      initInstructions();
+      initBuilding();
+      if (typeof initStructure === 'function') initStructure();
+      initSignboard();
+      initEnding();
+      initTBM();
+      if (typeof BLUEPRINT_MANAGER !== 'undefined') {
+        BLUEPRINT_MANAGER.init().then(() => BLUEPRINT_MANAGER.setActive('warehouse'));
+      }
+    } else {
+      // 비-lifting: ending(컷씬·수료증) 만 활성, NPC·건물.js·TBM 제외
+      initEnding();
+      // HUD 양중 전용 표시 숨김
+      const f = document.getElementById('hud-floors'); if (f) f.classList.add('hidden');
+      const b = document.getElementById('building-progress'); if (b) b.style.display = 'none';
     }
     updateHUD();
     _openBriefing();

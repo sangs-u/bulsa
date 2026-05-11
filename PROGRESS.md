@@ -2,7 +2,7 @@
 > 작업 완료 시 이 파일만 업데이트. 내용은 항상 30줄 이내로 유지.
 
 ## 마지막 완료 작업
-- 물리 보강: 5점 다중 raycast 바닥 감지(엣지 안정), 코요테 타임 0.15s, 점프 버퍼 0.15s, 헤드범프(천장 충돌), 종속속도 -55 m/s 제한, 추락 데미지(15m/s 초과 충격 시 안전지수 차감 + 화면 붉은 플래시). 안내에 SHIFT 달리기 추가
+- 추락 사망 + 시나리오 격리 batch fix: 4m 이상(13 m/s) 추락 시 GLOBAL_ACCIDENTS.worker_fall 게임오버 사고(KOSHA §42/§44). lifting 전용 시스템(NPC/건물/TBM/도면/signboard)을 lifting 시나리오에서만 초기화. showCompletePanel 체크리스트 시나리오별 분기(LIFT/EXCAV/FOUND/ENV/MEP_STATE 자동 선택). HUD 층수 카운터·building-progress 비-lifting에서 숨김
 
 ## 디자인 원칙 (v2.0 방향)
 - **행동 중심**: 팝업/클릭이 아니라 실제 도구 사용·측정·이동이 게임 결과에 영향

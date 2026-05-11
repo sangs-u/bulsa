@@ -306,14 +306,24 @@ function _applyVerticalPhysics(delta) {
     PLAYER.onGround = true;
     PLAYER._coyoteT = PLAYER.coyoteTime;
 
-    // 착지 데미지 (안전대 미착용 가정) — 충격속도 따라
-    if (!wasOnGround && impactVelY < -15) {
-      const severity = Math.min(40, Math.round(-impactVelY * 1.4));
-      if (typeof applySafetyPenalty === 'function') applySafetyPenalty(severity);
-      if (typeof showActionNotif === 'function') {
-        showActionNotif(`💥 추락 충격 — 안전지수 -${severity}`, 2500);
+    // ── 추락 데미지 (충격속도 기반 — 현실 임계치 적용) ──
+    // v² = 2gh → h: 2m → v≈9, 4m → v≈13, 10m → v≈21
+    // < 9 m/s (h<2m): 무해
+    // 9~13  (h 2~4m): 경상 — 안전지수 감소
+    // >= 13 (h≥4m, 약 1층 이상): 사망 — 게임오버 사고
+    if (!wasOnGround && impactVelY < -9) {
+      const v = -impactVelY;
+      if (v >= 13) {
+        // 사망 사고 — 안전대·추락방지망 미설치 추정
+        if (typeof triggerAccident === 'function') triggerAccident('worker_fall');
+      } else {
+        const severity = Math.round((v - 9) * 6);  // 9~13 → 0~24
+        if (typeof applySafetyPenalty === 'function') applySafetyPenalty(severity);
+        if (typeof showActionNotif === 'function') {
+          showActionNotif(`💥 경상 — 안전지수 -${severity} (충격 ${v.toFixed(1)} m/s)`, 2800);
+        }
+        _flashFallImpact();
       }
-      _flashFallImpact();
     }
   } else {
     if (wasOnGround) {

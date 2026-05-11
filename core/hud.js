@@ -67,12 +67,17 @@ function updateHUD() {
   const siLbl = document.getElementById('hud-si-label');
   if (siLbl) siLbl.textContent = t('safetyIndex');
 
-  // 층수 진척
+  // 층수 진척 (lifting 시나리오에서만)
   const fEl = document.getElementById('hud-floors');
   if (fEl) {
-    const done = s.completedFloors || 0;
-    const tot  = s.targetFloors || 5;
-    fEl.textContent = `🏗 ${done}/${tot}${t('floorUnit')}`;
+    if (GAME.scenarioId === 'lifting') {
+      const done = s.completedFloors || 0;
+      const tot  = s.targetFloors || 5;
+      fEl.textContent = `🏗 ${done}/${tot}${t('floorUnit')}`;
+      fEl.classList.remove('hidden');
+    } else {
+      fEl.classList.add('hidden');
+    }
   }
 
   // 숙련도 — survey 활성 시 매설물탐지 Lv 표시

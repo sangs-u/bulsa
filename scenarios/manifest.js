@@ -140,6 +140,30 @@ const CONSTRUCTION_MANIFEST = [
   },
 ];
 
+// 시나리오 무관 글로벌 사고 — 추락사 등 (어디서나 발생 가능)
+const GLOBAL_ACCIDENTS = {
+  worker_fall: {
+    descKo: '안전대 미착용·추락방지망 미설치 상태에서 작업자가 고소작업 중 추락하여 사망하였습니다.',
+    descEn: 'Worker fell from height due to missing fall arrest equipment.',
+    causeKo: '안전대 부착설비 미설치 / 안전난간 미설치 / 추락방지망 부재',
+    causeEn: 'No lifeline anchor / no guardrails / no safety net',
+    lawKo: '산업안전보건기준에 관한 규칙 제42조 (추락의 방지)\n제44조 (안전대의 사용)\nKOSHA GUIDE G-110-2020',
+    lawEn: 'OSH Standards Rule §42 (Fall prevention)\n§44 (Use of safety harness)\nKOSHA GUIDE G-110-2020',
+    procedureKo: [
+      '2m 이상 작업 시 안전대 부착설비(수평구명줄) 설치',
+      '작업 외곽·개구부 안전난간(상부·중간) 설치',
+      '추락 위험 구역 하부에 추락방지망 설치',
+      '안전대 더블훅 체결 — 이동 시 한쪽 항상 연결 유지',
+    ],
+    procedureEn: [
+      'Install lifeline anchors (horizontal lifeline) for work ≥ 2m',
+      'Install upper/middle guardrails at edges and openings',
+      'Install fall-arrest netting below fall hazard zones',
+      'Use double-hook harness — keep one hook connected at all times',
+    ],
+  },
+};
+
 // 산안법 과태료 기준 (시행령 별표 35) — penalty 시스템에서 참조
 const OSH_PENALTY_BASE = {
   no_worksplan:     { ko: '작업계획서 미작성',         krw: 5_000_000, law: '산안법 §38, 시행규칙 §38' },

@@ -125,7 +125,11 @@ function showAccidentPanel(accidentId) {
   } else if (GAME.scenarioId === 'mep_finish' && typeof MEP_DATA !== 'undefined') {
     dataset = MEP_DATA;
   }
-  const data = dataset.accidents[accidentId];
+  // 시나리오 데이터에 없으면 글로벌 사고에서 조회 (추락 등)
+  let data = dataset.accidents[accidentId];
+  if (!data && typeof GLOBAL_ACCIDENTS !== 'undefined') {
+    data = GLOBAL_ACCIDENTS[accidentId];
+  }
   if (!data) return;
   const isKo = currentLang === 'ko';
 
@@ -179,16 +183,54 @@ function showCompletePanel() {
 
   if (document.pointerLockElement) document.exitPointerLock();
 
-  const checks = [
-    { key: 'slingInspected',  ko: '슬링 점검',         en: 'Sling Inspection',       vi: 'Kiểm tra dây đai',        ar: 'فحص حبل الربط' },
-    { key: 'pinSecured',      ko: '안전핀 체결',        en: 'Safety Pin Secured',     vi: 'Khóa chốt an toàn',       ar: 'تثبيت مسمار الأمان' },
-    { key: 'specChecked',     ko: '사양서 확인',        en: 'Spec Sheet Reviewed',    vi: 'Xem tài liệu thông số',   ar: 'مراجعة وثيقة المواصفات' },
-    { key: 'angleMeasured',   ko: '슬링 각도 측정',     en: 'Angle Measured',         vi: 'Đo góc dây',              ar: 'قياس زاوية الحبل' },
-    { key: 'signalAssigned',  ko: '신호수 위치 지정',   en: 'Signal Person Assigned', vi: 'Bố trí người ra hiệu',    ar: 'تحديد موقع المُوجِّه' },
-    { key: 'workerEvacuated', ko: '작업반경 대피 지시', en: 'Worker Evacuated',       vi: 'Ra lệnh sơ tán công nhân', ar: 'إخلاء العامل من المنطقة' },
-  ];
-
-  const allDone = checks.every(c => LIFT_STATE[c.key]);
+  // 시나리오별 체크리스트
+  const checksByScenario = {
+    lifting: [
+      { state: 'LIFT_STATE', key: 'slingInspected',  ko: '슬링 점검' },
+      { state: 'LIFT_STATE', key: 'pinSecured',      ko: '안전핀 체결' },
+      { state: 'LIFT_STATE', key: 'specChecked',     ko: '사양서 확인' },
+      { state: 'LIFT_STATE', key: 'angleMeasured',   ko: '슬링 각도 측정' },
+      { state: 'LIFT_STATE', key: 'signalAssigned',  ko: '신호수 위치 지정' },
+      { state: 'LIFT_STATE', key: 'workerEvacuated', ko: '작업반경 대피 지시' },
+    ],
+    excavation: [
+      { state: 'EXCAV_STATE', key: 'planWritten',       ko: '작업계획서 작성' },
+      { state: 'EXCAV_STATE', key: 'surveyDone',        ko: '매설물 사전조사' },
+      { state: 'EXCAV_STATE', key: 'shoringInstalled', ko: '흙막이 점검' },
+      { state: 'EXCAV_STATE', key: 'railingInstalled', ko: '안전난간 설치' },
+      { state: 'EXCAV_STATE', key: 'signalAssigned',    ko: '신호수 배치' },
+    ],
+    foundation: [
+      { state: 'FOUND_STATE', key: 'planWritten',      ko: '작업계획서 작성' },
+      { state: 'FOUND_STATE', key: 'rebarCapsOk',      ko: '철근 보호캡 점검' },
+      { state: 'FOUND_STATE', key: 'formworkOk',       ko: '거푸집·동바리 점검' },
+      { state: 'FOUND_STATE', key: 'pumpOk',           ko: '펌프카 점검' },
+      { state: 'FOUND_STATE', key: 'pourOrderAgreed', ko: '타설 순서 합의' },
+    ],
+    envelope: [
+      { state: 'ENV_STATE', key: 'planWritten',         ko: '작업계획서 작성' },
+      { state: 'ENV_STATE', key: 'scaffoldInspected',  ko: '비계 조립검사' },
+      { state: 'ENV_STATE', key: 'lifelineInstalled', ko: '안전대 부착설비' },
+      { state: 'ENV_STATE', key: 'panelSecured',       ko: '외장재 결속 점검' },
+      { state: 'ENV_STATE', key: 'signalAssigned',     ko: '신호수 배치' },
+    ],
+    mep_finish: [
+      { state: 'MEP_STATE', key: 'planWritten',    ko: '작업계획서 작성' },
+      { state: 'MEP_STATE', key: 'lotoApplied',    ko: 'LOTO 잠금·표지' },
+      { state: 'MEP_STATE', key: 'gasChecked',     ko: '가스누설 점검' },
+      { state: 'MEP_STATE', key: 'ventActivated', ko: '환기·국소배기' },
+      { state: 'MEP_STATE', key: 'extVerified',    ko: '소화기 배치' },
+    ],
+  };
+  const checks = checksByScenario[GAME.scenarioId] || checksByScenario.lifting;
+  function _getState(st) {
+    try { return (typeof window !== 'undefined') ? window[st] : eval(st); } catch(e) { return null; }
+  }
+  function _check(c) {
+    const s = _getState(c.state);
+    return s && s[c.key];
+  }
+  const allDone = checks.every(c => _check(c));
   const L = currentLang;
 
   document.getElementById('cmp-title').textContent    = t('completeTitle');
@@ -201,7 +243,7 @@ function showCompletePanel() {
   if (listEl) {
     listEl.innerHTML = '';
     checks.forEach(c => {
-      const done = LIFT_STATE[c.key];
+      const done = _check(c);
       const div  = document.createElement('div');
       div.className  = 'check-item ' + (done ? 'check-done' : 'check-missed');
       div.textContent = (done ? '✓ ' : '✗ ') + (c[L] || c.ko);
