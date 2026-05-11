@@ -17,7 +17,14 @@ const PLAYER = {
   lookDX: 0,
   lookDY: 0,
   // Collision
-  _collisionRay: null, // reused Raycaster instance
+  _collisionRay: null,
+  // Vertical physics
+  velocityY: 0,
+  onGround: true,
+  jumpSpeed: 7.5,     // m/s
+  gravity:   22,      // m/s²
+  eyeHeight: 1.7,     // 카메라 높이 (발 기준)
+  _downRay: null,
 };
 
 // Fixed camera presets — populated in initPlayer after Three.js is ready
@@ -27,6 +34,7 @@ function initPlayer() {
   PLAYER.euler   = new THREE.Euler(0, 0, 0, 'YXZ');
   PLAYER.worldPos = new THREE.Vector3(0, 0, 12);
   PLAYER._collisionRay = new THREE.Raycaster();
+  PLAYER._downRay      = new THREE.Raycaster();
 
   FIXED_CAMS = [
     { pos: new THREE.Vector3(18,  9,  5),  target: new THREE.Vector3(0,  3, -10) }, // 전체 조망
@@ -71,6 +79,14 @@ function initPlayer() {
     }
     if (GAME.state.gameStarted && e.code === 'KeyV') _toggleCamFpsTps();
     if (GAME.state.gameStarted && e.code === 'KeyC') _cycleFixedCam();
+    // 점프: SPACE — 미니게임이 SPACE 안 쓸 때만 (현재 survey 만 사용)
+    if (GAME.state.gameStarted && e.code === 'Space' && PLAYER.onGround) {
+      const surveyUsesSpace = (typeof SURVEY !== 'undefined' && SURVEY.active);
+      if (!surveyUsesSpace) {
+        PLAYER.velocityY = PLAYER.jumpSpeed;
+        PLAYER.onGround = false;
+      }
+    }
   });
   document.addEventListener('keyup', e => { PLAYER.keys[e.code] = false; });
 
@@ -158,9 +174,12 @@ function updatePlayer(delta) {
       PLAYER.worldPos.x = Math.max(-38, Math.min(38, PLAYER.worldPos.x));
       PLAYER.worldPos.z = Math.max(-38, Math.min(38, PLAYER.worldPos.z));
       PLAYER._stepTimer = (PLAYER._stepTimer || 0) + delta;
-      if (PLAYER._stepTimer > 0.38) { PLAYER._stepTimer = 0; if (typeof SOUND !== 'undefined') SOUND.footstep(); }
+      if (PLAYER._stepTimer > 0.38 && PLAYER.onGround) { PLAYER._stepTimer = 0; if (typeof SOUND !== 'undefined') SOUND.footstep(); }
     }
   }
+
+  // ── Vertical physics (중력 + 바닥 감지) ────────────────────
+  _applyVerticalPhysics(delta);
 
   // Mobile look (FPS only)
   if (PLAYER.camMode === 'fps' && (PLAYER.lookDX !== 0 || PLAYER.lookDY !== 0)) {
@@ -174,12 +193,11 @@ function updatePlayer(delta) {
 
   // ── Camera positioning by mode ─────────────────────────
   if (PLAYER.camMode === 'fps') {
-    GAME.camera.position.set(PLAYER.worldPos.x, 1.7, PLAYER.worldPos.z);
+    GAME.camera.position.set(PLAYER.worldPos.x, PLAYER.worldPos.y + PLAYER.eyeHeight, PLAYER.worldPos.z);
 
   } else if (PLAYER.camMode === 'tps') {
-    const yaw     = PLAYER.euler.y;
-    // Camera sits 4.5m behind + 3m above the player
-    const behind  = new THREE.Vector3(
+    const yaw = PLAYER.euler.y;
+    const behind = new THREE.Vector3(
       Math.sin(yaw) * 4.5,
       3.0,
       Math.cos(yaw) * 4.5
@@ -190,7 +208,6 @@ function updatePlayer(delta) {
       PLAYER.worldPos.z + behind.z
     );
     GAME.camera.position.lerp(desired, Math.min(1, 10 * delta));
-    // Look at player's shoulder height
     GAME.camera.lookAt(PLAYER.worldPos.x, PLAYER.worldPos.y + 1.5, PLAYER.worldPos.z);
 
   } else if (PLAYER.camMode === 'fixed') {
@@ -198,6 +215,61 @@ function updatePlayer(delta) {
     GAME.camera.position.lerp(fc.pos, Math.min(1, 6 * delta));
     GAME.camera.lookAt(fc.target);
   }
+}
+
+// ── Vertical physics ──────────────────────────────────────
+// 중력 + 바닥 감지 (raycast 아래 방향). 비계 plank·건물 슬라브 위에 설 수 있음.
+function _applyVerticalPhysics(delta) {
+  // 1) 중력 적용
+  PLAYER.velocityY -= PLAYER.gravity * delta;
+  PLAYER.worldPos.y += PLAYER.velocityY * delta;
+
+  // 2) 바닥 감지 — 머리 위치에서 아래로 raycast
+  const origin = new THREE.Vector3(
+    PLAYER.worldPos.x,
+    PLAYER.worldPos.y + PLAYER.eyeHeight + 0.3,  // 머리 위 살짝
+    PLAYER.worldPos.z
+  );
+  PLAYER._downRay.set(origin, new THREE.Vector3(0, -1, 0));
+  PLAYER._downRay.near = 0;
+  PLAYER._downRay.far  = 30;
+
+  // 모든 메시 대상 (avatar/viewmodel 제외)
+  const targets = [];
+  GAME.scene.traverse(obj => {
+    if (!obj.isMesh) return;
+    if (AVATAR && AVATAR.group && _isDescendantOf(obj, AVATAR.group)) return;
+    if (AVATAR && AVATAR.vmDetector && _isDescendantOf(obj, AVATAR.vmDetector)) return;
+    targets.push(obj);
+  });
+
+  const hits = PLAYER._downRay.intersectObjects(targets, false);
+
+  // 3) 가장 높은 (가까운) hit 의 표면 Y 를 ground 로 채택
+  let groundY = -100; // 무한대 아래
+  for (const h of hits) {
+    if (h.point.y < origin.y + 0.01) {
+      groundY = h.point.y;
+      break;  // 첫 번째 hit 이 가장 가까움
+    }
+  }
+  // ground 가 없으면 절대 바닥 0 으로
+  if (groundY < -50) groundY = 0;
+
+  // 4) 발이 ground 아래로 가면 표면에 맞춤
+  if (PLAYER.worldPos.y <= groundY) {
+    PLAYER.worldPos.y = groundY;
+    if (PLAYER.velocityY < 0) PLAYER.velocityY = 0;
+    PLAYER.onGround = true;
+  } else {
+    PLAYER.onGround = false;
+  }
+}
+
+function _isDescendantOf(child, parent) {
+  let p = child.parent;
+  while (p) { if (p === parent) return true; p = p.parent; }
+  return false;
 }
 
 // ── Joystick ───────────────────────────────────────────────

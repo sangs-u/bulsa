@@ -161,9 +161,9 @@ function _buildDetectorViewmodel() {
 function updateAvatar() {
   if (!AVATAR.group || !PLAYER || !PLAYER.worldPos) return;
 
-  // 위치·회전 동기
-  AVATAR.group.position.set(PLAYER.worldPos.x, PLAYER.worldPos.y, PLAYER.worldPos.z);
-  AVATAR.group.rotation.y = PLAYER.euler.y + Math.PI;  // 카메라 yaw에 맞게 (얼굴이 진행 방향)
+  // 위치·회전 동기 (점프·낙하 시 Y 도 같이 움직임)
+  AVATAR.group.position.set(PLAYER.worldPos.x, PLAYER.worldPos.y || 0, PLAYER.worldPos.z);
+  AVATAR.group.rotation.y = PLAYER.euler.y + Math.PI;
 
   // 카메라 모드 분기
   if (PLAYER.camMode === 'tps') {

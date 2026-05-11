@@ -95,10 +95,11 @@ function _buildScaffolding(scene) {
     // 작업발판 + 안전난간 (각 층)
     for (let fl = 0; fl < Math.floor(totalH/bayH); fl++) {
       const fy = fl * bayH + 0.05;
-      // 작업발판
+      // 작업발판 (서있을 수 있도록 collider 등록)
       const plank = new THREE.Mesh(new THREE.BoxGeometry(offset*2, 0.05, 0.6), plateMat);
       plank.position.set(0, fy, zSide);
       scene.add(plank);
+      GAME.colliders.push(plank);
       // 안전난간 (3단)
       [0.45, 0.9, 1.05].forEach(rh => {
         const pts = [
@@ -123,6 +124,7 @@ function _buildScaffolding(scene) {
       const plank = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, offset*2), plateMat);
       plank.position.set(xSide, fy, cz);
       scene.add(plank);
+      GAME.colliders.push(plank);
       [0.45, 0.9, 1.05].forEach(rh => {
         const pts = [
           new THREE.Vector3(xSide, fy + rh, cz - offset),
