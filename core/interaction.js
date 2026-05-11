@@ -106,12 +106,13 @@ function _handleE() {
   if (!target) return;
 
   switch (target.type) {
-    case 'action':     performAction(target.actionId); break;
-    case 'document':   openSpecPopup(target.docId);    break;
-    case 'blueprint':  openBlueprintPanel();            break;
-    case 'crane_cab':  boardCrane();                    break;
-    case 'excav_cab':  if (typeof boardExcavator === 'function') boardExcavator(); break;
-    case 'npc':        openPopup(target);               break;   // instruction.js handles
+    case 'action':       performAction(target.actionId); break;
+    case 'document':     openSpecPopup(target.docId);    break;
+    case 'blueprint':    openBlueprintPanel();           break;
+    case 'crane_cab':    boardCrane();                   break;
+    case 'excav_cab':    if (typeof boardExcavator === 'function') boardExcavator(); break;
+    case 'pump_console': openPumpConsole();              break;
+    case 'npc':          openPopup(target);              break;
   }
 }
 
@@ -119,6 +120,9 @@ function _handleE() {
 function getCurrentPhase() {
   if (GAME.scenarioId === 'excavation' && typeof getCurrentExcavPhase === 'function') {
     return getCurrentExcavPhase();
+  }
+  if (GAME.scenarioId === 'foundation' && typeof getCurrentFoundPhase === 'function') {
+    return getCurrentFoundPhase();
   }
   if (!LIFT_STATE.planWritten)       return 1;
   if (!LIFT_STATE.safetyChecked)     return 2;
@@ -249,6 +253,52 @@ function performAction(actionId) {
       GAME.state.phase = getCurrentPhase();
       updateHUD();
       showActionNotif('✅ 신호수 배치 완료 — 굴착기 운전석으로', 3000);
+      break;
+
+    // ── Foundation actions ──────────────────────────────────
+    case 'write_found_plan':
+      if (FOUND_STATE.planWritten) { showActionNotif('작업계획서 이미 작성됨', 2000); break; }
+      openFoundPlanPanel();
+      break;
+
+    case 'check_rebar_caps':
+      if (FOUND_STATE.rebarCapsOk) return;
+      if (!FOUND_STATE.planWritten) { showActionNotif('계획서 먼저', 2000); break; }
+      FOUND_STATE.rebarCapsOk = true;
+      _dimActionMesh('check_rebar_caps');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 철근 보호캡 점검 완료', 2500);
+      break;
+
+    case 'inspect_formwork':
+      if (FOUND_STATE.formworkOk) return;
+      if (!FOUND_STATE.rebarCapsOk) { showActionNotif('철근 먼저', 2000); break; }
+      FOUND_STATE.formworkOk = true;
+      _dimActionMesh('inspect_formwork');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 거푸집·동바리 점검 완료', 2500);
+      break;
+
+    case 'inspect_pump':
+      if (FOUND_STATE.pumpOk) return;
+      if (!FOUND_STATE.formworkOk) { showActionNotif('거푸집 먼저', 2000); break; }
+      FOUND_STATE.pumpOk = true;
+      _dimActionMesh('inspect_pump');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 펌프카 점검 완료', 2500);
+      break;
+
+    case 'agree_pour_order':
+      if (FOUND_STATE.pourOrderAgreed) return;
+      if (!FOUND_STATE.pumpOk) { showActionNotif('펌프카 먼저', 2000); break; }
+      FOUND_STATE.pourOrderAgreed = true;
+      _dimActionMesh('agree_pour_order');
+      GAME.state.phase = getCurrentPhase();
+      updateHUD();
+      showActionNotif('✅ 타설 순서 합의 완료 — 제어반으로', 3000);
       break;
   }
 }
@@ -1073,6 +1123,40 @@ function boardExcavator() {
 
   document.getElementById('excav-cab-overlay').classList.remove('hidden');
   hideInteractPrompt();
+}
+
+// ── 기초공사 — 작업계획서 ──────────────────────────────────
+function openFoundPlanPanel() {
+  document.exitPointerLock();
+  INTERACTION.popupOpen = true;
+  const panel = document.getElementById('found-plan-panel');
+  if (!panel) return;
+  panel.classList.remove('hidden');
+
+  document.getElementById('found-plan-sign').onclick = () => {
+    FOUND_STATE.planMatArea      = parseFloat(document.getElementById('found-area').value);
+    FOUND_STATE.planRebarSpacing = parseFloat(document.getElementById('found-rebar').value);
+    FOUND_STATE.planConcStrength = parseFloat(document.getElementById('found-conc').value);
+    FOUND_STATE.planShoringSpace = parseFloat(document.getElementById('found-shoring').value);
+    FOUND_STATE.planWritten = true;
+
+    GAME.state.phase = getCurrentPhase();
+    updateHUD();
+    showActionNotif('✅ 기초 작업계획서 서명 완료 — 철근 점검으로', 3500);
+    _closePanel('found-plan-panel');
+  };
+  document.getElementById('found-plan-cancel').onclick = () => _closePanel('found-plan-panel');
+}
+
+// ── 기초공사 — 타설 제어반 ────────────────────────────────
+function openPumpConsole() {
+  if (GAME.state.liftStarted || GAME.state.gameOver) return;
+  if (typeof FOUND_STATE === 'undefined') return;
+  if (!FOUND_STATE.pourOrderAgreed) {
+    showActionNotif('타설 순서 합의 먼저', 2500);
+    return;
+  }
+  evaluateFoundation();
 }
 
 function exitExcavCab() {

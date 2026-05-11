@@ -115,9 +115,12 @@ function _doFlash() {
 
 function showAccidentPanel(accidentId) {
   // 시나리오 인식: 활성 데이터셋에서 사고 정보 조회
-  const dataset = (GAME.scenarioId === 'excavation' && typeof EXCAVATION_DATA !== 'undefined')
-    ? EXCAVATION_DATA
-    : LIFTING_DATA;
+  let dataset = LIFTING_DATA;
+  if (GAME.scenarioId === 'excavation' && typeof EXCAVATION_DATA !== 'undefined') {
+    dataset = EXCAVATION_DATA;
+  } else if (GAME.scenarioId === 'foundation' && typeof FOUNDATION_DATA !== 'undefined') {
+    dataset = FOUNDATION_DATA;
+  }
   const data = dataset.accidents[accidentId];
   if (!data) return;
   const isKo = currentLang === 'ko';
@@ -202,10 +205,26 @@ function showCompletePanel() {
     });
   }
 
+  // 다음 공정 버튼 노출 (있을 때만)
+  const nextBtn = document.getElementById('cmp-btn-next');
+  if (nextBtn) {
+    if (GAME.nextScenarioId) {
+      const nextLabels = {
+        excavation: '🏗 다음: 토공사 →',
+        foundation: '🏗 다음: 기초공사 →',
+        lifting:    '🏗 다음: 골조 양중 →',
+      };
+      nextBtn.textContent = nextLabels[GAME.nextScenarioId] || `다음 공정 →`;
+      nextBtn.style.display = '';
+    } else {
+      nextBtn.style.display = 'none';
+    }
+  }
+
   document.getElementById('complete-panel').classList.remove('hidden');
 
-  // 모두 완료 시 2초 후 수료증 자동 표시
-  if (allDone && typeof showCertificate === 'function') {
+  // 모두 완료 시 2초 후 수료증 자동 표시 (마지막 공정에서만)
+  if (allDone && !GAME.nextScenarioId && typeof showCertificate === 'function') {
     setTimeout(() => showCertificate(), 2000);
   }
 }

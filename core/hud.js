@@ -37,9 +37,15 @@ function updateHUD() {
 
   // Phase label (시나리오 인식)
   const phase = Math.max(1, Math.min(6, s.phase || 1));
-  const isExcav = GAME.scenarioId === 'excavation' && typeof EXCAV_PHASE_NAMES !== 'undefined';
-  const namesTbl   = isExcav ? EXCAV_PHASE_NAMES    : PHASE_NAMES;
-  const missionTbl = isExcav ? EXCAV_PHASE_MISSIONS : PHASE_MISSIONS;
+  let namesTbl   = PHASE_NAMES;
+  let missionTbl = PHASE_MISSIONS;
+  if (GAME.scenarioId === 'excavation' && typeof EXCAV_PHASE_NAMES !== 'undefined') {
+    namesTbl   = EXCAV_PHASE_NAMES;
+    missionTbl = EXCAV_PHASE_MISSIONS;
+  } else if (GAME.scenarioId === 'foundation' && typeof FOUND_PHASE_NAMES !== 'undefined') {
+    namesTbl   = FOUND_PHASE_NAMES;
+    missionTbl = FOUND_PHASE_MISSIONS;
+  }
   const phaseName = (namesTbl[phase] && namesTbl[phase][currentLang]) ||
                     (namesTbl[phase] && namesTbl[phase].ko) || '';
   const phaseEl = document.getElementById('hud-phase-text');

@@ -87,6 +87,7 @@
     <p id="cmp-msg" style="font-size:0.86rem; color:var(--muted); line-height:1.6; margin:10px 0;"></p>
     <div id="cmp-checklist" style="margin:12px 0 16px;"></div>
     <div class="accident-btns">
+      <button class="btn-primary" id="cmp-btn-next" onclick="goNextScenario()" style="display:none;">다음 공정 →</button>
       <button class="btn-retry" id="cmp-btn-retry" onclick="retryGame()">다시 시도</button>
       <button class="btn-hub"   id="cmp-btn-hub"   onclick="goHub()">허브로</button>
     </div>
@@ -196,6 +197,51 @@
   </div>
   <div class="panel-footer">
     <button class="btn-primary" id="excav-plan-sign">서명·제출</button>
+  </div>
+</div>
+
+<!-- Foundation Work Plan Panel (Phase 1) -->
+<div id="found-plan-panel" class="panel hidden">
+  <div class="panel-header">
+    <span class="panel-icon">📋</span>
+    <h2 id="found-plan-title">기초 작업계획서</h2>
+    <span class="panel-phase">Phase 1/6</span>
+    <button class="panel-close-btn" id="found-plan-cancel" title="닫기">✕</button>
+  </div>
+  <div class="panel-body">
+    <p class="panel-guide">매트 기초 매개변수를 결정하세요. 동바리 간격이 1m 초과면 거푸집 붕괴 위험.</p>
+    <div class="wi-form">
+      <label class="wi-row">
+        <span class="wi-label">기초 매트 면적 (m²)</span>
+        <input type="number" id="found-area" min="80" max="200" step="5" value="144">
+      </label>
+      <label class="wi-row">
+        <span class="wi-label">철근 배근 간격 (mm)</span>
+        <select id="found-rebar">
+          <option value="150">150mm (밀배근)</option>
+          <option value="200" selected>200mm (표준)</option>
+          <option value="250">250mm (소배근)</option>
+          <option value="300">300mm (위험)</option>
+        </select>
+      </label>
+      <label class="wi-row">
+        <span class="wi-label">콘크리트 강도 (MPa)</span>
+        <select id="found-conc">
+          <option value="21">21 MPa (저강도)</option>
+          <option value="24" selected>24 MPa (표준)</option>
+          <option value="27">27 MPa (고강도)</option>
+          <option value="30">30 MPa (특수)</option>
+        </select>
+      </label>
+      <label class="wi-row">
+        <span class="wi-label">동바리 간격 (m)</span>
+        <input type="number" id="found-shoring" min="0.6" max="1.5" step="0.1" value="0.9">
+      </label>
+      <p class="wi-hint">권장 0.6~1.0m · 1.0m 초과 시 측압 집중 → 거푸집 붕괴</p>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn-primary" id="found-plan-sign">서명·제출</button>
   </div>
 </div>
 
@@ -609,6 +655,10 @@
 <script src="scenarios/excavation/scene.js"></script>
 <script src="scenarios/excavation/hazards.js"></script>
 <script src="scenarios/excavation/actions.js"></script>
+<script src="scenarios/foundation/data.js"></script>
+<script src="scenarios/foundation/scene.js"></script>
+<script src="scenarios/foundation/hazards.js"></script>
+<script src="scenarios/foundation/actions.js"></script>
 <script src="core/hud.js"></script>
 <script src="core/accident.js"></script>
 <script src="core/unsafe.js"></script>
@@ -718,6 +768,11 @@
 
   function retryGame() { window.location.reload(); }
   function goHub()     { window.location.href = 'index.html'; }
+  function goNextScenario() {
+    if (GAME && GAME.nextScenarioId) {
+      window.location.href = location.pathname + '?s=' + GAME.nextScenarioId;
+    }
+  }
 
   // Late init — after all scripts loaded
   window.addEventListener('load', () => {
