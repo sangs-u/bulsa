@@ -144,7 +144,11 @@ function updatePlayer(delta) {
   // 가속도 보간 — 시작/정지 시 부드러운 가속
   PLAYER._curSpeed = PLAYER._curSpeed || 0;
   const isSprint = (PLAYER.keys['ShiftLeft'] || PLAYER.keys['ShiftRight']);
-  const targetSpeed = isSprint ? PLAYER.sprint : PLAYER.speed;
+  const isCrouch = (PLAYER.keys['ControlLeft'] || PLAYER.keys['ControlRight']);
+  const targetSpeed = isCrouch ? 2.0 : (isSprint ? PLAYER.sprint : PLAYER.speed);
+  // 크라우치 시 눈높이 낮춤 — eyeHeight 동적 보간
+  PLAYER._eyeTarget = isCrouch ? 1.05 : 1.7;
+  PLAYER.eyeHeight = PLAYER.eyeHeight + (PLAYER._eyeTarget - PLAYER.eyeHeight) * Math.min(1, 10 * delta);
 
   // 카메라 보브 누적
   PLAYER._bobT = PLAYER._bobT || 0;

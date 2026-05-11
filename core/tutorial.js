@@ -35,7 +35,7 @@
       </div>
       <div style="font-size:13px;line-height:1.85;margin-bottom:18px">
         ${isKo ? `
-        <b>이동:</b> WASD / 화살표 · <b>달리기:</b> Shift · <b>점프:</b> Space<br>
+        <b>이동:</b> WASD / 화살표 · <b>달리기:</b> Shift · <b>웅크리기:</b> Ctrl · <b>점프:</b> Space<br>
         <b>상호작용:</b> E · <b>1인칭/3인칭:</b> V · <b>고정카메라:</b> C<br>
         <b>픽업/내려놓기:</b> Q · <b>던지기:</b> F · <b>날씨 토글:</b> B<br>
         <b>도구함:</b> 1·2·3·4 · <b>도면:</b> M · <b>일시정지:</b> P/ESC · <b>FPS:</b> F3<br><br>
@@ -59,6 +59,9 @@
     document.getElementById('tutorial-close-btn').onclick = () => {
       try { localStorage.setItem('bulsa_tutorial_seen', '1'); } catch (e) {}
       el.remove();
+      // 포인터락 자동 복원 (게임 흐름 끊김 없음)
+      const c = GAME.renderer && GAME.renderer.domElement;
+      if (c && window.matchMedia && window.matchMedia('(pointer: fine)').matches) c.requestPointerLock();
     };
   }
 
