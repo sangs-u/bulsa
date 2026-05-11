@@ -29,6 +29,9 @@ const GAME = {
     completedFloors: 0,
     // 작업계획서 (시나리오별 확정 — 사전 수립, 이후 실제 작업의 근거)
     workPlans:       {},
+    // 누적 과태료 (감독관 적발 시 부과)
+    finesKrw:        0,
+    fineHistory:     [],
   },
 };
 
@@ -101,6 +104,7 @@ const GAME = {
   if (typeof initPostFX === 'function') initPostFX();
   if (typeof initPhysics === 'function') initPhysics();
   if (typeof spawnDemoHazards === 'function') spawnDemoHazards(GAME.scene, GAME.scenarioId);
+  if (typeof initInspector === 'function') initInspector();
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
@@ -143,6 +147,7 @@ function _loop() {
     if (typeof updateAvatar === 'function')         updateAvatar();
     if (typeof updateDelegation === 'function')     updateDelegation(delta);
     if (typeof updatePhysics === 'function')    updatePhysics(delta);
+    if (typeof updateInspector === 'function')  updateInspector(delta);
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();

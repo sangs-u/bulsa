@@ -268,12 +268,15 @@ function _applyVerticalPhysics(delta) {
   }
 
   // 6) 다중 ray 바닥 감지 (몸 둘레 5점 — 엣지 안정)
+  // 스텝업 상한: 발에서 maxStepUp 보다 높은 hit 은 "벽 윗면"으로 간주, 무시.
+  // (예전 버그: 벽 옆 sample 이 벽 윗면을 잡아 플레이어를 텔레포트시킴)
   const r = PLAYER.bodyRadius;
   const samples = [
     [ 0, 0 ],
     [ r, 0 ], [-r, 0 ],
     [ 0, r ], [ 0, -r ],
   ];
+  const maxStepUp = 0.45;          // 보도턱·계단 한 칸 정도만 자동 올라감
   let groundY = -1000;
   for (const [dx, dz] of samples) {
     const o = new THREE.Vector3(
@@ -286,12 +289,12 @@ function _applyVerticalPhysics(delta) {
     PLAYER._downRay.far  = 40;
     const hits = PLAYER._downRay.intersectObjects(targets, false);
     if (hits.length > 0) {
-      // 머리보다 낮은 첫 hit
       for (const h of hits) {
-        if (h.point.y <= o.y) {
-          if (h.point.y > groundY) groundY = h.point.y;
-          break;
-        }
+        if (h.point.y > o.y) continue;
+        // 발보다 maxStepUp 이상 높은 hit = 벽 윗면. 다음 hit 탐색.
+        if (h.point.y - PLAYER.worldPos.y > maxStepUp) continue;
+        if (h.point.y > groundY) groundY = h.point.y;
+        break;
       }
     }
   }

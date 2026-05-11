@@ -1081,16 +1081,45 @@ function animateLift() {
   const target = baseTarget + floor * floorRise;
   const speed  = 2.2;
 
+  // 빔 흔들림 (펜듈럼) — 양중 중 자연스러운 자재 진동.
+  // 각도 ~3° (0.05 rad) · 주기 2.4s · 상승할수록 감쇠.
+  const swayBaseX = beam.position.x;
+  const swayBaseZ = beam.position.z;
+  const swayBaseRotZ = beam.rotation.z;
+  const swayBaseRotX = beam.rotation.x;
+  const swayStart = performance.now();
+  const swayAmp = 0.06;             // ±6cm
+  const swayFreq = 2.4;             // rad/s (주기 ≈ 2.6s)
+
   (function rise() {
     if (GAME.state.gameOver) return;
     const dy = speed * 0.016;
 
     beam.position.y += dy;
 
+    // 흔들림 적용 — 상승 진행률에 따라 감쇠 (안정화)
+    const progress = Math.min(1, (beam.position.y - 1) / Math.max(1, target - 1));
+    const decay = 1 - progress * 0.6;
+    const t = (performance.now() - swayStart) / 1000;
+    const sx = Math.sin(t * swayFreq) * swayAmp * decay;
+    const sz = Math.cos(t * swayFreq * 0.83) * swayAmp * decay;
+    beam.position.x = swayBaseX + sx;
+    beam.position.z = swayBaseZ + sz;
+    beam.rotation.z = swayBaseRotZ - sx * 0.6;   // 흔들림에 따라 살짝 기울임
+    beam.rotation.x = swayBaseRotX + sz * 0.6;
+
     const h = GAME._craneHook;
     if (h) {
-      if (h.block) h.block.position.y += dy;
-      if (h.curve) h.curve.position.y += dy;
+      if (h.block) {
+        h.block.position.y += dy;
+        h.block.position.x = swayBaseX + sx * 0.7;
+        h.block.position.z = swayBaseZ + sz * 0.7;
+      }
+      if (h.curve) {
+        h.curve.position.y += dy;
+        h.curve.position.x = swayBaseX + sx * 0.7;
+        h.curve.position.z = swayBaseZ + sz * 0.7;
+      }
       if (h.hoistCable) {
         const pos = h.hoistCable.geometry.attributes.position;
         pos.setY(1, pos.getY(1) + dy);
@@ -1099,11 +1128,20 @@ function animateLift() {
     }
 
     const slArr = GAME._slingLines;
-    if (slArr) slArr.forEach(sl => { sl.position.y += dy; });
+    if (slArr) slArr.forEach(sl => {
+      sl.position.y += dy;
+      sl.position.x = swayBaseX + sx * 0.85;
+      sl.position.z = swayBaseZ + sz * 0.85;
+    });
 
     if (beam.position.y < target) {
       requestAnimationFrame(rise);
     } else {
+      // 거치 직전 흔들림 0 으로 복귀
+      beam.position.x = swayBaseX;
+      beam.position.z = swayBaseZ;
+      beam.rotation.z = swayBaseRotZ;
+      beam.rotation.x = swayBaseRotX;
       _onLiftCycleComplete();
     }
   })();

@@ -249,6 +249,17 @@ function showCompletePanel() {
       div.textContent = (done ? '✓ ' : '✗ ') + (c[L] || c.ko);
       listEl.appendChild(div);
     });
+    // 누적 과태료 표시
+    const fines = GAME.state.finesKrw || 0;
+    if (fines > 0) {
+      const fDiv = document.createElement('div');
+      fDiv.className = 'check-item check-missed';
+      fDiv.style.marginTop = '8px';
+      fDiv.style.borderTop = '1px solid #4A5568';
+      fDiv.style.paddingTop = '8px';
+      fDiv.textContent = `💰 누적 과태료 ₩${fines.toLocaleString('ko-KR')}`;
+      listEl.appendChild(fDiv);
+    }
   }
 
   // 다음 공정 버튼 노출 (있을 때만)
