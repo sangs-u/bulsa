@@ -28,13 +28,14 @@ const STATE_SPEED = {
 
 // ── NPC Class ──────────────────────────────────────────────────
 class NPC {
-  constructor({ id, name, role, language, skill, position, vestColor }) {
-    this.id       = id;
-    this.name     = name;
-    this.role     = role;
-    this.language = language;
-    this.skill    = skill;
-    this.fatigue  = 0;
+  constructor({ id, name, role, language, skill, position, vestColor, experience }) {
+    this.id         = id;
+    this.name       = name;
+    this.role       = role;
+    this.language   = language;
+    this.skill      = skill;
+    this.experience = experience || 0;  // 경력 (년)
+    this.fatigue    = 0;
     this.state    = NPC_STATES.IDLE;
     this.hasInstruction = false;
     this.instructionLangMismatch = false;
@@ -354,14 +355,35 @@ class NPC {
   }
 }
 
-// ── NPC Definitions ──────────────────────────────────────────
+// ── NPC Definitions (ID·역할·스킬·위치만 고정, 이름·경력은 랜덤) ──
 const NPC_DEFS = [
-  { id: 'gimc',   name: '김철수',   role: '신호수',     language: 'ko', skill: 0.90, vestColor: 0xCC5018, position: [ 7,  0,  -6] },
-  { id: 'park',   name: '박영수',   role: '슬링작업자', language: 'ko', skill: 0.75, vestColor: 0xD4A217, position: [-4,  0,  -8] },
-  { id: 'lee',    name: '이민호',   role: '고소작업자', language: 'ko', skill: 0.80, vestColor: 0xCC5018, position: [ 0,  0, -14] },
-  { id: 'ahmad',  name: '아흐마드', role: '보조작업자', language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 5,  0, -12] },
-  { id: 'nguyen', name: '응우옌',   role: '보조작업자', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0,  -4] },
+  { id: 'gimc',   role: '신호수',     language: 'ko', skill: 0.90, vestColor: 0xCC5018, position: [ 7,  0,  -6] },
+  { id: 'park',   role: '슬링작업자', language: 'ko', skill: 0.75, vestColor: 0xD4A217, position: [-4,  0,  -8] },
+  { id: 'lee',    role: '고소작업자', language: 'ko', skill: 0.80, vestColor: 0xCC5018, position: [ 0,  0, -14] },
+  { id: 'ahmad',  role: '보조작업자', language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 5,  0, -12] },
+  { id: 'nguyen', role: '보조작업자', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0,  -4] },
 ];
+
+// 언어별 이름 풀 — 매 세션 랜덤 선택
+const NPC_NAMES = {
+  ko: ['김민수','이지훈','박서준','최도윤','정시우','강하준','조이준','윤예준','장지호','임주원',
+       '서건우','한현우','오정훈','신동현','권혁준','황준영','노재민','홍성민','문태영','양원석'],
+  en: ['John Smith','David Brown','Michael Lee','Robert Kim','James Park','William Choi','Henry Cooper',
+       'Daniel Wright','Thomas Hall','Charles Reed','Joseph Bell','Edward Murphy','Andrew Foster'],
+  ar: ['أحمد المنصور','محمد الفهد','عمر السعيد','علي الناصر','يوسف الخالدي','حمزة العتيبي',
+       'خالد القحطاني','عبدالله المطيري','سعد الحربي','فهد العنزي'],
+  vi: ['Nguyễn Văn An','Trần Văn Bình','Lê Văn Chính','Phạm Văn Dũng','Hoàng Văn Em',
+       'Vũ Quang Huy','Bùi Trọng Nghĩa','Đỗ Minh Khôi','Đặng Văn Phú','Lý Tuấn Khang'],
+};
+
+function _randomName(lang) {
+  const pool = NPC_NAMES[lang] || NPC_NAMES.ko;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function _randomExperience() {
+  return Math.floor(Math.random() * 25) + 3; // 3 ~ 27 년
+}
 
 GAME.npcs = [];
 
@@ -377,7 +399,19 @@ function _initYuka() {
 function initNPCs() {
   _initYuka();
   NPC_DEFS.forEach(def => {
-    const npc = new NPC(def);
+    // 매 세션 동적 인스턴스화 — 이름·경력·위치 미세 변동
+    const runtimeDef = Object.assign({}, def);
+    runtimeDef.name       = _randomName(def.language);
+    runtimeDef.experience = _randomExperience();
+    runtimeDef.position   = [
+      def.position[0] + (Math.random() - 0.5) * 1.5,
+      def.position[1],
+      def.position[2] + (Math.random() - 0.5) * 1.5,
+    ];
+    // 스킬도 ±0.08 변동
+    runtimeDef.skill = Math.max(0.45, Math.min(0.98, def.skill + (Math.random() - 0.5) * 0.16));
+
+    const npc = new NPC(runtimeDef);
     npc.build();
     GAME.npcs.push(npc);
     _addYukaVehicle(npc);

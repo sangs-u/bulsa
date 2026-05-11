@@ -69,9 +69,10 @@ function openInstructionPopup(item) {
 
   _currentPanelNpcId = npc.id;
 
-  // NPC header
+  // NPC header — 이름 + 역할 + 경력
   document.getElementById('inst-name').textContent = npc.name;
-  document.getElementById('inst-role').textContent = `· ${npc.role}`;
+  const expSuffix = npc.experience ? ` · 경력 ${npc.experience}년` : '';
+  document.getElementById('inst-role').textContent = `· ${npc.role}${expSuffix}`;
 
   // Language badge
   const langBadge = document.getElementById('inst-lang-badge');

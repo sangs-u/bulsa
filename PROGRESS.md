@@ -2,7 +2,7 @@
 > 작업 완료 시 이 파일만 업데이트. 내용은 항상 30줄 이내로 유지.
 
 ## 마지막 완료 작업
-- 추락 사망 + 시나리오 격리 batch fix: 4m 이상(13 m/s) 추락 시 GLOBAL_ACCIDENTS.worker_fall 게임오버 사고(KOSHA §42/§44). lifting 전용 시스템(NPC/건물/TBM/도면/signboard)을 lifting 시나리오에서만 초기화. showCompletePanel 체크리스트 시나리오별 분기(LIFT/EXCAV/FOUND/ENV/MEP_STATE 자동 선택). HUD 층수 카운터·building-progress 비-lifting에서 숨김
+- NPC 동적 생성: ID·역할·스킬 베이스만 고정, 이름은 언어별 풀(ko 20 / en 13 / ar 10 / vi 10)에서 랜덤 선택. 경력 3~27년 랜덤, 위치 ±0.75m 지터, 스킬 ±0.08 변동. 인스트럭션 팝업에 "역할 · 경력 N년" 표시
 
 ## 디자인 원칙 (v2.0 방향)
 - **행동 중심**: 팝업/클릭이 아니라 실제 도구 사용·측정·이동이 게임 결과에 영향
