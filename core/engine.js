@@ -280,6 +280,7 @@ function _loop() {
     if (typeof updateRcLoopTaskLocs === 'function') updateRcLoopTaskLocs(delta);
     if (typeof updateInterference === 'function') updateInterference(delta);
     if (typeof updateTaskChips === 'function')    updateTaskChips();
+    if (typeof tickUnifiedAchievements === 'function') tickUnifiedAchievements();
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();
