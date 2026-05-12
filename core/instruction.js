@@ -292,9 +292,34 @@ function openInstructionPopup(item) {
     return aFit - bFit;
   });
 
+  // type 별 그룹 헤더 — 같은 taskType 명령이 모이게 (학습 UX)
+  let _lastType = null;
+  const _typeLabel = (type) => {
+    if (!type) return null;
+    const def = (typeof TASK_TYPES !== 'undefined') && TASK_TYPES[type];
+    if (!def) return type === 'global' ? null : type;
+    return (def.label && (def.label[currentLang] || def.label.ko)) || type;
+  };
+  // 그룹용 2차 정렬 (이미 정렬된 risk 순서는 유지하되 같은 type 인접화)
+  items = items.slice().sort((a, b) => {
+    const at = a.taskType || 'global', bt = b.taskType || 'global';
+    if (at !== bt) return at < bt ? -1 : 1;
+    const ad = a.risk === 'danger' ? 1 : 0, bd = b.risk === 'danger' ? 1 : 0;
+    return ad - bd;
+  });
+
   // 모든 명령을 풀에 표시 — 직종/phase 미스매치는 NPC 거부로 처리 (학습)
   // 위험변종(risk='danger')는 시각적 경고 (⚠ 아이콘이 이미 있음) — 플레이어가 인식 가능
   items.forEach(inst => {
+    const curType = inst.taskType || 'global';
+    if (curType !== _lastType) {
+      _lastType = curType;
+      const hdr = document.createElement('div');
+      const labelText = _typeLabel(curType) || ({ ko: '공통/함정', en: 'Common/Traps', vi: 'Chung/Bẫy', ar: 'عام/فخاخ' }[currentLang] || '공통');
+      hdr.textContent = '— ' + labelText + ' —';
+      hdr.style.cssText = 'opacity:0.55;font-size:11px;font-family:monospace;letter-spacing:0.4px;margin:6px 0 2px;padding-left:6px';
+      list.appendChild(hdr);
+    }
     const btn = document.createElement('div');
     const isDanger = inst.risk === 'danger';
     btn.className = 'inst-item' +

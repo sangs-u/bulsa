@@ -50,6 +50,33 @@
     return line;
   }
 
+  function _updateLineEndpoints(line, a, b) {
+    if (!line || !line.geometry) return;
+    const ax = (a.loc && a.loc.x) || 0, az = (a.loc && a.loc.z) || 0;
+    const bx = (b.loc && b.loc.x) || 0, bz = (b.loc && b.loc.z) || 0;
+    const arr = line.geometry.attributes.position.array;
+    arr[0] = ax; arr[1] = LINE_Y; arr[2] = az;
+    arr[3] = bx; arr[4] = LINE_Y; arr[5] = bz;
+    line.geometry.attributes.position.needsUpdate = true;
+  }
+
+  function _updateLineIntensity(line, sustained) {
+    if (!line || !line.material) return;
+    // 0s → opacity 0.55 / 6s → 1.0 + pulse
+    const ratio = Math.min(1, sustained / SUSTAIN_THRESHOLD_S);
+    const baseOpacity = 0.55 + 0.40 * ratio;
+    // critical 단계(≥80%) 에는 펄스
+    if (ratio >= 0.8) {
+      const phase = (performance.now() / 180) % (Math.PI * 2);
+      line.material.opacity = baseOpacity * (0.7 + 0.3 * Math.sin(phase));
+    } else {
+      line.material.opacity = baseOpacity;
+    }
+    // 임계 가까울수록 더 강한 적색 (color shift)
+    const r = 1, g = 0.19 - 0.15 * ratio, b = 0.19 - 0.15 * ratio;
+    line.material.color.setRGB(r, Math.max(0, g), Math.max(0, b));
+  }
+
   function _disposeLine(line) {
     if (!line) return;
     if (line.parent) line.parent.remove(line);
@@ -125,6 +152,10 @@
       }
       track.sustainedS += delta;
       track.lastSeenT   = nowT;
+
+      // 라인 끝점은 NPC 가 움직이면 따라가야 함 + sustained 에 따라 강도 변화
+      _updateLineEndpoints(track.line, c.a, c.b);
+      _updateLineIntensity(track.line, track.sustainedS);
 
       // 확률적 사고 — rule.prob 를 초당 위험률로 사용 (보수: 누적 6초 임계를 주 트리거로)
       const perFrameRisk = (c.rule.prob || 0) * delta * 0.04;
