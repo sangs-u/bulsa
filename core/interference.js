@@ -97,8 +97,8 @@
       track.sustainedS += delta;
       track.lastSeenT   = nowT;
 
-      // 확률적 사고 — rule.prob 를 초당 위험률로 사용
-      const perFrameRisk = (c.rule.prob || 0) * delta * 0.15;
+      // 확률적 사고 — rule.prob 를 초당 위험률로 사용 (보수: 누적 6초 임계를 주 트리거로)
+      const perFrameRisk = (c.rule.prob || 0) * delta * 0.04;
       if (Math.random() < perFrameRisk) {
         _fireAccident(c.rule);
         return;

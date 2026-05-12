@@ -13,9 +13,72 @@ function initRcLoop() {
     floor: 1,
     stepIdx: 0,   // 0=formwork, 1=lift, 2=pour
     completed: false,
+    _taskIds: {}, // sub-step 명 → 활성 task.id
   };
+  GAME.state.rcLoop._taskIds = GAME.state.rcLoop._taskIds || {};
   _ensureRcHud();
   _renderRcHud();
+  _enqueueContinuousTasks();
+}
+
+// 사이클 동안 항상 활성인 지속 작업 — 한 번만 큐 등록
+// loc 분산: 양중 반경(6m) 밖으로 배치해야 정상 사이클은 충돌 없음.
+// NPC 위치가 양중 반경 안으로 들어오면 향후 task.loc 동기화로 충돌 평가.
+function _enqueueContinuousTasks() {
+  if (typeof addTask !== 'function') return;
+  const rl = GAME.state.rcLoop;
+  if (!rl._taskIds.lift && (typeof hasActiveTask !== 'function' || !hasActiveTask('lift'))) {
+    const t = addTask({ type: 'lift', floor: rl.floor, loc: { x: 0, z: 0 } });
+    if (t) rl._taskIds.lift = t.id;
+  }
+  if (!rl._taskIds.signal && (typeof hasActiveTask !== 'function' || !hasActiveTask('signal'))) {
+    const t = addTask({ type: 'signal', floor: rl.floor, loc: { x: 7, z: 7 } });
+    if (t) rl._taskIds.signal = t.id;
+  }
+}
+
+// sub-step 명 → 큐에 들어갈 task type + 기본 loc
+const _SUBSTEP_TASKS = {
+  formwork_rebar: [
+    { type: 'formwork', loc: { x:  8, z: 0 } }, // 양중 반경 밖
+    { type: 'rebar',    loc: { x: -8, z: 0 } },
+  ],
+  lift:      [],                                 // 지속 lift 가 이미 처리
+  pour_cure: [
+    { type: 'pour', loc: { x: 0, z:  8 } },
+    { type: 'cure', loc: { x: 0, z:  8 } },
+  ],
+};
+
+function _enqueueSubStepTasks(step) {
+  if (typeof addTask !== 'function') return;
+  const rl    = GAME.state.rcLoop;
+  const specs = _SUBSTEP_TASKS[step] || [];
+  rl._taskIds[step] = rl._taskIds[step] || [];
+  specs.forEach(spec => {
+    const t = addTask({ type: spec.type, floor: rl.floor, loc: spec.loc });
+    if (t) rl._taskIds[step].push(t.id);
+  });
+}
+
+function _dequeueSubStepTasks(step) {
+  if (typeof removeTask !== 'function') return;
+  const rl   = GAME.state.rcLoop;
+  const ids  = (rl._taskIds && rl._taskIds[step]) || [];
+  ids.forEach(id => removeTask(id));
+  if (rl._taskIds) rl._taskIds[step] = [];
+}
+
+function _updateContinuousTaskFloor() {
+  // 지속 작업의 floor 를 현재 진행층으로 갱신 (간섭 평가 정확도용)
+  const rl = GAME.state.rcLoop;
+  if (!rl || !rl._taskIds) return;
+  const tasks = (typeof getActiveTasks === 'function') ? getActiveTasks() : [];
+  ['lift', 'signal'].forEach(key => {
+    const id = rl._taskIds[key];
+    const tk = id && tasks.find(t => t.id === id);
+    if (tk) tk.floor = rl.floor;
+  });
 }
 
 function _ensureRcHud() {
@@ -66,16 +129,27 @@ function advanceRcStep() {
   const s = GAME.state.rcLoop;
   if (!s || s.completed) return;
 
+  // 직전 sub-step 작업 큐에서 제거
+  const prevStep = RC_LOOP.subSteps[s.stepIdx];
+  _dequeueSubStepTasks(prevStep);
+
   s.stepIdx += 1;
   if (s.stepIdx >= RC_LOOP.subSteps.length) {
     s.stepIdx = 0;
     s.floor  += 1;
     // 층 시각화 한 단계 진행 (building.js)
     if (typeof advanceBuildingStage === 'function') advanceBuildingStage();
+    _updateContinuousTaskFloor();
   }
 
   if (s.floor > RC_LOOP.totalFloors) {
     s.completed = true;
+    // 사이클 종료 — 지속 작업도 모두 제거
+    if (typeof removeTask === 'function' && s._taskIds) {
+      ['lift', 'signal'].forEach(k => s._taskIds[k] && removeTask(s._taskIds[k]));
+      s._taskIds.lift = null;
+      s._taskIds.signal = null;
+    }
     _renderRcHud();
     if (typeof showActionNotif === 'function') {
       const msgs = {
@@ -96,6 +170,7 @@ function advanceRcStep() {
   _renderRcHud();
   // 다음 sub-step 자동 시작
   const next = RC_LOOP.subSteps[s.stepIdx];
+  _enqueueSubStepTasks(next);
   setTimeout(() => _startSubStep(next), 800);
 }
 
@@ -131,6 +206,7 @@ function enterRcLoopAfterFirstLift() {
   // 1층은 formwork 부터 다시 시작하지 않고 lift 가 이미 완료된 상태로 간주
   GAME.state.rcLoop.stepIdx = 2; // pour_cure 부터
   _renderRcHud();
+  _enqueueSubStepTasks('pour_cure');
   setTimeout(() => _startSubStep('pour_cure'), 1500);
 }
 
