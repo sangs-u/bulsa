@@ -246,10 +246,14 @@
     <button class="panel-close-btn" id="mep-plan-cancel" title="닫기">✕</button>
   </div>
   <div class="panel-body">
-    <p class="panel-guide">설비·마감 매개변수와 안전 절차를 결정하세요. LOTO 미체크 시 감전 사고 확률 ↑.</p>
+    <p class="panel-guide"
+       data-lang-ko="설비·마감 매개변수와 안전 절차를 결정하세요. LOTO 미체크 시 감전 사고 확률 ↑."
+       data-lang-en="Set MEP/finishing parameters. Unchecked LOTO raises electric shock risk."
+       data-lang-vi="Đặt thông số M&E. Bỏ qua LOTO làm tăng nguy cơ điện giật."
+       data-lang-ar="حدد معاملات التركيب. عدم LOTO يرفع خطر الصعق.">설비·마감 매개변수와 안전 절차를 결정하세요. LOTO 미체크 시 감전 사고 확률 ↑.</p>
     <div class="wi-form">
       <label class="wi-row">
-        <span class="wi-label">차단기 용량 (A)</span>
+        <span class="wi-label" data-lang-ko="차단기 용량 (A)" data-lang-en="Breaker Capacity (A)" data-lang-vi="Dung lượng CB (A)" data-lang-ar="سعة القاطع (A)">차단기 용량 (A)</span>
         <select id="mep-breaker">
           <option value="20">20A (분기)</option>
           <option value="30">30A (콘센트)</option>
@@ -258,16 +262,16 @@
         </select>
       </label>
       <label class="wi-row">
-        <span class="wi-label">배관 구경 (mm)</span>
+        <span class="wi-label" data-lang-ko="배관 구경 (mm)" data-lang-en="Pipe Diameter (mm)" data-lang-vi="Đường kính ống (mm)" data-lang-ar="قطر الأنبوب (مم)">배관 구경 (mm)</span>
         <select id="mep-pipe">
-          <option value="15">15mm (세면대)</option>
-          <option value="20" selected>20mm (분기)</option>
-          <option value="25">25mm (메인)</option>
-          <option value="32">32mm (대형)</option>
+          <option value="15">15mm</option>
+          <option value="20" selected>20mm</option>
+          <option value="25">25mm</option>
+          <option value="32">32mm</option>
         </select>
       </label>
       <label class="wi-row">
-        <span class="wi-label">마감재 종류</span>
+        <span class="wi-label" data-lang-ko="마감재 종류" data-lang-en="Finish Type" data-lang-vi="Loại hoàn thiện" data-lang-ar="نوع التشطيب">마감재 종류</span>
         <select id="mep-finish-type">
           <option value="paint" selected>수성 페인트 (저독성)</option>
           <option value="solvent">유성 페인트 (유기용제)</option>
@@ -277,13 +281,17 @@
       </label>
       <label class="wi-row wi-check">
         <input type="checkbox" id="mep-loto">
-        <span>LOTO 절차 준수 — 잠금/표지/검전</span>
+        <span data-lang-ko="LOTO 절차 준수 — 잠금/표지/검전" data-lang-en="Follow LOTO — lock/tag/test" data-lang-vi="Tuân thủ LOTO — khóa/dán/kiểm tra" data-lang-ar="اتباع LOTO — قفل/وسم/فحص">LOTO 절차 준수 — 잠금/표지/검전</span>
       </label>
-      <p class="wi-hint">유성·에폭시 마감재 선택 시 국소배기 의무 · LOTO 미체크 시 산안법 §310 위반</p>
+      <p class="wi-hint"
+         data-lang-ko="유성·에폭시 마감재 선택 시 국소배기 의무 · LOTO 미체크 시 산안법 §310 위반"
+         data-lang-en="Solvent/epoxy finish requires local ventilation · Missing LOTO violates OSH §310"
+         data-lang-vi="Sơn dầu/epoxy bắt buộc thông gió cục bộ · Thiếu LOTO vi phạm §310"
+         data-lang-ar="الطلاء العضوي/الإيبوكسي يلزم تهوية موضعية · بدون LOTO مخالفة §310">유성·에폭시 마감재 선택 시 국소배기 의무 · LOTO 미체크 시 산안법 §310 위반</p>
     </div>
   </div>
   <div class="panel-footer">
-    <button class="btn-primary" id="mep-plan-sign">서명·제출</button>
+    <button class="btn-primary" id="mep-plan-sign" data-lang-ko="서명·제출" data-lang-en="Sign &amp; Submit" data-lang-vi="Ký &amp; Gửi" data-lang-ar="توقيع وإرسال">서명·제출</button>
   </div>
 </div>
 
@@ -296,10 +304,14 @@
     <button class="panel-close-btn" id="env-plan-cancel" title="닫기">✕</button>
   </div>
   <div class="panel-body">
-    <p class="panel-guide">비계 사양과 외장재를 결정하세요. 안전난간 단수 부족 시 비계 붕괴 위험.</p>
+    <p class="panel-guide"
+       data-lang-ko="비계 사양과 외장재를 결정하세요. 안전난간 단수 부족 시 비계 붕괴 위험."
+       data-lang-en="Set scaffold and cladding parameters. Insufficient guardrails risk collapse."
+       data-lang-vi="Đặt thông số giàn giáo và vỏ. Thiếu lan can gây sập."
+       data-lang-ar="حدد معاملات السقالة والواجهة. نقص الحاجز يسبب الانهيار.">비계 사양과 외장재를 결정하세요. 안전난간 단수 부족 시 비계 붕괴 위험.</p>
     <div class="wi-form">
       <label class="wi-row">
-        <span class="wi-label">비계 종류</span>
+        <span class="wi-label" data-lang-ko="비계 종류" data-lang-en="Scaffold Type" data-lang-vi="Loại giàn giáo" data-lang-ar="نوع السقالة">비계 종류</span>
         <select id="env-scaffold-type">
           <option value="system" selected>시스템 비계 (표준)</option>
           <option value="tubular">강관 비계</option>
@@ -307,11 +319,11 @@
         </select>
       </label>
       <label class="wi-row">
-        <span class="wi-label">비계 높이 (m)</span>
+        <span class="wi-label" data-lang-ko="비계 높이 (m)" data-lang-en="Scaffold Height (m)" data-lang-vi="Chiều cao giàn giáo (m)" data-lang-ar="ارتفاع السقالة (م)">비계 높이 (m)</span>
         <input type="number" id="env-scaffold-height" min="5" max="25" step="0.5" value="19">
       </label>
       <label class="wi-row">
-        <span class="wi-label">안전난간 단수</span>
+        <span class="wi-label" data-lang-ko="안전난간 단수" data-lang-en="Guardrail Levels" data-lang-vi="Số tầng lan can" data-lang-ar="مستويات الحاجز">안전난간 단수</span>
         <select id="env-guardrails">
           <option value="1">1단 (상단만) — 위험</option>
           <option value="2">2단 (상·중)</option>
@@ -319,18 +331,22 @@
         </select>
       </label>
       <label class="wi-row">
-        <span class="wi-label">외장 패널 사양</span>
+        <span class="wi-label" data-lang-ko="외장 패널 사양" data-lang-en="Panel Type" data-lang-vi="Loại tấm vỏ" data-lang-ar="نوع الألواح">외장 패널 사양</span>
         <select id="env-panel-type">
           <option value="acm" selected>ACM 알루미늄 복합</option>
           <option value="glass">유리 커튼월</option>
           <option value="stone">석재 패널</option>
         </select>
       </label>
-      <p class="wi-hint">안전난간 1단 선택 시 산안법 §42 위반 — 비계 붕괴 확률 ↑</p>
+      <p class="wi-hint"
+         data-lang-ko="안전난간 1단 선택 시 산안법 §42 위반 — 비계 붕괴 확률 ↑"
+         data-lang-en="Single-tier guardrail violates OSH §42 — high collapse risk"
+         data-lang-vi="Lan can 1 tầng vi phạm §42 — nguy cơ sập cao"
+         data-lang-ar="حاجز طبقة واحدة مخالفة §42 — خطر انهيار مرتفع">안전난간 1단 선택 시 산안법 §42 위반 — 비계 붕괴 확률 ↑</p>
     </div>
   </div>
   <div class="panel-footer">
-    <button class="btn-primary" id="env-plan-sign">서명·제출</button>
+    <button class="btn-primary" id="env-plan-sign" data-lang-ko="서명·제출" data-lang-en="Sign &amp; Submit" data-lang-vi="Ký &amp; Gửi" data-lang-ar="توقيع وإرسال">서명·제출</button>
   </div>
 </div>
 
@@ -343,39 +359,47 @@
     <button class="panel-close-btn" id="found-plan-cancel" title="닫기">✕</button>
   </div>
   <div class="panel-body">
-    <p class="panel-guide">매트 기초 매개변수를 결정하세요. 동바리 간격이 1m 초과면 거푸집 붕괴 위험.</p>
+    <p class="panel-guide"
+       data-lang-ko="매트 기초 매개변수를 결정하세요. 동바리 간격이 1m 초과면 거푸집 붕괴 위험."
+       data-lang-en="Set mat foundation parameters. Shoring spacing >1m risks formwork collapse."
+       data-lang-vi="Đặt thông số móng bè. Khoảng chống >1m gây sập ván khuôn."
+       data-lang-ar="حدد معاملات الأساس. تباعد الدعم >1م يسبب انهيار القوالب.">매트 기초 매개변수를 결정하세요. 동바리 간격이 1m 초과면 거푸집 붕괴 위험.</p>
     <div class="wi-form">
       <label class="wi-row">
-        <span class="wi-label">기초 매트 면적 (m²)</span>
+        <span class="wi-label" data-lang-ko="기초 매트 면적 (m²)" data-lang-en="Mat Area (m²)" data-lang-vi="Diện tích bè (m²)" data-lang-ar="مساحة البلاطة (م²)">기초 매트 면적 (m²)</span>
         <input type="number" id="found-area" min="80" max="200" step="5" value="144">
       </label>
       <label class="wi-row">
-        <span class="wi-label">철근 배근 간격 (mm)</span>
+        <span class="wi-label" data-lang-ko="철근 배근 간격 (mm)" data-lang-en="Rebar Spacing (mm)" data-lang-vi="Khoảng cách thép (mm)" data-lang-ar="تباعد الحديد (مم)">철근 배근 간격 (mm)</span>
         <select id="found-rebar">
-          <option value="150">150mm (밀배근)</option>
-          <option value="200" selected>200mm (표준)</option>
-          <option value="250">250mm (소배근)</option>
-          <option value="300">300mm (위험)</option>
+          <option value="150">150mm</option>
+          <option value="200" selected>200mm</option>
+          <option value="250">250mm</option>
+          <option value="300">300mm</option>
         </select>
       </label>
       <label class="wi-row">
-        <span class="wi-label">콘크리트 강도 (MPa)</span>
+        <span class="wi-label" data-lang-ko="콘크리트 강도 (MPa)" data-lang-en="Concrete Strength (MPa)" data-lang-vi="Cường độ bê tông (MPa)" data-lang-ar="قوة الخرسانة (MPa)">콘크리트 강도 (MPa)</span>
         <select id="found-conc">
-          <option value="21">21 MPa (저강도)</option>
-          <option value="24" selected>24 MPa (표준)</option>
-          <option value="27">27 MPa (고강도)</option>
-          <option value="30">30 MPa (특수)</option>
+          <option value="21">21 MPa</option>
+          <option value="24" selected>24 MPa</option>
+          <option value="27">27 MPa</option>
+          <option value="30">30 MPa</option>
         </select>
       </label>
       <label class="wi-row">
-        <span class="wi-label">동바리 간격 (m)</span>
+        <span class="wi-label" data-lang-ko="동바리 간격 (m)" data-lang-en="Shoring Spacing (m)" data-lang-vi="Khoảng chống (m)" data-lang-ar="تباعد الدعم (م)">동바리 간격 (m)</span>
         <input type="number" id="found-shoring" min="0.6" max="1.5" step="0.1" value="0.9">
       </label>
-      <p class="wi-hint">권장 0.6~1.0m · 1.0m 초과 시 측압 집중 → 거푸집 붕괴</p>
+      <p class="wi-hint"
+         data-lang-ko="권장 0.6~1.0m · 1.0m 초과 시 측압 집중 → 거푸집 붕괴"
+         data-lang-en="0.6–1.0m recommended · >1.0m concentrates pressure → formwork collapse"
+         data-lang-vi="Khuyến nghị 0.6–1.0m · >1.0m tập trung lực → sập ván"
+         data-lang-ar="يوصى بـ 0.6–1.0م · >1.0م يركّز الضغط → انهيار">권장 0.6~1.0m · 1.0m 초과 시 측압 집중 → 거푸집 붕괴</p>
     </div>
   </div>
   <div class="panel-footer">
-    <button class="btn-primary" id="found-plan-sign">서명·제출</button>
+    <button class="btn-primary" id="found-plan-sign" data-lang-ko="서명·제출" data-lang-en="Sign &amp; Submit" data-lang-vi="Ký &amp; Gửi" data-lang-ar="توقيع وإرسال">서명·제출</button>
   </div>
 </div>
 
