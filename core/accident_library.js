@@ -125,6 +125,7 @@
       { id: 'matrix',   ko: '매트릭스 ⚠', en: 'Matrix ⚠', vi: 'Ma trận ⚠', ar: 'مصفوفة ⚠' },
       { id: 'global',   ko: '전역',  en: 'Global',   vi: 'Toàn cầu', ar: 'عام' },
       { id: 'scenario', ko: '시나리오', en: 'Scenario', vi: 'Kịch bản', ar: 'سيناريو' },
+      { id: 'rules',    ko: '룰',    en: 'Rules',    vi: 'Quy tắc',  ar: 'القواعد' },
     ];
     html += '<div style="display:flex;gap:4px;margin-bottom:6px">';
     tabs.forEach(tab => {
@@ -132,6 +133,32 @@
       html += `<span data-cat="${tab.id}" style="cursor:pointer;padding:2px 8px;border-radius:4px;font-size:11px;background:${a ? '#4a5060' : 'rgba(255,255,255,0.06)'};border:1px solid ${a ? '#7888a0' : 'rgba(255,255,255,0.15)'}">${tab[currentLang] || tab.ko}</span>`;
     });
     html += '</div>';
+    // 'rules' 탭 — 매트릭스 룰 자체를 카드로 노출
+    if (_category === 'rules') {
+      html += '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px">';
+      if (typeof INTERFERENCE_MATRIX !== 'undefined') {
+        INTERFERENCE_MATRIX.forEach((r, idx) => {
+          const aLbl = (typeof TASK_TYPES !== 'undefined' && TASK_TYPES[r.a]) ? (TASK_TYPES[r.a].label[currentLang] || r.a) : r.a;
+          const bLbl = (r.b === '*') ? '*' : ((typeof TASK_TYPES !== 'undefined' && TASK_TYPES[r.b]) ? (TASK_TYPES[r.b].label[currentLang] || r.b) : r.b);
+          const accLbl = (typeof accidentLabel === 'function') ? accidentLabel(r.accident) : r.accident;
+          const condHuman = (typeof humanInterferenceCond === 'function') ? humanInterferenceCond(r.cond) : r.cond;
+          html += `<div style="padding:6px 8px;background:rgba(255,255,255,0.04);border-left:3px solid #c04040;border-radius:3px;font-size:11px;line-height:1.4">
+            <div><b>#${idx + 1}</b> ${aLbl} <span style="color:#aaa">×</span> ${bLbl}</div>
+            <div style="opacity:0.85">${condHuman} → <span style="color:#ff8080">${accLbl}</span> · prob ${r.prob}</div>
+          </div>`;
+        });
+      }
+      html += '</div>';
+      panel.innerHTML = html;
+      panel.querySelectorAll('[data-cat]').forEach(el => {
+        el.addEventListener('click', () => { _category = el.getAttribute('data-cat'); _renderPanel(); });
+      });
+      const search = panel.querySelector('#acc-lib-search');
+      if (search) {
+        search.addEventListener('input', (e) => { _filter = e.target.value || ''; _renderPanel(); const f = panel.querySelector('#acc-lib-search'); if (f) { f.focus(); f.setSelectionRange(_filter.length, _filter.length); } });
+      }
+      return;
+    }
     html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">';
     if (ids.length === 0) {
       html += `<span style="opacity:0.55">${{ko:'(검색 결과 없음)',en:'(no results)',vi:'(không có)',ar:'(لا نتائج)'}[currentLang] || '(없음)'}</span>`;
