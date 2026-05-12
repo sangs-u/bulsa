@@ -7,6 +7,7 @@
 ## 최근 완료 (2026-05-13) — Phase 0 batch #44~45 · 기본기 보강
 - **#44 script load order + E키 UX** — game.html 에서 `tasks.js`/`interference.js`/`task_chips.js` 를 `engine.js` 보다 앞으로 이동 (engine IIFE 가 즉시 사용 → 이전 버그: unified 모드 활성 작업 0개). interaction.js NPC 인터랙션 반경 2.8 → 3.5m 완화 + E 키 빈 입력에 "가까이 다가가세요" 토스트.
 - **#45 마우스 입력 표준화** — LMB=상호작용 (E와 동일, 미니게임 hold 포함), RMB=작업반장 위치 지시 (지면 raycast → 노랑 ring 마커 + 가장 가까운 NPC 4언어 토스트, 2.4초 페이드). crosshair `.targetable` 클래스 추가 (타겟 노출 시 노랑 글로우). 인터랙트 프롬프트 라벨 "[E / 좌클릭]" 으로 통일. 우클릭 contextmenu pointerlock 시 차단.
+- **#46 phase_controller.js 신규** — 페이즈 1~5 (굴착·기초·골조·외장·마감) 상태머신. PHASES 메타데이터 + label 4언어 + npcTradePool + completion 조건 (RC_LOOP 또는 task progress 평균 80~85%). enable/advance/canAdvance/progress/onChange API. 인스펙터 flag 미해결 시 advance 차단. engine.js: unifiedMode 에서 v2 4시나리오 동시 시드 폐기, PHASE_CONTROLLER.enable() 만 호출 (페이즈 1=굴착 시드). _loop 에서 .tick() 호출. `__bulsa.phase(n)` 강제 이동 + `__bulsa.advance()` 디버그.
 
 ## 직전 완료 — v2.0 batch #41~43
 - #41 i18n pause 메뉴 4언어 / #42 디버그 콘솔 보강 / #43 인스펙터 다이얼로그 4언어

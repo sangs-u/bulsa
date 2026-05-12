@@ -158,13 +158,9 @@ window.persistFines = persistFines;
   }
 
   // v2.0 — 시나리오별 초기 작업 큐 시드 (lifting 은 RC_LOOP 가 동적 enqueue)
-  if (typeof enqueueScenarioTasks === 'function') {
-    if (GAME.unifiedMode) {
-      // 통합 모드 — 모든 시나리오의 task seed 를 합쳐 enqueue (큐가 풍부해짐)
-      ['excavation', 'foundation', 'envelope', 'mep_finish'].forEach(s => enqueueScenarioTasks(s));
-    } else {
-      enqueueScenarioTasks(GAME.scenarioId);
-    }
+  // v3 — unified 모드는 PHASE_CONTROLLER 가 페이즈 1 만 시드. 아래 통합 시드 분기는 폐기.
+  if (typeof enqueueScenarioTasks === 'function' && !GAME.unifiedMode) {
+    enqueueScenarioTasks(GAME.scenarioId);
   }
 
   initPlayer();
@@ -209,9 +205,10 @@ window.persistFines = persistFines;
   const fallbackTitle = { ko: '안전 시뮬레이터', en: 'Safety Simulator', vi: 'Mô phỏng an toàn', ar: 'محاكي السلامة' }[currentLang] || '안전 시뮬레이터';
   if (nameSub) nameSub.textContent = (scenarioTitles[GAME.scenarioId] || fallbackTitle) + subSuffix;
 
-  // v2.0 통합 모드 — RC 지속 작업 즉시 활성 (lift/signal/inspect)
-  if (GAME.unifiedMode && typeof initRcLoop === 'function') {
-    try { initRcLoop(); } catch (e) { console.warn('[unified rc_loop]', e.message); }
+  // v3 통합 모드 — PHASE_CONTROLLER 활성화 (페이즈 1 = 굴착 시드)
+  // v2 의 모든 시나리오 동시 활성 + RC_LOOP 즉시 실행은 폐기. 각 페이즈 시작 시 그 페이즈 task 만.
+  if (GAME.unifiedMode && typeof PHASE_CONTROLLER !== 'undefined') {
+    try { PHASE_CONTROLLER.enable(); } catch (e) { console.warn('[v3 phase_controller]', e.message); }
     if (typeof unlockAchievement === 'function') unlockAchievement('unified_enter');
   }
 
@@ -242,6 +239,7 @@ function _loop() {
   if (GAME.state.gameStarted && !GAME.state.gameOver && !GAME.state.paused) {
     if (!GAME.state.craneBoarded) updatePlayer(delta);
     updateInteraction();
+    if (typeof PHASE_CONTROLLER !== 'undefined') PHASE_CONTROLLER.tick(elapsed);
     updateHUD();
     if (typeof updateUnsafe === 'function')      updateUnsafe();
     if (typeof updateSurvey === 'function')         updateSurvey();
