@@ -135,6 +135,29 @@
     npc.group.rotation.y = Math.atan2(dx, dz);
   }
 
+  // v2.0 — task.flags 가 위반 상태로 켜진 작업을 적발
+  function _taskFlagViolations() {
+    const out = [];
+    if (!GAME.activeTasks) return out;
+    const RULES = {
+      dismantling: { id: 'flag_dismantling', krw: 5_000_000, law: '산안규칙 §57', label: { ko: '비계 해체 절차 위반', en: 'Scaffold dismantle without procedure', vi: 'Tháo giàn không quy trình', ar: 'تفكيك السقالة بلا إجراء' } },
+      unchecked:   { id: 'flag_unchecked',   krw: 5_000_000, law: '산안규칙 §334', label: { ko: '동바리 점검 미실시', en: 'Shoring not inspected', vi: 'Không kiểm tra chống', ar: 'لم يُفحص الدعم' } },
+      organic:     { id: 'flag_organic',     krw: 3_000_000, law: '산안규칙 §232', label: { ko: '유기용제 환기 누락', en: 'Solvent without ventilation', vi: 'Dung môi không thông gió', ar: 'مذيب بلا تهوية' } },
+      premature:   { id: 'flag_premature',   krw: 8_000_000, law: '산안규칙 §334', label: { ko: '양생 미완 적재', en: 'Loading before cure', vi: 'Chất tải khi chưa dưỡng đủ', ar: 'تحميل قبل المعالجة' } },
+    };
+    const seen = new Set();
+    GAME.activeTasks.forEach(t => {
+      if (!t.flags) return;
+      Object.keys(RULES).forEach(k => {
+        if (t.flags[k] && !seen.has(k)) {
+          seen.add(k);
+          out.push(RULES[k]);
+        }
+      });
+    });
+    return out;
+  }
+
   // ── 점검 결과 다이얼로그 ─────────────────────────────────────
   function _openDialog() {
     INSPECTOR.state = 'dialog';
@@ -142,6 +165,8 @@
     const fnName = `getViolations_${sid}`;
     const fn = window[fnName];
     const violations = (typeof fn === 'function') ? (fn() || []) : [];
+    // v2.0 task.flags 위반 합치기
+    violations.push(..._taskFlagViolations());
 
     const lang = (typeof getLang === 'function') ? getLang() : 'ko';
     if (violations.length === 0) {
