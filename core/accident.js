@@ -168,7 +168,7 @@ function showAccidentPanel(accidentId) {
     if (o && o.kind === 'interference') {
       const lblTxt = { ko: '트리거 원인', en: 'Trigger cause', vi: 'Nguyên nhân kích hoạt', ar: 'سبب التفعيل' }[currentLang] || '트리거 원인';
       if (originLbl) originLbl.textContent = lblTxt;
-      const condHuman = (typeof window !== 'undefined' && typeof o.cond === 'string') ? o.cond : '';
+      const condHuman = (typeof humanInterferenceCond === 'function') ? humanInterferenceCond(o.cond) : (o.cond || '');
       originP.textContent = (o.a || '?') + ' × ' + (o.b || '?') + ' — ' + condHuman;
       originWrap.classList.remove('hidden');
     } else {

@@ -113,18 +113,19 @@ bulsa/
 
 ---
 
-## v2 마이그레이션 단계
+## v2 마이그레이션 진행 상태 (2026-05-12)
 
-1. **SPEC v2 + CLAUDE.md 명문화** (이 문서)
-2. **core/tasks.js 신규** — TASK_TYPES · GAME.activeTasks · INTERFERENCE_MATRIX 데이터
-3. **간섭 평가 함수** — evaluateInterference(): 매 프레임 활성 작업쌍 검사
-4. **명령 풀 합성 헬퍼** — _currentInstructionPool() 활성 작업 기반
-5. **레거시 scenarioId 보존** — 새 코드는 activeTasks 사용, 기존 시나리오 분기는 백워드 호환 유지
-6. **5층 사이클 컨트롤러** — rc_loop.js 확장하여 작업 큐에 작업 자동 enqueue
-7. **UI**: HUD에 활성 작업 리스트 표시 (현재 phase 위젯 옆)
-8. **간섭 시각화** — 충돌 작업 사이 적색 경고선
-9. **명령 히스토리 UI** — 시도·거부·사고 기록 (학습 도구)
-10. **5 시나리오 URL 진입을 한 부지 통합으로 점진 흡수**
+1. ✅ **SPEC v2 + CLAUDE.md 명문화** (이 문서)
+2. ✅ **core/tasks.js 신규** — TASK_TYPES 23 · GAME.activeTasks · INTERFERENCE_MATRIX 10
+3. ✅ **간섭 평가 함수** — evaluateInterference + cond AND 평가 (+flag 토큰: dismantle/unchecked/organic/premature)
+4. ✅ **명령 풀 합성 헬퍼** — buildInstructionPoolFromActiveTasks + INSTRUCTION_POOLS_BY_TASK 23종 + TRAPS_GLOBAL 8 (flag-trigger 포함)
+5. ✅ **레거시 scenarioId 보존** — engine.js scenarioId 유지, activeTasks 와 병행
+6. ✅ **5층 사이클 컨트롤러** — rc_loop.js 가 sub-step 진행에 따라 enqueue/dequeue + 4 시나리오 시드
+7. ✅ **HUD 활성 작업 칩** — core/task_chips.js, hud-tl 영역 (그룹색·충돌 적색 glow)
+8. ✅ **간섭 시각화** — core/interference.js, THREE.Line + sustained 강도 (opacity/color/pulse) + 끝점 NPC 추적
+9. ✅ **명령 히스토리 UI** — core/instruction_history.js, H 키, localStorage 영속, accident/interference 이벤트 통합
+10. ⏳ **5 시나리오 URL 진입을 한 부지 통합으로 흡수** — 마지막 큰 작업
+11. ✅ **추가**: 사고 라이브러리 (L 키) · 명(命) 게이미피케이션 · 디버그 콘솔 (`__bulsa`) · 사고 ID 4언어 라벨 매핑 · NPC 1:N trade 매핑
 
 ---
 

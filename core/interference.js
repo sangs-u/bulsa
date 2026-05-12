@@ -113,6 +113,8 @@
       return (e && (e[currentLang] || e.ko)) || tok;
     }).join(' + ');
   }
+  // 외부 노출 — accident.js 의 origin 표시에서 사용
+  window.humanInterferenceCond = _humanCond;
 
   function _toastConflict(rule, a, b) {
     const prefix = { ko: '⚠ 간섭', en: '⚠ Interference', vi: '⚠ Xung đột', ar: '⚠ تداخل' }[currentLang] || '⚠ 간섭';
