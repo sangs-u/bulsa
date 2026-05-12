@@ -27,6 +27,7 @@
       lifting:     { icon: '🏗', ko:'골조 양중', en:'RC Lifting',  vi:'Cẩu',        ar:'الرفع',          sub_ko:'인양·신호수·작업반경', sub_en:'Lift·Signal·Radius',            sub_vi:'Cẩu·Hiệu lệnh·Bán kính',     sub_ar:'الرفع·الإشارة·النطاق' },
       envelope:    { icon: '🪟', ko:'외장공사',  en:'Envelope',    vi:'Vỏ ngoài',   ar:'الواجهة',        sub_ko:'비계·외장·창호',       sub_en:'Scaffold·Cladding·Glass',       sub_vi:'Giàn giáo·Tấm·Kính',         sub_ar:'سقالة·ألواح·زجاج' },
       mep_finish:  { icon: '⚡', ko:'설비·마감', en:'MEP & Finish',vi:'M&E·Hoàn thiện', ar:'التركيب والتشطيب', sub_ko:'LOTO·가스·환기',     sub_en:'LOTO·Gas·Ventilation',          sub_vi:'LOTO·Gas·Thông gió',         sub_ar:'LOTO·غاز·تهوية' },
+      unified:     { icon: '🏗', ko:'자유 모드', en:'Free Mode',   vi:'Tự do',      ar:'الوضع الحر',     sub_ko:'5 시나리오 통합 부지', sub_en:'5 scenarios in one site',       sub_vi:'5 kịch bản 1 khu',          sub_ar:'5 سيناريوهات في موقع واحد' },
     };
     const L  = (typeof currentLang !== 'undefined') ? currentLang : 'ko';
     const tD = titlesAll[sid];
