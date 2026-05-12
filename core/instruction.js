@@ -316,7 +316,13 @@ function openInstructionPopup(item) {
       _lastType = curType;
       const hdr = document.createElement('div');
       const labelText = _typeLabel(curType) || ({ ko: '공통/함정', en: 'Common/Traps', vi: 'Chung/Bẫy', ar: 'عام/فخاخ' }[currentLang] || '공통');
-      hdr.textContent = '— ' + labelText + ' —';
+      // 활성 작업의 floor 정보 (있으면 옆에 표시)
+      let floorTag = '';
+      if (curType !== 'global' && typeof getActiveTasks === 'function') {
+        const t0 = getActiveTasks().find(x => x.type === curType);
+        if (t0 && t0.floor != null) floorTag = ` · ${t0.floor}F`;
+      }
+      hdr.textContent = '— ' + labelText + floorTag + ' —';
       hdr.style.cssText = 'opacity:0.55;font-size:11px;font-family:monospace;letter-spacing:0.4px;margin:6px 0 2px;padding-left:6px';
       list.appendChild(hdr);
     }

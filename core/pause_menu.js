@@ -214,6 +214,18 @@
       ? sortedAcc.map(([id, cnt]) => `<div style="opacity:0.85">  · ${_accLbl(id)} × ${cnt}</div>`).join('')
       : '<div style="opacity:0.55">(기록 없음)</div>';
     const totalDeaths = (stats._global && stats._global.totalDeaths) || 0;
+    // 명령 통계 — instruction_history 의 HIST 가 영속 + 세션 모두 포함
+    const hist = (window._instructionHistory || []);
+    const cnt  = { success: 0, reject: 0, accident: 0, danger_skipped: 0, skill_fail: 0, mismatch: 0, interference: 0 };
+    hist.forEach(e => {
+      if (e.result === 'success') cnt.success++;
+      else if (e.result === 'reject_trade' || e.result === 'reject_phase' || e.result === 'danger_refused') cnt.reject++;
+      else if (e.result === 'danger_accident' || e.result === 'accident') cnt.accident++;
+      else if (e.result === 'danger_skipped') cnt.danger_skipped++;
+      else if (e.result === 'skill_fail') cnt.skill_fail++;
+      else if (e.result === 'mismatch') cnt.mismatch++;
+      else if (e.result === 'interference') cnt.interference++;
+    });
     body.innerHTML = `
       <div style="margin-bottom:8px;font-weight:bold;color:#48BB78">현재 세션</div>
       <div>🛡 ${typeof t === 'function' ? t('safetyIndex') : '명'}: ${si}/100</div>
@@ -222,6 +234,9 @@
       ${rows.join('')}
       <div style="margin:10px 0 6px;font-weight:bold;color:#F56565">사고 누적 (총 ☠ ${totalDeaths})</div>
       ${accRows}
+      <div style="margin:10px 0 6px;font-weight:bold;color:#4DB8E0">명령 기록 (최근 30)</div>
+      <div>✓ 성공 ${cnt.success} · ✗ 거부 ${cnt.reject} · ☠ 사고 ${cnt.accident} · ⚠ 간섭 ${cnt.interference}</div>
+      <div style="opacity:0.75">⋯ 운좋음 ${cnt.danger_skipped} · 숙련부족 ${cnt.skill_fail} · 언어 ${cnt.mismatch}</div>
     `;
   }
 
