@@ -3,31 +3,34 @@
 
 function buildFoundationScene() {
   const scene = GAME.scene;
-  GAME.colliders = [];
+  const _unified = !!GAME.unifiedMode;
+  if (!_unified) {
+    GAME.colliders = [];
 
-  // ── Sky + Fog ──────────────────────────────────────────
-  scene.background = new THREE.Color(0x9CB8D0);
-  scene.fog = new THREE.FogExp2(0x9CB8D0, 0.006);
+    // ── Sky + Fog ──────────────────────────────────────────
+    scene.background = new THREE.Color(0x9CB8D0);
+    scene.fog = new THREE.FogExp2(0x9CB8D0, 0.006);
 
-  // ── Lighting ───────────────────────────────────────────
-  scene.add(new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.6));
-  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
-  const sun = new THREE.DirectionalLight(0xFFEAB8, 1.4);
-  sun.position.set(16, 22, 12);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.left = -45; sun.shadow.camera.right = 45;
-  sun.shadow.camera.top = 45; sun.shadow.camera.bottom = -45;
-  sun.shadow.camera.far = 130;
-  scene.add(sun);
-  GAME._sun = sun;
+    // ── Lighting ───────────────────────────────────────────
+    scene.add(new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.6));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+    const sun = new THREE.DirectionalLight(0xFFEAB8, 1.4);
+    sun.position.set(16, 22, 12);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left = -45; sun.shadow.camera.right = 45;
+    sun.shadow.camera.top = 45; sun.shadow.camera.bottom = -45;
+    sun.shadow.camera.far = 130;
+    scene.add(sun);
+    GAME._sun = sun;
 
-  // ── Ground ────────────────────────────────────────────
-  const groundMat = new THREE.MeshLambertMaterial({ color: 0x6E6E66 });
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), groundMat);
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+    // ── Ground ────────────────────────────────────────────
+    const groundMat = new THREE.MeshLambertMaterial({ color: 0x6E6E66 });
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+  }
 
   // ── 굴착 완료 부지 (음각 → 매트 기초 자리) ────────────
   _buildExcavatedPit(scene);

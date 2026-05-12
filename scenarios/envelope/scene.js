@@ -3,31 +3,34 @@
 
 function buildEnvelopeScene() {
   const scene = GAME.scene;
-  GAME.colliders = [];
+  const _unified = !!GAME.unifiedMode;
+  if (!_unified) {
+    GAME.colliders = [];
 
-  scene.background = new THREE.Color(0x8AB2D0);
-  scene.fog = new THREE.FogExp2(0x8AB2D0, 0.005);
+    scene.background = new THREE.Color(0x8AB2D0);
+    scene.fog = new THREE.FogExp2(0x8AB2D0, 0.005);
 
-  scene.add(new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.55));
-  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
-  const sun = new THREE.DirectionalLight(0xFFE4B5, 1.4);
-  sun.position.set(20, 25, 12);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.left = -50; sun.shadow.camera.right = 50;
-  sun.shadow.camera.top = 50; sun.shadow.camera.bottom = -50;
-  sun.shadow.camera.far = 150;
-  scene.add(sun);
-  GAME._sun = sun;
+    scene.add(new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.55));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+    const sun = new THREE.DirectionalLight(0xFFE4B5, 1.4);
+    sun.position.set(20, 25, 12);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left = -50; sun.shadow.camera.right = 50;
+    sun.shadow.camera.top = 50; sun.shadow.camera.bottom = -50;
+    sun.shadow.camera.far = 150;
+    scene.add(sun);
+    GAME._sun = sun;
 
-  // Ground
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(80, 80),
-    new THREE.MeshLambertMaterial({ color: 0x6E6E66 })
-  );
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+    // Ground
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(80, 80),
+      new THREE.MeshLambertMaterial({ color: 0x6E6E66 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+  }
 
   _buildEnvelopeStructure(scene);  // 완성된 골조
   _buildScaffolding(scene);         // 시스템 비계

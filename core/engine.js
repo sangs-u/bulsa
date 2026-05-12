@@ -112,13 +112,26 @@ window.persistFines = persistFines;
     console.error(`${_active.register} 없음 — hazards.js 로딩 순서 확인`);
   }
 
-  // v2.0 통합 모드 — 다른 4 시나리오의 hazards 도 안전 호출 (오픈월드 자유게임 토대)
-  // mesh 충돌 우려 항목은 향후 각 시나리오 hazards.js 에서 unifiedMode 분기로 정리.
+  // v2.0 통합 모드 — 다른 4 시나리오의 scene build + hazard register 모두 호출
+  // 각 scene.js 의 build 는 unifiedMode 분기로 sky/ground/lighting 중복 회피 (baseline 만 lifting)
+  // mesh 좌표계는 향후 각 scene.js 에서 unifiedOffset 으로 영역 분산.
   if (GAME.unifiedMode) {
+    GAME.unifiedZones = {
+      excavation: { ox: -22, oz: -10 },   // 좌상
+      foundation: { ox: -18, oz:  10 },   // 좌하
+      envelope:   { ox:  22, oz: -10 },   // 우상
+      mep_finish: { ox:  22, oz:  10 },   // 우하
+    };
+    ['buildExcavationScene','buildFoundationScene','buildEnvelopeScene','buildMepFinishScene'].forEach(fnName => {
+      const fn = window[fnName];
+      if (typeof fn === 'function') {
+        try { fn(); } catch (e) { console.warn('[unified build]', fnName, e.message); }
+      }
+    });
     ['registerExcavationHazards', 'registerFoundationHazards', 'registerEnvelopeHazards', 'registerMepFinishHazards'].forEach(fnName => {
       const fn = window[fnName];
       if (typeof fn === 'function') {
-        try { fn(); } catch (e) { console.warn('[unified]', fnName, e.message); }
+        try { fn(); } catch (e) { console.warn('[unified hazard]', fnName, e.message); }
       }
     });
   }

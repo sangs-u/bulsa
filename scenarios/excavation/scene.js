@@ -3,40 +3,45 @@
 
 function buildExcavationScene() {
   const scene = GAME.scene;
-  GAME.colliders = [];
+  const _unified = !!GAME.unifiedMode;
+  // v2.0 통합 모드 — baseline(lifting) 이 이미 sky/ground/lighting/colliders 등록.
+  // 시나리오별 mesh 만 추가 (위치는 _UNIFIED_OFFSET 좌표계로 분산).
+  if (!_unified) {
+    GAME.colliders = [];
 
-  // ── Sky + Fog ──────────────────────────────────────────
-  scene.background = new THREE.Color(0x8AB2D0);
-  scene.fog = new THREE.FogExp2(0x8AB2D0, 0.006);
+    // ── Sky + Fog ──────────────────────────────────────────
+    scene.background = new THREE.Color(0x8AB2D0);
+    scene.fog = new THREE.FogExp2(0x8AB2D0, 0.006);
 
-  // ── Lighting ───────────────────────────────────────────
-  const hemi = new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.6);
-  scene.add(hemi);
+    // ── Lighting ───────────────────────────────────────────
+    const hemi = new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.6);
+    scene.add(hemi);
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.18);
-  scene.add(ambient);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.18);
+    scene.add(ambient);
 
-  const sun = new THREE.DirectionalLight(0xFFEAB8, 1.4);
-  sun.position.set(16, 22, 12);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.left   = -45;
-  sun.shadow.camera.right  =  45;
-  sun.shadow.camera.top    =  45;
-  sun.shadow.camera.bottom = -45;
-  sun.shadow.camera.far    = 130;
-  sun.shadow.bias = -0.0003;
-  scene.add(sun);
-  GAME._sun = sun;
+    const sun = new THREE.DirectionalLight(0xFFEAB8, 1.4);
+    sun.position.set(16, 22, 12);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left   = -45;
+    sun.shadow.camera.right  =  45;
+    sun.shadow.camera.top    =  45;
+    sun.shadow.camera.bottom = -45;
+    sun.shadow.camera.far    = 130;
+    sun.shadow.bias = -0.0003;
+    scene.add(sun);
+    GAME._sun = sun;
 
-  // ── Ground (대지) ──────────────────────────────────────
-  const groundMat = new THREE.MeshLambertMaterial({ color: 0x8B7355 });
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), groundMat);
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+    // ── Ground (대지) ──────────────────────────────────────
+    const groundMat = new THREE.MeshLambertMaterial({ color: 0x8B7355 });
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
 
-  _addExcavGroundGrid(scene);
+    _addExcavGroundGrid(scene);
+  }
 
   // ── 굴착 구덩이 (Pit) ──────────────────────────────────
   _buildPit(scene);

@@ -3,30 +3,33 @@
 
 function buildMepFinishScene() {
   const scene = GAME.scene;
-  GAME.colliders = [];
+  const _unified = !!GAME.unifiedMode;
+  if (!_unified) {
+    GAME.colliders = [];
 
-  scene.background = new THREE.Color(0x7BA0BD);
-  scene.fog = new THREE.FogExp2(0x7BA0BD, 0.005);
+    scene.background = new THREE.Color(0x7BA0BD);
+    scene.fog = new THREE.FogExp2(0x7BA0BD, 0.005);
 
-  scene.add(new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.55));
-  scene.add(new THREE.AmbientLight(0xffffff, 0.2));
-  const sun = new THREE.DirectionalLight(0xFFE4B5, 1.3);
-  sun.position.set(18, 26, 10);
-  sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.left = -50; sun.shadow.camera.right = 50;
-  sun.shadow.camera.top = 50; sun.shadow.camera.bottom = -50;
-  sun.shadow.camera.far = 150;
-  scene.add(sun);
-  GAME._sun = sun;
+    scene.add(new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.55));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+    const sun = new THREE.DirectionalLight(0xFFE4B5, 1.3);
+    sun.position.set(18, 26, 10);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left = -50; sun.shadow.camera.right = 50;
+    sun.shadow.camera.top = 50; sun.shadow.camera.bottom = -50;
+    sun.shadow.camera.far = 150;
+    scene.add(sun);
+    GAME._sun = sun;
 
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(80, 80),
-    new THREE.MeshLambertMaterial({ color: 0x6E6E66 })
-  );
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(80, 80),
+      new THREE.MeshLambertMaterial({ color: 0x6E6E66 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+  }
 
   _buildMepBuilding(scene);     // 완공 직전 건물 (외벽 + 창문)
   _buildElectricPanel(scene);    // 분전반 (LOTO 대상)
