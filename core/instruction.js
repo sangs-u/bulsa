@@ -457,7 +457,12 @@ function _clearInstructionFlag(spec) {
 }
 
 function giveInstruction(npc, inst) {
-  _givenInstructions.add(`${npc.id}_${inst.id}`);
+  const _key = `${npc.id}_${inst.id}`;
+  _givenInstructions.add(_key);
+  // v2.0 통합 모드 — 30초 후 자동 reset (자유 모드에서 같은 명령 반복 가능)
+  if (GAME.unifiedMode) {
+    setTimeout(() => _givenInstructions.delete(_key), 30000);
+  }
   const _record = (r) => {
     if (typeof recordInstructionEvent === 'function') recordInstructionEvent(npc, inst, r);
   };

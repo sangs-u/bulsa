@@ -136,9 +136,15 @@
     if (ids.length === 0) {
       html += `<span style="opacity:0.55">${{ko:'(검색 결과 없음)',en:'(no results)',vi:'(không có)',ar:'(لا نتائج)'}[currentLang] || '(없음)'}</span>`;
     }
+    // 사고 누적 통계 — stats._global.accidents 에서 횟수 추출
+    let _stats = {};
+    try { _stats = JSON.parse(localStorage.getItem('bulsa_stats') || '{}'); } catch (e) {}
+    const _accCnt = (_stats && _stats._global && _stats._global.accidents) || {};
     ids.forEach(id => {
       const active = (id === _selected);
-      html += `<span data-acc-id="${id}" style="cursor:pointer;padding:2px 7px;border-radius:9px;font-size:11px;background:${active ? '#7a2020' : 'rgba(255,255,255,0.08)'};border:1px solid ${active ? '#ff6060' : 'rgba(255,255,255,0.15)'}">${_label(id)}</span>`;
+      const cnt = _accCnt[id] || 0;
+      const cntStr = cnt > 0 ? ` ×${cnt}` : '';
+      html += `<span data-acc-id="${id}" style="cursor:pointer;padding:2px 7px;border-radius:9px;font-size:11px;background:${active ? '#7a2020' : 'rgba(255,255,255,0.08)'};border:1px solid ${active ? '#ff6060' : 'rgba(255,255,255,0.15)'}">${_label(id)}${cntStr}</span>`;
     });
     html += '</div>';
     if (_selected && all[_selected]) {
