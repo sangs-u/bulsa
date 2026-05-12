@@ -212,6 +212,7 @@ window.persistFines = persistFines;
   // v2.0 통합 모드 — RC 지속 작업 즉시 활성 (lift/signal/inspect)
   if (GAME.unifiedMode && typeof initRcLoop === 'function') {
     try { initRcLoop(); } catch (e) { console.warn('[unified rc_loop]', e.message); }
+    if (typeof unlockAchievement === 'function') unlockAchievement('unified_enter');
   }
 
   // v2.0 통합 모드 — 게임 시작 후 자유 모드 안내 토스트 (3초 후 등장 8초 노출)

@@ -25,6 +25,10 @@
     { id: 'survivor',        ko:'생존자',          en:'Survivor',         vi:'Người Sống Sót',    ar:'الناجي',           desc_ko:'추락 경상 후 회복하여 완주',       desc_en:'Recover from fall and finish',      desc_vi:'Hồi phục sau ngã và hoàn tất',    desc_ar:'التعافي وإنهاء العمل',             emoji:'🩹' },
     { id: 'inspector_pass',  ko:'점검 통과',       en:'Pass Inspection',  vi:'Qua Kiểm Tra',      ar:'اجتياز التفتيش',   desc_ko:'안전관리자 점검 위반 0건 통과',  desc_en:'Pass safety inspector with 0 violations', desc_vi:'Qua kiểm tra không vi phạm',   desc_ar:'اجتياز التفتيش بلا مخالفات',      emoji:'✅' },
     { id: 'high_roller',     ko:'돈낭비',          en:'High Roller',      vi:'Tiêu Pha',          ar:'مسرف',             desc_ko:'누적 과태료 ₩30,000,000 돌파',    desc_en:'Accumulate ₩30M in fines',          desc_vi:'Tổng phạt vượt 30 triệu',         desc_ar:'تجاوز الغرامات 30 مليون',          emoji:'💸' },
+    // v2.0 통합 모드 업적
+    { id: 'unified_enter',   ko:'자유 모드 입장',  en:'Free Mode',        vi:'Vào Tự do',         ar:'وضع حر',           desc_ko:'통합 부지 첫 진입',               desc_en:'First entry to unified site',       desc_vi:'Lần đầu vào khu thống nhất',      desc_ar:'أول دخول للموقع الموحد',           emoji:'🏗' },
+    { id: 'unified_5min',    ko:'자유 5분 무사고', en:'Free 5min Safe',   vi:'Tự do 5p',          ar:'حر 5 دقائق',       desc_ko:'통합 부지에서 5분 사고없이 진행', desc_en:'5 min in unified site with no accident', desc_vi:'5 phút trong khu không tai nạn', desc_ar:'5 دقائق بلا حادث',                 emoji:'⏱' },
+    { id: 'unified_zero_int',ko:'간섭 0',          en:'Zero Interference',vi:'Không Xung Đột',    ar:'بلا تداخل',        desc_ko:'10분 진행 동안 간섭 0회',         desc_en:'10 min with zero interference',     desc_vi:'10 phút không xung đột',          desc_ar:'10 دقائق بلا تداخل',               emoji:'🛡' },
   ];
   window.ACHIEVEMENTS = ACHIEVEMENTS;
 

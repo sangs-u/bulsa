@@ -66,6 +66,16 @@
     return (window._instructionHistory || []).slice(0, 10);
   };
 
+  D.zone = function (name) {
+    if (!GAME.unifiedZones || !GAME.unifiedZones[name]) {
+      return { error: 'unknown zone (excavation/foundation/envelope/mep_finish)' };
+    }
+    const z = GAME.unifiedZones[name];
+    if (!PLAYER || !PLAYER.position) return { error: 'PLAYER not ready' };
+    PLAYER.position.set(z.ox, PLAYER.position.y, z.oz);
+    return { teleported: name, x: z.ox, z: z.oz };
+  };
+
   D.help = function () {
     return [
       'tasks()                  — 활성 작업 요약',
@@ -75,6 +85,7 @@
       "simulateAccident(id)     — 사고 강제",
       'windSet(mps)             — 풍속 설정',
       'history()                — 최근 명령 10개',
+      "zone(name)               — 통합 모드 영역 텔레포트 (excavation/foundation/envelope/mep_finish)",
     ];
   };
 
