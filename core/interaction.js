@@ -151,16 +151,25 @@ function updateInteraction() {
   }
 
   // Proximity fallback for large/invisible triggers — world position 사용 (unified zone group offset 호환)
+  // NPC 는 투명 sphere trigger 라 raycast 빗나가기 쉬움 → 반경 3.5m 로 완화 (이전 2.8m)
+  // 일반 mesh 와 NPC 분리: NPC 는 더 너그럽게.
   if (!closest) {
     const cam = GAME.camera.position;
-    let minD  = 2.8;
     const _wp = new THREE.Vector3();
+    let minNpcD = 3.5, minObjD = 2.8;
+    let nearestNpc = null, nearestObj = null;
     eligible.forEach(item => {
       if (!item.mesh) return;
       item.mesh.getWorldPosition(_wp);
       const d = cam.distanceTo(_wp);
-      if (d < minD) { minD = d; closest = item; }
+      if (item.type === 'npc') {
+        if (d < minNpcD) { minNpcD = d; nearestNpc = item; }
+      } else {
+        if (d < minObjD) { minObjD = d; nearestObj = item; }
+      }
     });
+    // 오브젝트가 더 가깝거나 NPC 후보 없으면 오브젝트 우선
+    closest = nearestObj || nearestNpc;
   }
 
   INTERACTION.currentTarget = closest;
@@ -229,7 +238,14 @@ function _handleE() {
   if (INTERACTION.popupOpen || INTERACTION.specOpen) return;
 
   const target = INTERACTION.currentTarget;
-  if (!target) return;
+  if (!target) {
+    // 사용자 피드백: 키는 인식됐으나 대상 없음 (아무 반응 없는 듯한 인상 방지)
+    if (typeof showActionNotif === 'function') {
+      const msg = { ko: '가까이 다가가서 시도하세요', en: 'Move closer to interact', vi: 'Đến gần hơn để tương tác', ar: 'اقترب للتفاعل' };
+      showActionNotif(msg[currentLang] || msg.ko, 1400);
+    }
+    return;
+  }
 
   switch (target.type) {
     case 'action':       performAction(target.actionId); break;

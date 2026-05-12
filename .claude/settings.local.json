@@ -11,7 +11,9 @@
       "WebFetch(*)",
       "WebSearch(*)",
       "mcp__claude-in-chrome__*",
-      "mcp__*"
+      "mcp__*",
+      "Bash(rm -rf .git/rebase-merge)",
+      "Bash(rm -rf .git/rebase-apply)"
     ]
   }
 }
