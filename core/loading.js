@@ -61,7 +61,14 @@
     let p = 0;
     const tick = () => {
       p = Math.min(100, p + 8 + Math.random() * 12);
-      const msgs = ['초기화 중...', 'Three.js 로드...', '물리엔진 준비...', 'NPC 로드...', '시나리오 빌드...', '준비 완료'];
+      const L = (typeof currentLang !== 'undefined') ? currentLang : 'ko';
+      const msgsByLang = {
+        ko: ['초기화 중...', 'Three.js 로드...', '물리엔진 준비...', 'NPC 로드...', '시나리오 빌드...', '준비 완료'],
+        en: ['Initializing...', 'Loading Three.js...', 'Preparing physics...', 'Loading NPCs...', 'Building scenario...', 'Ready'],
+        vi: ['Khởi tạo...', 'Tải Three.js...', 'Chuẩn bị vật lý...', 'Tải NPC...', 'Dựng kịch bản...', 'Sẵn sàng'],
+        ar: ['التهيئة...', 'تحميل Three.js...', 'تحضير الفيزياء...', 'تحميل الشخصيات...', 'بناء السيناريو...', 'جاهز'],
+      };
+      const msgs = msgsByLang[L] || msgsByLang.ko;
       setProgress(p, msgs[Math.min(msgs.length - 1, Math.floor(p / 22))]);
       if (p < 100) setTimeout(tick, 200);
       else setTimeout(hide, 350);

@@ -20,15 +20,19 @@
 
     INTRO.active = true;
 
-    // 시나리오별 타이틀
-    const titles = {
-      excavation:  { ko: '토공사',      sub: '굴착·흙막이·매설물', icon: '⛏' },
-      foundation:  { ko: '기초공사',    sub: '거푸집·철근·콘크리트', icon: '🧱' },
-      lifting:     { ko: '골조 양중',   sub: '인양·신호수·작업반경', icon: '🏗' },
-      envelope:    { ko: '외장공사',    sub: '비계·외장·창호',     icon: '🪟' },
-      mep_finish:  { ko: '설비·마감',   sub: 'LOTO·가스·환기',     icon: '⚡' },
+    // 시나리오별 타이틀 (4언어)
+    const titlesAll = {
+      excavation:  { icon: '⛏', ko:'토공사',    en:'Earthworks',  vi:'San nền',    ar:'الحفر',          sub_ko:'굴착·흙막이·매설물',   sub_en:'Excavation·Shoring·Survey',     sub_vi:'Đào·Chống vách·Khảo sát',     sub_ar:'الحفر·الدعم·المسح' },
+      foundation:  { icon: '🧱', ko:'기초공사',  en:'Foundation',  vi:'Móng',       ar:'الأساسات',       sub_ko:'거푸집·철근·콘크리트', sub_en:'Formwork·Rebar·Concrete',       sub_vi:'Ván khuôn·Thép·BT',          sub_ar:'القوالب·الحديد·الخرسانة' },
+      lifting:     { icon: '🏗', ko:'골조 양중', en:'RC Lifting',  vi:'Cẩu',        ar:'الرفع',          sub_ko:'인양·신호수·작업반경', sub_en:'Lift·Signal·Radius',            sub_vi:'Cẩu·Hiệu lệnh·Bán kính',     sub_ar:'الرفع·الإشارة·النطاق' },
+      envelope:    { icon: '🪟', ko:'외장공사',  en:'Envelope',    vi:'Vỏ ngoài',   ar:'الواجهة',        sub_ko:'비계·외장·창호',       sub_en:'Scaffold·Cladding·Glass',       sub_vi:'Giàn giáo·Tấm·Kính',         sub_ar:'سقالة·ألواح·زجاج' },
+      mep_finish:  { icon: '⚡', ko:'설비·마감', en:'MEP & Finish',vi:'M&E·Hoàn thiện', ar:'التركيب والتشطيب', sub_ko:'LOTO·가스·환기',     sub_en:'LOTO·Gas·Ventilation',          sub_vi:'LOTO·Gas·Thông gió',         sub_ar:'LOTO·غاز·تهوية' },
     };
-    const t = titles[sid] || { ko: 'BULSA', sub: '안전 시뮬레이터', icon: '🦺' };
+    const L  = (typeof currentLang !== 'undefined') ? currentLang : 'ko';
+    const tD = titlesAll[sid];
+    const t  = tD
+      ? { icon: tD.icon, ko: tD[L] || tD.ko, sub: tD['sub_' + L] || tD.sub_ko }
+      : { ko: 'BULSA', sub: { ko:'안전 시뮬레이터', en:'Safety Simulator', vi:'Mô phỏng', ar:'محاكي' }[L] || '안전 시뮬레이터', icon: '🦺' };
 
     // 오버레이
     const ov = document.createElement('div');
@@ -44,7 +48,7 @@
       <div style="font-size:80px;margin-bottom:14px;text-shadow:0 4px 16px rgba(0,0,0,0.6)">${t.icon}</div>
       <div style="font-size:46px;font-weight:bold;letter-spacing:6px;text-shadow:0 4px 16px rgba(0,0,0,0.6)">${t.ko}</div>
       <div style="font-size:14px;color:#A0AEC0;letter-spacing:3px;margin-top:8px">${t.sub}</div>
-      <div style="position:absolute;bottom:60px;font-size:11px;color:#5A6478;letter-spacing:2px">아무 키 또는 클릭으로 건너뛰기</div>
+      <div style="position:absolute;bottom:60px;font-size:11px;color:#5A6478;letter-spacing:2px">${ { ko:'아무 키 또는 클릭으로 건너뛰기', en:'Press any key or click to skip', vi:'Nhấn phím bất kỳ để bỏ qua', ar:'اضغط أي مفتاح للتخطي' }[L] || '아무 키 또는 클릭으로 건너뛰기' }</div>
     `;
     document.body.appendChild(ov);
     requestAnimationFrame(() => ov.style.opacity = '1');
