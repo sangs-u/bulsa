@@ -96,22 +96,24 @@ tmux has-session -t bulsa 2>/dev/null || {
 - `scenarios/` 디렉토리 — 백워드 호환 유지, 신규 시나리오 분기 추가 금지
 - `INSTRUCTIONS_BY_SCENARIO` / `INSTRUCTIONS_LIFTING` 등 시도 폐기. 풀은 **작업 종류 기준** (`INSTRUCTION_POOLS_BY_TASK[type]`)
 
-### 즉시 적용 작업 (이 세션)
-1. `core/tasks.js` 신규 — TASK_TYPES + INTERFERENCE_MATRIX + 평가 함수
-2. `instruction.js` 활성작업 기반 풀 합성
-3. PROGRESS.md 정리
+### v2 마이그레이션 진행 (2026-05-12, 18 batch / 18 commits 마라톤 완료)
+✅ 1. 간섭 평가 + 시각화 — interference.js 매 프레임 평가 · THREE.Line · sustained 강도 · NPC 추적
+✅ 2. 5층 사이클 컨트롤러 작업 큐 enqueue — rc_loop sub-step 자동 enqueue/dequeue · 4 시나리오 시드
+✅ 3. HUD 활성 작업 리스트 — task_chips.js · 그룹색 · 충돌 적색 · flag 주황 · 풍부 tooltip
+✅ 4. 명령 히스토리 UI — H 키 패널 · localStorage 영속 · 사고/간섭 통합 · 라이브러리 점프
+✅ 5. 사고 라이브러리 — L 키 · 전체 사고 + 4언어 상세
+⏳ 6. 시각 플레이쓰루 검증 · ?s=unified 진입점 (현재 데이터 통합 골격)
+⏳ 7. 5 시나리오 hazard register 통합 모드 안전 호출
 
-### v2 마이그레이션 우선순위 (다음 세션)
-1. 간섭 평가 + 시각화 (적색 경고선)
-2. 5층 사이클 컨트롤러가 작업 큐 enqueue
-3. HUD 활성 작업 리스트 위젯
-4. 명령 히스토리 UI (학습 도구)
-5. 5 시나리오 URL → 한 부지 통합으로 흡수
+### v2.0 새 단축키
+- **H** — 명령 히스토리 패널 (✓성공/✗거부/☠사고/⚠간섭 카운트 + 30개 행)
+- **L** — 사고 라이브러리 패널 (모든 사고 ID + 4언어 desc/cause/law/procedure)
+- **P/Esc** — 일시정지 메뉴 → 통계 탭 (시나리오별 ☠ + 사고 누적 TOP5 + 명령 7종 카운터)
 
 ## 현재 구현 상태
 ```
 ✅ v1.x: Three.js 씬, 5 시나리오 분리 동작, NPC 5+ 명 4언어, 사고 패널, 수료증
 ✅ v1.2: NPC 명령 4분기 (거부/숙련/위험변종), 88개 사고 vi/ar, 21 inspector 위반 vi/ar
-✅ v2.0 설계: SPEC v2 + CLAUDE.md 가이드 (시나리오→작업 큐 모델 전환)
-⏳ v2.0 구현: core/tasks.js 작성 + 간섭 매트릭스 데이터 + 명령풀 합성 통합
+✅ v2.0 완성: TASK_TYPES 23 · INTERFERENCE_MATRIX 17 · cond AND + flag 토큰 4종 · INSTRUCTION_POOLS_BY_TASK 23 · TRAPS_GLOBAL 8 · GLOBAL_ACCIDENTS 5 신규 · accident_labels 20 · 작업 칩 · 사고 라이브러리 · 명(命) 비네팅 · 인스펙터 flag 적발 · 디버그 콘솔
+⏳ v2.0 남은 작업: 시각 플레이쓰루 / 통합 모드 hazard 안전 통합 / index 허브 카드
 ```

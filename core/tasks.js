@@ -51,6 +51,12 @@ const INTERFERENCE_MATRIX = [
   { a: 'lift',     b: '*',          cond: 'wind_gt_10mps',       accident: 'swing_drop',       prob: 0.85 },
   { a: 'formwork', b: 'rebar',      cond: 'below_floor + dismantle', accident: 'falling_debris', prob: 0.55 },
   { a: 'cure',     b: 'pour',       cond: 'same_slab + premature',accident: 'premature_load',  prob: 0.60 },
+  // v2.0 추가 — 다양한 작업 조합
+  { a: 'glass',    b: 'scaffold',   cond: 'same_floor + dismantle', accident: 'panel_drop',    prob: 0.60 },
+  { a: 'panel',    b: 'lifeline',   cond: 'same_floor + dismantle', accident: 'falling_debris',prob: 0.55 },
+  { a: 'vent',     b: 'electric',   cond: 'within_1m',           accident: 'electric_shock',   prob: 0.55 },
+  { a: 'paint',    b: 'plumb',      cond: 'within_5m + organic', accident: 'fire_explosion',   prob: 0.50 },
+  { a: 'lift',     b: 'panel',      cond: 'within_radius_6m',    accident: 'worker_crush',     prob: 0.70 },
 ];
 
 // ── 작업 큐 관리 API ──────────────────────────────────────
