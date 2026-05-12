@@ -97,6 +97,24 @@ function initInteraction() {
       tryDelegateCurrent();
     }
 
+    // Y — 통합 모드 페이즈 전환 (canAdvance 체크)
+    if (e.code === 'KeyY' && typeof PHASE_CONTROLLER !== 'undefined' && PHASE_CONTROLLER.isEnabled()) {
+      const blocker = PHASE_CONTROLLER.advanceBlocker();
+      if (blocker === 'final') {
+        const m = { ko: '🏁 모든 페이즈 완료!', en: '🏁 All phases done!', vi: '🏁 Hoàn thành!', ar: '🏁 تم!' };
+        if (typeof showActionNotif === 'function') showActionNotif(m[currentLang] || m.ko, 2200);
+      } else if (blocker === 'inspector_flag') {
+        const m = { ko: '⚠ 인스펙터 flag 해결 후 진입 가능', en: '⚠ Resolve inspector flag first', vi: '⚠ Giải quyết flag trước', ar: '⚠ احلّ الملاحظة أولاً' };
+        if (typeof showActionNotif === 'function') showActionNotif(m[currentLang] || m.ko, 2200);
+      } else if (blocker === 'incomplete') {
+        const prog = Math.round(PHASE_CONTROLLER.progress() * 100);
+        const m = { ko: `진행 ${prog}% — 아직 완료되지 않음`, en: `Progress ${prog}% — not complete`, vi: `Tiến độ ${prog}% — chưa xong`, ar: `التقدم ${prog}٪ — غير مكتمل` };
+        if (typeof showActionNotif === 'function') showActionNotif(m[currentLang] || m.ko, 2200);
+      } else {
+        PHASE_CONTROLLER.advance();
+      }
+    }
+
     if (e.code === 'Escape') {
       if (INTERACTION.specOpen) { closeSpecPopup(); return; }
       if (GAME.state.craneBoarded) { exitCraneCab(); return; }

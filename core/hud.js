@@ -20,6 +20,32 @@ const PHASE_NAMES = {
 
 function initHUD() {
   updateHUD();
+  // v3 — 페이즈 전환 시 토스트 + SFX
+  if (typeof PHASE_CONTROLLER !== 'undefined') {
+    PHASE_CONTROLLER.onChange(_onPhaseChange);
+  }
+}
+
+function _onPhaseChange(ev) {
+  if (typeof showActionNotif !== 'function') return;
+  if (ev.isFinal) {
+    const m = { ko: '🏁 튜토리얼 완료 — 모든 페이즈 클리어!', en: '🏁 Tutorial complete — all phases cleared!', vi: '🏁 Hoàn thành tutorial!', ar: '🏁 اكتمل التعليم!' };
+    showActionNotif(m[currentLang] || m.ko, 6000);
+    return;
+  }
+  if (!ev.toPhase) return;
+  const label = ev.toPhase.label[currentLang] || ev.toPhase.label.ko;
+  const m = {
+    ko: `▶ 페이즈 ${ev.toPhase.id}/5 진입 — ${label}`,
+    en: `▶ Entered phase ${ev.toPhase.id}/5 — ${label}`,
+    vi: `▶ Vào phase ${ev.toPhase.id}/5 — ${label}`,
+    ar: `▶ دخلت المرحلة ${ev.toPhase.id}/5 — ${label}`,
+  };
+  showActionNotif(m[currentLang] || m.ko, 4500);
+  // 짧은 띵 효과음 (있으면)
+  if (typeof SFX !== 'undefined' && typeof SFX.beep === 'function') {
+    try { SFX.beep(880, 0.18); } catch (e) {}
+  }
 }
 
 function updateHUD() {
@@ -41,14 +67,12 @@ function updateHUD() {
     vig.classList.toggle('critical', pct <= 15 && pct > 0);
   }
 
-  // v2.0 통합 모드 — phase 자체를 무시하고 "오픈 부지" 라벨만 표시
-  if (GAME.unifiedMode) {
-    const openLbl = { ko: '🏗 오픈 부지 (자유 모드)', en: '🏗 Open Site (Free Mode)', vi: '🏗 Công trường mở (Tự do)', ar: '🏗 موقع مفتوح (حر)' };
-    const tipLbl  = { ko: '활성 작업을 자유롭게 선택해 NPC에게 명령하세요.', en: 'Pick any active task and assign NPCs freely.', vi: 'Chọn tự do task hoạt động để giao cho NPC.', ar: 'اختر مهمة نشطة وكلّف العمال بحرية.' };
+  // v3 통합 모드 — PHASE_CONTROLLER 진행 상태 표시
+  if (GAME.unifiedMode && typeof PHASE_CONTROLLER !== 'undefined' && PHASE_CONTROLLER.isEnabled()) {
+    _renderUnifiedPhaseHud();
+  } else if (GAME.unifiedMode) {
     const phaseEl = document.getElementById('hud-phase-text');
-    if (phaseEl) phaseEl.textContent = openLbl[currentLang] || openLbl.ko;
-    const mEl = document.getElementById('hud-mission');
-    if (mEl) mEl.textContent = tipLbl[currentLang] || tipLbl.ko;
+    if (phaseEl) phaseEl.textContent = '🏗 통합 모드';
   } else {
     // Phase label (시나리오 인식)
     const phase = Math.max(1, Math.min(6, s.phase || 1));
@@ -137,6 +161,78 @@ function updateHUD() {
   const cEl = document.getElementById('hud-compass-text');
   if (cEl && GAME.camera) {
     cEl.textContent = _renderCompass(GAME.camera.rotation.y);
+  }
+}
+
+// ── v3 페이즈 진행바 + 안내 (통합 모드 전용) ─────────────────
+function _renderUnifiedPhaseHud() {
+  const ph = PHASE_CONTROLLER.current();
+  const phaseEl = document.getElementById('hud-phase-text');
+  if (ph && phaseEl) {
+    const label = ph.label[currentLang] || ph.label.ko;
+    phaseEl.textContent = `🏗 페이즈 ${ph.id}/5 — ${label}`;
+  }
+
+  const mEl = document.getElementById('hud-mission');
+  if (mEl && ph) {
+    const prog = Math.round(PHASE_CONTROLLER.progress() * 100);
+    const blocker = PHASE_CONTROLLER.advanceBlocker();
+    const tbl = {
+      ko: { incomplete: `진행 ${prog}% — NPC에게 작업 지시로 페이즈를 완료하세요`,
+            inspector_flag: '⚠ 인스펙터 적발 flag 해결 후 다음 페이즈',
+            ready: `✅ 페이즈 완료 (${prog}%) — [Y] 키로 다음 페이즈 진입`,
+            final: '🏁 모든 페이즈 완료 — 튜토리얼 클리어' },
+      en: { incomplete: `Progress ${prog}% — assign tasks to NPCs to advance`,
+            inspector_flag: '⚠ Resolve inspector flag before next phase',
+            ready: `✅ Phase complete (${prog}%) — Press [Y] for next phase`,
+            final: '🏁 All phases complete — Tutorial cleared' },
+      vi: { incomplete: `Tiến độ ${prog}% — giao nhiệm vụ cho NPC`,
+            inspector_flag: '⚠ Giải quyết flag thanh tra trước',
+            ready: `✅ Hoàn thành (${prog}%) — Nhấn [Y] cho phase tiếp theo`,
+            final: '🏁 Hoàn thành mọi phase' },
+      ar: { incomplete: `التقدم ${prog}% — كلّف العمال بالمهام`,
+            inspector_flag: '⚠ احلّ ملاحظة المفتش قبل المرحلة التالية',
+            ready: `✅ المرحلة مكتملة (${prog}%) — اضغط [Y]`,
+            final: '🏁 جميع المراحل مكتملة' },
+    };
+    const lang = tbl[currentLang] || tbl.ko;
+    let key = 'ready';
+    if (blocker === 'final') key = 'final';
+    else if (blocker === 'inspector_flag') key = 'inspector_flag';
+    else if (blocker === 'incomplete') key = 'incomplete';
+    mEl.textContent = lang[key];
+  }
+
+  _ensurePhaseProgressBar();
+  _updatePhaseProgressBar();
+}
+
+function _ensurePhaseProgressBar() {
+  if (document.getElementById('hud-phase-progress')) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'hud-phase-progress';
+  wrap.style.cssText = 'position:fixed;top:42px;left:50%;transform:translateX(-50%);' +
+    'width:360px;max-width:60vw;height:6px;background:rgba(20,28,40,0.7);' +
+    'border-radius:4px;overflow:hidden;pointer-events:none;z-index:51;' +
+    'box-shadow:0 0 8px rgba(0,0,0,0.5);';
+  const fill = document.createElement('div');
+  fill.id = 'hud-phase-progress-fill';
+  fill.style.cssText = 'height:100%;width:0%;background:linear-gradient(90deg,#3D7BFF,#6FE7B7);' +
+    'transition:width 0.4s ease, background 0.3s ease;';
+  wrap.appendChild(fill);
+  document.body.appendChild(wrap);
+}
+
+function _updatePhaseProgressBar() {
+  const fill = document.getElementById('hud-phase-progress-fill');
+  if (!fill) return;
+  const prog = PHASE_CONTROLLER.progress();
+  fill.style.width = (prog * 100).toFixed(1) + '%';
+  // 완료 시 황금색
+  if (prog >= 1.0) {
+    fill.style.background = 'linear-gradient(90deg,#F5A623,#F8E71C)';
+  } else {
+    fill.style.background = 'linear-gradient(90deg,#3D7BFF,#6FE7B7)';
   }
 }
 
