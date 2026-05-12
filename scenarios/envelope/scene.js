@@ -134,6 +134,13 @@ function _buildScaffolding(scene) {
       });
     }
   });
+
+  if (typeof ASSETS !== 'undefined') {
+    ASSETS.attach(scene, 'scaffold_kit', {
+      pos:   [0, 0, -17],
+      scale: 1.0,
+    });
+  }
 }
 
 // 외장 패널 자재 적치

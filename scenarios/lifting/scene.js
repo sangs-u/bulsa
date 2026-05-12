@@ -304,6 +304,14 @@ function _buildCrane(scene) {
   scene.add(panel);
 
   GAME._cranePanelMesh = panel;
+
+  // GLB가 로컬에 있으면 추가 (현재 procedural 메시들은 그룹화되어 있지 않아 자동 숨김 불가 — 추후 그룹화 시 onAttached 로 끄기)
+  if (typeof ASSETS !== 'undefined') {
+    ASSETS.attach(scene, 'tower_crane', {
+      pos:   [14, 0, -8],
+      scale: 1.0,
+    });
+  }
 }
 
 // ── RC Beam (the load) ────────────────────────────────────

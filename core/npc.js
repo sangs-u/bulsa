@@ -61,11 +61,36 @@ class NPC {
         this._char = char;
         this.group = char.group;
         this._playAnim('Idle');
+        // 직종별 도구 부착 (MOTION 사용 가능할 때)
+        if (typeof attachTool === 'function') {
+          const toolByTrade = {
+            signal:    'flag',
+            formwork:  'hammer',
+            rebar:     'wrench',
+            mep:       'welder',
+            survey:    'detector',
+            excavator: null,
+            crane:     null,
+          };
+          const t = toolByTrade[this.trade];
+          if (t) {
+            try { this._tool = attachTool(char, t, { scale: 0.9 }); } catch(e) {}
+          }
+        }
       } else {
         this._buildGeometry();
       }
       this._addTrigger();
     });
+  }
+
+  // 외부에서 직접 모션 클립을 지정 (Mixamo 클립 사용 시)
+  setMotionClip(name, fadeIn) {
+    if (typeof setMotion === 'function' && this._char) {
+      setMotion(this._char, name, fadeIn);
+    } else if (this._char) {
+      this._playAnim(name, fadeIn || 0.3);
+    }
   }
 
   // _targetPos 지원: tick에서 목표 위치로 이동

@@ -177,6 +177,16 @@ function _buildExcavator(scene) {
   scene.add(group);
   GAME._excavator = group;
   GAME.colliders.push(upper, cab, cw);
+
+  // GLB가 로컬에 있으면 procedural 위에 덮어쓰고 procedural 숨김
+  if (typeof ASSETS !== 'undefined') {
+    ASSETS.attach(scene, 'excavator', {
+      pos:   [-13, 0, -8],
+      rot:   [0, -Math.PI / 6, 0],
+      scale: 1.6,
+      onAttached: () => { group.visible = false; },
+    });
+  }
 }
 
 // 흙더미 (굴착으로 나온 흙 보관)

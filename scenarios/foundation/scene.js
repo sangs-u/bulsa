@@ -179,6 +179,14 @@ function _buildPumpTruck(scene) {
   scene.add(group);
   GAME._pumpTruck = group;
   GAME.colliders.push(chassis, cab);
+
+  if (typeof ASSETS !== 'undefined') {
+    ASSETS.attach(scene, 'pump_truck', {
+      pos:   [14, 0, -8],
+      scale: 1.4,
+      onAttached: () => { group.visible = false; },
+    });
+  }
 }
 
 function _buildFoundationMaterials(scene) {

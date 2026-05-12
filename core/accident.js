@@ -270,19 +270,52 @@ function showCompletePanel() {
     if (typeof sfx === 'function') sfx('achievement');
   }
 
-  // 다음 공정 버튼 노출 (있을 때만)
+  // 다음 공정 버튼 + 자동 진행 카운트다운
   const nextBtn = document.getElementById('cmp-btn-next');
   if (nextBtn) {
     if (GAME.nextScenarioId) {
-      const nextLabels = {
-        excavation: '🏗 다음: 토공사 →',
-        foundation: '🏗 다음: 기초공사 →',
-        lifting:    '🏗 다음: 골조 양중 →',
-        envelope:   '🏗 다음: 외장공사 →',
-        mep_finish: '🏗 다음: 설비·마감 →',
+      const nextLabelsL = {
+        ko: { excavation: '🏗 다음: 토공사 →', foundation: '🏗 다음: 기초공사 →', lifting: '🏗 다음: 골조 양중 →', envelope: '🏗 다음: 외장공사 →', mep_finish: '🏗 다음: 설비·마감 →' },
+        en: { excavation: '🏗 Next: Earthworks →', foundation: '🏗 Next: Foundation →', lifting: '🏗 Next: RC Lifting →', envelope: '🏗 Next: Envelope →', mep_finish: '🏗 Next: MEP/Finish →' },
+        vi: { excavation: '🏗 Tiếp: San nền →', foundation: '🏗 Tiếp: Móng →', lifting: '🏗 Tiếp: Nâng tải →', envelope: '🏗 Tiếp: Vỏ ngoài →', mep_finish: '🏗 Tiếp: M&E/Hoàn thiện →' },
+        ar: { excavation: '🏗 التالي: الحفر →', foundation: '🏗 التالي: الأساسات →', lifting: '🏗 التالي: الرفع →', envelope: '🏗 التالي: الواجهة →', mep_finish: '🏗 التالي: التركيب والتشطيب →' },
       };
-      nextBtn.textContent = nextLabels[GAME.nextScenarioId] || `다음 공정 →`;
+      const baseLabel = (nextLabelsL[L] || nextLabelsL.ko)[GAME.nextScenarioId] || '다음 공정 →';
+      nextBtn.dataset.baseLabel = baseLabel;
+      nextBtn.textContent = baseLabel;
       nextBtn.style.display = '';
+
+      // 사고 없이 완료(allDone) 시에만 자동 진행 — 미흡 완료는 사용자 검토 후 수동
+      if (allDone) {
+        const countdownText = { ko: '초 후 자동 진행', en: 's auto-advance', vi: 's tự chuyển', ar: 'ث للمتابعة' };
+        let remain = 8;
+        nextBtn.textContent = `${baseLabel}  (${remain}${countdownText[L] || countdownText.ko})`;
+        if (GAME._nextScenarioTimer) clearInterval(GAME._nextScenarioTimer);
+        GAME._nextScenarioTimer = setInterval(() => {
+          remain -= 1;
+          if (remain <= 0) {
+            clearInterval(GAME._nextScenarioTimer);
+            GAME._nextScenarioTimer = null;
+            if (typeof goNextScenario === 'function') goNextScenario();
+          } else {
+            nextBtn.textContent = `${baseLabel}  (${remain}${countdownText[L] || countdownText.ko})`;
+          }
+        }, 1000);
+        // 패널 내 임의 클릭으로 자동진행 취소
+        const cancelAuto = () => {
+          if (GAME._nextScenarioTimer) {
+            clearInterval(GAME._nextScenarioTimer);
+            GAME._nextScenarioTimer = null;
+            nextBtn.textContent = baseLabel;
+          }
+        };
+        const panelEl = document.getElementById('complete-panel');
+        if (panelEl) {
+          ['mousedown', 'touchstart'].forEach(evt => {
+            panelEl.addEventListener(evt, cancelAuto, { once: true });
+          });
+        }
+      }
     } else {
       nextBtn.style.display = 'none';
     }

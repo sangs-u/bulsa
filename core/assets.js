@@ -7,14 +7,27 @@
 (function () {
   'use strict';
 
-  // 매니페스트 — manifest.md 의 1순위 항목을 URL이 확정되는 대로 채움
-  // 빈 문자열인 항목은 자동으로 폴백(기존 박스 메시) 사용
+  // 매니페스트 — 로컬 우선 (assets/glb/*.glb), 파일 없으면 8초 타임아웃 후 폴백
+  // 사용자가 Kenney Vehicle Pack 등 CC0 GLB를 다운로드해 assets/glb/ 에 떨어뜨리면 자동 적용
+  // 런타임 오버라이드: ASSETS.setUrl('excavator', 'https://cdn.example.com/excavator.glb')
   const MANIFEST = {
-    excavator:    '',  // Kenney Vehicle Pack — 검증 후 채울 것
-    pump_truck:   '',
-    tower_crane:  '',
-    scaffold_kit: '',
-    hardhat:      '',
+    excavator:    'assets/glb/excavator.glb',
+    pump_truck:   'assets/glb/pump_truck.glb',
+    tower_crane:  'assets/glb/tower_crane.glb',
+    scaffold_kit: 'assets/glb/scaffold_kit.glb',
+    hardhat:      'assets/glb/hardhat.glb',
+  };
+
+  // 로컬 GLB가 없을 때 빠르게 폴백 (404 즉시 감지 → 8초 대기 불필요)
+  // fetch HEAD 로 사전 점검: 200 응답일 때만 GLTFLoader 로드 시도
+  const _quickCheck = (url) => {
+    return new Promise((resolve) => {
+      try {
+        fetch(url, { method: 'HEAD' })
+          .then(r => resolve(r && r.ok))
+          .catch(() => resolve(false));
+      } catch (e) { resolve(false); }
+    });
   };
 
   const _cache    = {};   // name → gltf (null=폴백 확정)
@@ -56,27 +69,47 @@
       _resolve(name, null);
     }, 8000);
 
-    new THREE.GLTFLoader().load(
-      url,
-      (gltf) => {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(timeoutId);
-        gltf.scene.traverse(m => {
-          if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; }
-        });
-        _resolve(name, gltf);
-      },
-      undefined,
-      (err) => {
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(timeoutId);
-        console.warn('[assets] ' + name + ' 로드 실패 — 폴백:', (err && err.message) || err);
-        _failed.add(name);
-        _resolve(name, null);
-      }
-    );
+    // 로컬 경로(assets/) 는 HEAD 사전점검으로 즉시 폴백 결정 (404 시 GLTFLoader 호출 자체 생략)
+    const isLocal = url.indexOf('assets/') === 0 || url.indexOf('./assets/') === 0;
+    const proceed = () => {
+      new THREE.GLTFLoader().load(
+        url,
+        (gltf) => {
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(timeoutId);
+          gltf.scene.traverse(m => {
+            if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; }
+          });
+          _resolve(name, gltf);
+        },
+        undefined,
+        (err) => {
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(timeoutId);
+          console.warn('[assets] ' + name + ' 로드 실패 — 폴백:', (err && err.message) || err);
+          _failed.add(name);
+          _resolve(name, null);
+        }
+      );
+    };
+
+    if (isLocal) {
+      _quickCheck(url).then(ok => {
+        if (!ok) {
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(timeoutId);
+          _failed.add(name);
+          _resolve(name, null);
+          return;
+        }
+        proceed();
+      });
+    } else {
+      proceed();
+    }
   }
 
   function attach(parent, name, opts) {

@@ -125,6 +125,8 @@ function _dispatchHoldStart() {
     () => PANEL_GAME && PANEL_GAME.state.active && (panelHoldStart(), true),
     () => ENV_SIGNAL_GAME && ENV_SIGNAL_GAME.state.active && (envSignalHoldStart(), true),
     () => typeof LOTO_GAME !== 'undefined' && LOTO_GAME && LOTO_GAME.state.active && (lotoHoldStart(), true),
+    () => typeof FORMWORK_RC_GAME !== 'undefined' && FORMWORK_RC_GAME && FORMWORK_RC_GAME.state.active && (formworkRcHoldStart(), true),
+    () => typeof POUR_RC_GAME !== 'undefined' && POUR_RC_GAME && POUR_RC_GAME.state.active && (pourRcHoldStart(), true),
   ];
   for (const fn of holdGames) {
     try { if (fn()) return true; } catch(e) {}
@@ -149,6 +151,8 @@ function _dispatchHoldEnd() {
     () => PANEL_GAME && PANEL_GAME.state.active && panelHoldEnd(),
     () => ENV_SIGNAL_GAME && ENV_SIGNAL_GAME.state.active && envSignalHoldEnd(),
     () => typeof LOTO_GAME !== 'undefined' && LOTO_GAME && LOTO_GAME.state.active && lotoHoldEnd(),
+    () => typeof FORMWORK_RC_GAME !== 'undefined' && FORMWORK_RC_GAME && FORMWORK_RC_GAME.state.active && formworkRcHoldEnd(),
+    () => typeof POUR_RC_GAME !== 'undefined' && POUR_RC_GAME && POUR_RC_GAME.state.active && pourRcHoldEnd(),
   ];
   for (const fn of enders) {
     try { fn(); } catch(e) {}
@@ -654,6 +658,20 @@ function openPlanPanel() {
 
   document.getElementById('plan-btn-sign').onclick = () => {
     LIFT_STATE.planWritten = true;
+
+    // 작업계획서 매개변수 — 운전원 거부권 분기에서 사용
+    GAME.state.workPlans = GAME.state.workPlans || {};
+    GAME.state.workPlans.lifting = {
+      params: {
+        load_ton:      3.0,        // 인양 부재 무게
+        sling_swl_ton: 3.0,        // 슬링 정격하중
+        angle_deg:     58,         // 슬링 각도
+        lines:         2,          // 슬링 가닥수
+      },
+      signedAt: new Date().toLocaleTimeString('ko-KR'),
+      signedBy: GAME.state.playerName || '작업반장',
+    };
+
     GAME.state.phase = getCurrentPhase();
     updateHUD();
     showActionNotif(t('notifPlanDone'), 3500);
@@ -991,7 +1009,53 @@ const _OPERATOR_CHECKLIST = [
 ];
 
 function _getMissingSafetyItems() {
-  return _OPERATOR_CHECKLIST.filter(item => !LIFT_STATE[item.key]);
+  const missing = _OPERATOR_CHECKLIST.filter(item => !LIFT_STATE[item.key]);
+
+  // 계획서 매개변수 위반 — sling SWL 대비 실제 사용률(sr) 100% 초과 시 거부
+  const plan = (GAME.state.workPlans || {}).lifting;
+  if (plan && plan.params) {
+    const p = plan.params;
+    const betaRad = (p.angle_deg / 2) * Math.PI / 180;
+    const K   = 1 / Math.cos(betaRad);
+    const Ts  = (p.load_ton * K) / (p.lines || 2);
+    const sr  = Ts / p.sling_swl_ton;
+    if (sr > 1.0) {
+      missing.push({
+        key:      'planOverload',
+        labelKey: null,
+        custom:   true,
+        textKo:   `계획 슬링 SWL ${p.sling_swl_ton}ton 부족 (사용률 ${(sr*100).toFixed(0)}% 초과)`,
+        textEn:   `Plan sling SWL ${p.sling_swl_ton}t insufficient (usage ${(sr*100).toFixed(0)}% > 100%)`,
+        textVi:   `Tải SWL ${p.sling_swl_ton}t không đủ (${(sr*100).toFixed(0)}% > 100%)`,
+        textAr:   `سعة الحبل ${p.sling_swl_ton}t غير كافية (${(sr*100).toFixed(0)}%)`,
+      });
+    }
+    // 각도 60° 이상이면 K 증가 — 거부
+    if (p.angle_deg > 90) {
+      missing.push({
+        key:      'planAngle',
+        labelKey: null,
+        custom:   true,
+        textKo:   `계획 슬링 각도 ${p.angle_deg}° 과대 (60° 이내 권장)`,
+        textEn:   `Plan sling angle ${p.angle_deg}° too wide (≤60° recommended)`,
+        textVi:   `Góc dây cẩu ${p.angle_deg}° quá rộng (≤60° khuyến nghị)`,
+        textAr:   `زاوية الحبل ${p.angle_deg}° واسعة جداً (≤60° مستحسن)`,
+      });
+    }
+  } else {
+    // 계획서 미작성 자체가 거부 사유 (작업계획서 별표 3 위반)
+    missing.push({
+      key:      'planMissing',
+      labelKey: null,
+      custom:   true,
+      textKo:   '작업계획서 미서명 — 산안법 §38 위반',
+      textEn:   'Work plan not signed — OSH §38 violation',
+      textVi:   'Kế hoạch chưa ký — vi phạm §38',
+      textAr:   'خطة العمل غير موقعة — مخالفة §38',
+    });
+  }
+
+  return missing;
 }
 
 function showOperatorRefusal(missing) {
@@ -1008,7 +1072,14 @@ function showOperatorRefusal(missing) {
   list.innerHTML = '';
   missing.forEach(item => {
     const li = document.createElement('li');
-    li.textContent = t(item.labelKey);
+    if (item.custom) {
+      const langKey = 'text' + (currentLang || 'ko').charAt(0).toUpperCase() + (currentLang || 'ko').slice(1);
+      li.textContent = item[langKey] || item.textKo || '계획서 위반';
+      li.style.color = '#FCA5A5';
+      li.style.fontWeight = '600';
+    } else {
+      li.textContent = t(item.labelKey);
+    }
     list.appendChild(li);
   });
 
@@ -1176,8 +1247,32 @@ function _onLiftCycleComplete() {
       }, 1400);
     }, 1200);
   } else {
-    // 다음 사이클 준비
-    setTimeout(_startNextLiftCycle, 1500);
+    // RC sub-step 흐름: 양중 완료 → 타설·양생 → 다음 층 거푸집·철근 → 다음 양중
+    const useSubSteps = (typeof startPourCure === 'function') && (typeof startFormworkRebar === 'function');
+    if (useSubSteps) {
+      const curFloor  = GAME.state.completedFloors;
+      const nextFloor = curFloor + 1;
+      // rcLoop state 동기화 (rc_loop.js 가 HUD 표시 담당)
+      GAME.state.rcLoop = GAME.state.rcLoop || { floor: 1, stepIdx: 1, completed: false };
+      GAME.state.rcLoop.floor = curFloor;
+      GAME.state.rcLoop.stepIdx = 2; // pour_cure
+      if (typeof initRcLoop === 'function') { try { initRcLoop(); } catch (e) {} }
+
+      setTimeout(() => {
+        // 현재 층 타설·양생
+        startPourCure(curFloor);
+        // pour_cure onComplete → advanceRcStep → 다음 sub-step (formwork_rebar of nextFloor)
+        // formwork onComplete → advanceRcStep → 다음 lift → _startNextLiftCycle 으로 복귀
+        GAME._rcAfterFormwork = () => {
+          GAME.state.rcLoop.floor   = nextFloor;
+          GAME.state.rcLoop.stepIdx = 1;  // lift
+          _startNextLiftCycle();
+        };
+      }, 1500);
+    } else {
+      // 다음 사이클 준비 (기존 경로)
+      setTimeout(_startNextLiftCycle, 1500);
+    }
   }
 }
 

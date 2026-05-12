@@ -16,6 +16,13 @@ const TIMEPRESSURE = {
   _el:          null,
 };
 
+const _CLOCK_TIPS = {
+  ko: '게임 내 시각 (18:00 마감)',
+  en: 'In-game clock (18:00 deadline)',
+  vi: 'Giờ trong game (hạn 18:00)',
+  ar: 'الساعة داخل اللعبة (حتى 18:00)',
+};
+
 function _ensureClockHUD() {
   if (TIMEPRESSURE._el) return TIMEPRESSURE._el;
   const tl = document.getElementById('hud-tl');
@@ -30,11 +37,18 @@ function _ensureClockHUD() {
   el.style.fontFamily     = 'monospace';
   el.style.fontSize       = '13px';
   el.style.letterSpacing  = '0.5px';
-  el.title                = '게임 내 시각 (18:00 마감)';
+  el.title                = _CLOCK_TIPS[currentLang] || _CLOCK_TIPS.ko;
   el.textContent = '🕒 09:00';
   tl.appendChild(el);
   TIMEPRESSURE._el = el;
   return el;
+}
+
+// 언어 전환 시 호출 (i18n.js applyLang 에서 사용 가능)
+function refreshClockI18n() {
+  if (TIMEPRESSURE._el) {
+    TIMEPRESSURE._el.title = _CLOCK_TIPS[currentLang] || _CLOCK_TIPS.ko;
+  }
 }
 
 function _fmtHM(h) {
@@ -95,34 +109,75 @@ function updateTimePressure(delta) {
   }
 }
 
+const _TIMEOUT_TEXT = {
+  ko: { t: '⏰ 시간초과',     d: '18:00 퇴근시간을 넘겼습니다. 작업이 강제 종료되었습니다.', c: '공기 압박 · 작업계획 지연',          retry: '다시 하기', home: '메인으로' },
+  en: { t: '⏰ Time Up',      d: 'Exceeded 18:00 quitting time. Work was forced to stop.',     c: 'Schedule pressure · planning delay', retry: 'Retry',     home: 'Home' },
+  vi: { t: '⏰ Hết giờ',      d: 'Đã quá 18:00. Công việc bị buộc dừng.',                       c: 'Áp lực tiến độ · trễ kế hoạch',     retry: 'Thử lại',   home: 'Trang chủ' },
+  ar: { t: '⏰ انتهى الوقت',  d: 'تجاوزت نهاية الدوام 18:00. توقف العمل قسراً.',                  c: 'ضغط الجدول · تأخر التخطيط',         retry: 'إعادة',     home: 'الرئيسية' },
+};
+
+function _buildTimeoutPanel() {
+  let panel = document.getElementById('timeout-panel');
+  if (panel) return panel;
+  panel = document.createElement('div');
+  panel.id = 'timeout-panel';
+  panel.className = 'hidden';
+  panel.style.cssText = [
+    'position:fixed','top:0','left:0','width:100%','height:100%',
+    'background:rgba(8,12,20,0.92)','z-index:9000',
+    'display:flex','align-items:center','justify-content:center',
+    'font-family:"Pretendard","Noto Sans KR",sans-serif',
+  ].join(';');
+  panel.innerHTML = `
+    <div style="background:#15202E;border:2px solid #DC2626;border-radius:14px;
+                padding:36px 44px;max-width:520px;text-align:center;color:#F0F0F0;
+                box-shadow:0 0 60px rgba(220,38,38,0.35)">
+      <div style="font-size:56px;line-height:1;margin-bottom:8px">⏰</div>
+      <h2 id="timeout-title" style="font-size:26px;margin:8px 0 14px;color:#FF6868"></h2>
+      <p id="timeout-desc"  style="font-size:15px;line-height:1.6;margin:0 0 18px;color:#D8DCE3"></p>
+      <div style="background:rgba(220,38,38,0.13);border-left:3px solid #DC2626;
+                  padding:10px 14px;border-radius:4px;margin:0 0 22px;
+                  font-size:13px;color:#FCA5A5;text-align:left">
+        <span id="timeout-cause"></span>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button id="timeout-retry-btn" style="background:#DC2626;color:#fff;border:none;
+                padding:11px 26px;border-radius:8px;font-size:15px;cursor:pointer;
+                font-weight:600;letter-spacing:0.5px"></button>
+        <button id="timeout-home-btn"  style="background:#3A4659;color:#fff;border:none;
+                padding:11px 26px;border-radius:8px;font-size:15px;cursor:pointer"></button>
+      </div>
+    </div>`;
+  document.body.appendChild(panel);
+
+  document.getElementById('timeout-retry-btn').addEventListener('click', () => {
+    location.reload();
+  });
+  document.getElementById('timeout-home-btn').addEventListener('click', () => {
+    location.href = 'index.html';
+  });
+  return panel;
+}
+
 function _timeoutGameOver() {
   if (GAME.state.gameOver) return;
   GAME.state.gameOver = true;
   if (document.pointerLockElement) document.exitPointerLock();
 
-  const msgs = {
-    ko: { t: '⏰ 시간초과', d: '18:00 퇴근시간을 넘겼습니다. 작업이 강제 종료되었습니다.' },
-    en: { t: '⏰ Time Up',  d: 'Exceeded 18:00 quitting time. Work was forced to stop.' },
-    vi: { t: '⏰ Hết giờ',  d: 'Đã quá 18:00. Công việc bị buộc dừng.' },
-    ar: { t: '⏰ انتهى الوقت', d: 'تجاوزت نهاية الدوام 18:00. توقف العمل قسراً.' },
-  };
-  const m = msgs[currentLang] || msgs.ko;
+  const m = _TIMEOUT_TEXT[currentLang] || _TIMEOUT_TEXT.ko;
+  const panel = _buildTimeoutPanel();
 
-  // 사고 패널을 재활용해 결과 표시
-  const panel = document.getElementById('accident-panel');
-  if (panel) {
-    const tEl = document.getElementById('acc-title');
-    const dEl = document.getElementById('acc-desc');
-    const cEl = document.getElementById('acc-cause');
-    if (tEl) tEl.textContent = m.t;
-    if (dEl) dEl.textContent = m.d;
-    if (cEl) cEl.textContent = '공기 압박 · 작업계획 지연';
-    panel.classList.remove('hidden');
-  } else if (typeof showNotification === 'function') {
-    showNotification(m.t + ' — ' + m.d, 'fail');
-  }
+  document.getElementById('timeout-title').textContent     = m.t;
+  document.getElementById('timeout-desc').textContent      = m.d;
+  document.getElementById('timeout-cause').textContent     = m.c;
+  document.getElementById('timeout-retry-btn').textContent = m.retry;
+  document.getElementById('timeout-home-btn').textContent  = m.home;
+  panel.classList.remove('hidden');
+
+  if (typeof BGM !== 'undefined' && BGM.stop) try { BGM.stop(); } catch (e) {}
 }
 
 window.TIMEPRESSURE       = TIMEPRESSURE;
 window.initTimePressure   = initTimePressure;
 window.updateTimePressure = updateTimePressure;
+window.refreshClockI18n   = refreshClockI18n;

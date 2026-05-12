@@ -129,6 +129,9 @@ window.persistFines = persistFines;
   if (typeof initWeatherFX === 'function') initWeatherFX();
   if (typeof initEvents === 'function') initEvents();
   if (typeof spawnSceneDecor === 'function') spawnSceneDecor(GAME.scene, GAME.scenarioId);
+  // Mixamo 클립 + 도구 미리 로드 (있을 때만 — 없으면 기본 Idle/Walk/Run 폴백)
+  if (typeof preloadMotionClips === 'function') preloadMotionClips();
+  if (typeof preloadMotionTools === 'function') preloadMotionTools();
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
@@ -174,6 +177,9 @@ function _loop() {
     if (typeof updateLifeline === 'function')       updateLifeline(delta);
     if (typeof updatePanel === 'function')          updatePanel(delta);
     if (typeof updateEnvSignal === 'function')      updateEnvSignal(delta);
+    // rc_frame sub-steps (lifting 시나리오 안에서 동작)
+    if (typeof updateFormworkRc === 'function')     updateFormworkRc(delta);
+    if (typeof updatePourRc === 'function')         updatePourRc(delta);
     // mep_finish
     if (typeof updateLoto === 'function')           updateLoto(delta);
     if (typeof updateGas === 'function')            updateGas(delta);
