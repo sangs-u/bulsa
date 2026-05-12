@@ -302,8 +302,10 @@ function openInstructionPopup(item) {
                     (isDanger ? ' inst-danger' : '');
     const langSuffix = (instructionLang || 'ko').charAt(0).toUpperCase() + (instructionLang || 'ko').slice(1);
     const label = inst['label' + langSuffix] || inst.labelEn || inst.labelKo;
+    const accSub = (isDanger && inst.accidentIfDanger && typeof accidentLabel === 'function')
+      ? `<span style="margin-left:6px;font-size:11px;opacity:0.85;color:#F56565">⚠ ${accidentLabel(inst.accidentIfDanger)}</span>` : '';
     btn.innerHTML = `<span class="inst-icon">${inst.icon}</span>
-      <span>${label}</span>`;
+      <span>${label}${accSub}</span>`;
 
     btn.onclick = () => {
       if (_givenInstructions.has(`${npc.id}_${inst.id}`)) return;
@@ -624,8 +626,10 @@ function toggleInstructionLang() {
                          (isDanger ? ' inst-danger' : '');
         const langSuffix2 = (instructionLang || 'ko').charAt(0).toUpperCase() + (instructionLang || 'ko').slice(1);
         const label2 = inst['label' + langSuffix2] || inst.labelEn || inst.labelKo;
+        const accSub2 = (isDanger && inst.accidentIfDanger && typeof accidentLabel === 'function')
+          ? `<span style="margin-left:6px;font-size:11px;opacity:0.85;color:#F56565">⚠ ${accidentLabel(inst.accidentIfDanger)}</span>` : '';
         btn2.innerHTML = `<span class="inst-icon">${inst.icon}</span>
-          <span>${label2}</span>`;
+          <span>${label2}${accSub2}</span>`;
         btn2.onclick = () => {
           if (_givenInstructions.has(`${npc.id}_${inst.id}`)) return;
           giveInstruction(npc, inst);
