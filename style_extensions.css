@@ -447,6 +447,16 @@
   opacity: 0.5;
   pointer-events: none;
 }
+/* 위험 변종 명령 — 시각 경고 */
+.inst-item.inst-danger {
+  background: rgba(220, 38, 38, 0.10);
+  border-color: rgba(220, 38, 38, 0.45);
+  color: #FCA5A5;
+}
+.inst-item.inst-danger:hover {
+  background: rgba(220, 38, 38, 0.22);
+  border-color: rgba(220, 38, 38, 0.7);
+}
 .inst-icon { font-size: 1rem; }
 
 .inst-close-btn {
