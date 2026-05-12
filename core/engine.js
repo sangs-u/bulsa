@@ -112,9 +112,8 @@ window.persistFines = persistFines;
     console.error(`${_active.register} 없음 — hazards.js 로딩 순서 확인`);
   }
 
-  // v2.0 통합 모드 — 다른 4 시나리오의 scene build + hazard register 모두 호출
-  // 각 scene.js 의 build 는 unifiedMode 분기로 sky/ground/lighting 중복 회피 (baseline 만 lifting)
-  // mesh 좌표계는 향후 각 scene.js 에서 unifiedOffset 으로 영역 분산.
+  // v2.0 통합 모드 — 4 시나리오 scene build + hazard register 모두 호출.
+  // 각 시나리오가 추가한 mesh 를 그 시나리오 영역(unifiedZones) 으로 group offset 분산.
   if (GAME.unifiedMode) {
     GAME.unifiedZones = {
       excavation: { ox: -22, oz: -10 },   // 좌상
@@ -122,16 +121,31 @@ window.persistFines = persistFines;
       envelope:   { ox:  22, oz: -10 },   // 우상
       mep_finish: { ox:  22, oz:  10 },   // 우하
     };
-    ['buildExcavationScene','buildFoundationScene','buildEnvelopeScene','buildMepFinishScene'].forEach(fnName => {
-      const fn = window[fnName];
-      if (typeof fn === 'function') {
-        try { fn(); } catch (e) { console.warn('[unified build]', fnName, e.message); }
+    const _buildEntries = [
+      ['buildExcavationScene', 'excavation', 'registerExcavationHazards'],
+      ['buildFoundationScene', 'foundation', 'registerFoundationHazards'],
+      ['buildEnvelopeScene',   'envelope',   'registerEnvelopeHazards'],
+      ['buildMepFinishScene',  'mep_finish', 'registerMepFinishHazards'],
+    ];
+    _buildEntries.forEach(([buildFn, sid, regFn]) => {
+      const fn = window[buildFn];
+      if (typeof fn !== 'function') return;
+      const zone = GAME.unifiedZones[sid];
+      const startIdx = GAME.scene.children.length;
+      try { fn(); } catch (e) { console.warn('[unified build]', buildFn, e.message); }
+      if (typeof window[regFn] === 'function') {
+        try { window[regFn](); } catch (e) { console.warn('[unified hazard]', regFn, e.message); }
       }
-    });
-    ['registerExcavationHazards', 'registerFoundationHazards', 'registerEnvelopeHazards', 'registerMepFinishHazards'].forEach(fnName => {
-      const fn = window[fnName];
-      if (typeof fn === 'function') {
-        try { fn(); } catch (e) { console.warn('[unified hazard]', fnName, e.message); }
+      // 새로 추가된 GAME.scene 의 자식들을 group 으로 묶어 영역 offset 적용
+      if (zone) {
+        const newChildren = GAME.scene.children.slice(startIdx);
+        if (newChildren.length > 0) {
+          const grp = new THREE.Group();
+          grp.name = `unified_zone_${sid}`;
+          newChildren.forEach(c => grp.add(c));  // scene 에서 자동 제거 + group 으로 이동
+          grp.position.set(zone.ox, 0, zone.oz);
+          GAME.scene.add(grp);
+        }
       }
     });
   }
