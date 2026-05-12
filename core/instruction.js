@@ -278,6 +278,20 @@ function openInstructionPopup(item) {
     items = INSTRUCTIONS[phase] || INSTRUCTIONS[1];
   }
 
+  // 정렬 — safe(NPC 직종 일치 > 일반) > flag-trigger > danger 순. 위험 명령이 함정처럼 섞이지 않게.
+  items = items.slice().sort((a, b) => {
+    const aDanger = a.risk === 'danger' ? 1 : 0;
+    const bDanger = b.risk === 'danger' ? 1 : 0;
+    if (aDanger !== bDanger) return aDanger - bDanger;
+    const aFlag = a.setFlagOnTask ? 1 : 0;
+    const bFlag = b.setFlagOnTask ? 1 : 0;
+    if (aFlag !== bFlag) return aFlag - bFlag;
+    const npcTrade = npc && npc.trade;
+    const aFit = (a.applicableTrades && npcTrade && a.applicableTrades.indexOf(npcTrade) >= 0) ? 0 : 1;
+    const bFit = (b.applicableTrades && npcTrade && b.applicableTrades.indexOf(npcTrade) >= 0) ? 0 : 1;
+    return aFit - bFit;
+  });
+
   // 모든 명령을 풀에 표시 — 직종/phase 미스매치는 NPC 거부로 처리 (학습)
   // 위험변종(risk='danger')는 시각적 경고 (⚠ 아이콘이 이미 있음) — 플레이어가 인식 가능
   items.forEach(inst => {
@@ -592,6 +606,16 @@ function toggleInstructionLang() {
         const phase = GAME.state.phase;
         items = INSTRUCTIONS[phase] || INSTRUCTIONS[1];
       }
+      items = items.slice().sort((a, b) => {
+        const ad = a.risk === 'danger' ? 1 : 0, bd = b.risk === 'danger' ? 1 : 0;
+        if (ad !== bd) return ad - bd;
+        const af = a.setFlagOnTask ? 1 : 0, bf = b.setFlagOnTask ? 1 : 0;
+        if (af !== bf) return af - bf;
+        const nt = npc && npc.trade;
+        const afit = (a.applicableTrades && nt && a.applicableTrades.indexOf(nt) >= 0) ? 0 : 1;
+        const bfit = (b.applicableTrades && nt && b.applicableTrades.indexOf(nt) >= 0) ? 0 : 1;
+        return afit - bfit;
+      });
       items.forEach(inst => {
         const isDanger = inst.risk === 'danger';
         const btn2 = document.createElement('div');

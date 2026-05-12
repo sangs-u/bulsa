@@ -149,7 +149,9 @@ function showAccidentPanel(accidentId) {
   const langSuffix = { ko: 'Ko', en: 'En', vi: 'Vi', ar: 'Ar' }[currentLang] || 'Ko';
   const pick = (base) => data[base + langSuffix] || data[base + 'En'] || data[base + 'Ko'] || '';
 
-  document.getElementById('acc-title').textContent     = t('accidentTitle');
+  const baseTitle = t('accidentTitle');
+  const sub = (typeof accidentLabel === 'function') ? accidentLabel(accidentId) : accidentId;
+  document.getElementById('acc-title').textContent     = baseTitle + (sub && sub !== accidentId ? ' — ' + sub : '');
   document.getElementById('acc-lbl-desc').textContent  = t('accidentSituation');
   document.getElementById('acc-lbl-cause').textContent = t('accidentCause');
   document.getElementById('acc-lbl-law').textContent   = t('accidentLaw');
