@@ -203,14 +203,24 @@
       const st = stats[s] || {};
       const best = st.bestGrade || '-';
       const completions = st.completions || 0;
-      return `<div>📋 ${names[s]} — 최고 ${best} · 완주 ${completions}회</div>`;
+      const deaths = st.deathCount || 0;
+      return `<div>📋 ${names[s]} — 최고 ${best} · 완주 ${completions}회 · ☠ ${deaths}</div>`;
     });
+    // 사고 누적 — 상위 5종
+    const acc = (stats._global && stats._global.accidents) || {};
+    const sortedAcc = Object.entries(acc).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const accRows = sortedAcc.length
+      ? sortedAcc.map(([id, cnt]) => `<div style="opacity:0.85">  · ${id} × ${cnt}</div>`).join('')
+      : '<div style="opacity:0.55">(기록 없음)</div>';
+    const totalDeaths = (stats._global && stats._global.totalDeaths) || 0;
     body.innerHTML = `
       <div style="margin-bottom:8px;font-weight:bold;color:#48BB78">현재 세션</div>
       <div>🛡 ${typeof t === 'function' ? t('safetyIndex') : '명'}: ${si}/100</div>
       <div>💰 누적 과태료: ₩${fines.toLocaleString('ko-KR')}</div>
       <div style="margin:10px 0 6px;font-weight:bold;color:#48BB78">시나리오 기록</div>
       ${rows.join('')}
+      <div style="margin:10px 0 6px;font-weight:bold;color:#F56565">사고 누적 (총 ☠ ${totalDeaths})</div>
+      ${accRows}
     `;
   }
 

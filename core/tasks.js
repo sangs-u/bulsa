@@ -183,6 +183,47 @@ function buildInstructionPoolFromActiveTasks(npc) {
   return pool;
 }
 
+// ── 시나리오별 초기 작업 큐 시드 ────────────────────────────
+// 시나리오 진입 시 그 시나리오에서 자주 등장하는 작업을 미리 큐에 등록.
+// 이 시드 덕분에 명령 풀(합성) + 간섭 매트릭스 + HUD 작업 칩이 시나리오 처음부터 동작.
+// loc 는 부지 내 적당히 분산 — 정상 흐름에서는 자연스럽게 충돌 없음.
+const _SCENARIO_TASK_SEEDS = {
+  excavation: [
+    { type: 'excavate',  floor: 0, loc: { x:  0, z:  0 } },
+    { type: 'survey',    floor: 0, loc: { x: -8, z: -8 } },
+    { type: 'shoring',   floor: 0, loc: { x:  8, z:  0 } },
+    { type: 'guardrail', floor: 0, loc: { x:  0, z:  8 } },
+  ],
+  foundation: [
+    { type: 'rebar',            floor: 0, loc: { x:  0, z:  0 } },
+    { type: 'formwork',         floor: 0, loc: { x: -7, z:  0 } },
+    { type: 'formwork_support', floor: 0, loc: { x:  7, z:  0 } },
+    { type: 'pour',             floor: 0, loc: { x:  0, z:  7 } },
+  ],
+  lifting: [],  // RC_LOOP 가 동적 enqueue
+  envelope: [
+    { type: 'scaffold',  floor: 1, loc: { x: -8, z:  0 } },
+    { type: 'panel',     floor: 1, loc: { x:  8, z:  0 } },
+    { type: 'glass',     floor: 1, loc: { x:  0, z:  8 } },
+    { type: 'guardrail', floor: 1, loc: { x:  0, z: -8 } },
+    { type: 'lifeline',  floor: 1, loc: { x:  0, z:  0 } },
+    { type: 'lift',      floor: 1, loc: { x:  0, z:-12 } },
+  ],
+  mep_finish: [
+    { type: 'electric',    floor: 1, loc: { x: -8, z:  0 } },
+    { type: 'plumb',       floor: 1, loc: { x:  8, z:  0 } },
+    { type: 'vent',        floor: 1, loc: { x:  0, z:  8 } },
+    { type: 'paint',       floor: 1, loc: { x:  0, z: -8 } },
+    { type: 'ext_install', floor: 1, loc: { x: 12, z: 12 } },
+  ],
+};
+
+function enqueueScenarioTasks(scenarioId) {
+  const seeds = _SCENARIO_TASK_SEEDS[scenarioId];
+  if (!seeds) return [];
+  return seeds.map(spec => addTask(Object.assign({}, spec, { loc: Object.assign({}, spec.loc) })));
+}
+
 // ── 외부 노출 ────────────────────────────────────────────
 window.TASK_TYPES                       = TASK_TYPES;
 window.INTERFERENCE_MATRIX              = INTERFERENCE_MATRIX;
@@ -193,3 +234,4 @@ window.getTasksByType                   = getTasksByType;
 window.hasActiveTask                    = hasActiveTask;
 window.evaluateInterference             = evaluateInterference;
 window.buildInstructionPoolFromActiveTasks = buildInstructionPoolFromActiveTasks;
+window.enqueueScenarioTasks             = enqueueScenarioTasks;

@@ -108,6 +108,9 @@ window.persistFines = persistFines;
     console.error(`${_active.register} 없음 — hazards.js 로딩 순서 확인`);
   }
 
+  // v2.0 — 시나리오별 초기 작업 큐 시드 (lifting 은 RC_LOOP 가 동적 enqueue)
+  if (typeof enqueueScenarioTasks === 'function') enqueueScenarioTasks(GAME.scenarioId);
+
   initPlayer();
   initInteraction();
   initHUD();

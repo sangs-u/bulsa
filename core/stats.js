@@ -27,8 +27,30 @@
     _write(s);
   }
 
+  // 사고 발생 시 누적 — accident.js triggerAccident 에서 호출
+  function recordAccident(scenarioId, accidentId) {
+    const s = _read();
+    s._global           = s._global || { accidents: {}, totalDeaths: 0 };
+    s._global.accidents = s._global.accidents || {};
+    s._global.accidents[accidentId] = (s._global.accidents[accidentId] || 0) + 1;
+    s._global.totalDeaths += 1;
+    if (scenarioId) {
+      s[scenarioId]            = s[scenarioId] || { completions: 0, bestGrade: null, bestSafetyIndex: 0, minFines: Infinity };
+      s[scenarioId].accidents  = s[scenarioId].accidents || {};
+      s[scenarioId].accidents[accidentId] = (s[scenarioId].accidents[accidentId] || 0) + 1;
+      s[scenarioId].deathCount = (s[scenarioId].deathCount || 0) + 1;
+    }
+    _write(s);
+  }
+
   function getStats() { return _read(); }
 
+  function resetStats() {
+    try { localStorage.removeItem('bulsa_stats'); } catch (e) {}
+  }
+
   window.recordCompletion = recordCompletion;
-  window.getStats = getStats;
+  window.recordAccident   = recordAccident;
+  window.getStats         = getStats;
+  window.resetStats       = resetStats;
 })();

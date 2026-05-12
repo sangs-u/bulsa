@@ -33,6 +33,11 @@ function triggerAccident(accidentId) {
 
   if (document.pointerLockElement) document.exitPointerLock();
 
+  // 사고 누적 통계
+  if (typeof recordAccident === 'function') {
+    try { recordAccident(GAME.scenarioId, accidentId); } catch (e) {}
+  }
+
   _triggerAccidentVFX(accidentId);
 
   if (typeof SOUND !== 'undefined') {
@@ -442,10 +447,46 @@ function applySafetyPenalty(points) {
   if (!points) return;
   GAME.state.safetyIndex = Math.max(0, GAME.state.safetyIndex - points);
   updateHUD();
+  _spawnSiFloater(-points);
+  _pulseSiBar('penalty');
 }
 
 function applySafetyReward(points) {
   if (!points) return;
   GAME.state.safetyIndex = Math.min(100, GAME.state.safetyIndex + points);
   updateHUD();
+  _spawnSiFloater(+points);
+  _pulseSiBar('reward');
+}
+
+// 명(命) 변화 floating 텍스트 — hud-tr 옆에 +/- 숫자 잠깐 표시
+function _spawnSiFloater(delta) {
+  const anchor = document.getElementById('hud-si-num');
+  if (!anchor) return;
+  const fl = document.createElement('span');
+  fl.textContent = (delta > 0 ? '+' : '') + delta;
+  fl.style.cssText =
+    'position:absolute;font-family:monospace;font-size:13px;font-weight:bold;' +
+    'pointer-events:none;user-select:none;z-index:9100;' +
+    'color:' + (delta > 0 ? '#48BB78' : '#F56565') + ';' +
+    'text-shadow:0 1px 3px rgba(0,0,0,0.6);' +
+    'transition:transform 0.9s ease-out, opacity 0.9s ease-out;' +
+    'opacity:1;';
+  const r = anchor.getBoundingClientRect();
+  fl.style.left = (r.right + 6) + 'px';
+  fl.style.top  = r.top + 'px';
+  document.body.appendChild(fl);
+  requestAnimationFrame(() => {
+    fl.style.transform = 'translateY(-18px)';
+    fl.style.opacity   = '0';
+  });
+  setTimeout(() => fl.remove(), 950);
+}
+
+function _pulseSiBar(kind) {
+  const bar = document.getElementById('hud-si-bar');
+  if (!bar) return;
+  const flash = kind === 'penalty' ? '0 0 12px rgba(245,101,101,0.95)' : '0 0 10px rgba(72,187,120,0.85)';
+  bar.style.boxShadow = flash;
+  setTimeout(() => { bar.style.boxShadow = 'none'; }, 380);
 }
