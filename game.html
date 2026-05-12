@@ -69,6 +69,10 @@
       <span>⚠</span>
       <span id="acc-title">사고 발생</span>
     </div>
+    <div class="accident-section hidden" id="acc-origin-wrap">
+      <h4 id="acc-lbl-origin">트리거 원인</h4>
+      <p id="acc-origin"></p>
+    </div>
     <div class="accident-section">
       <h4 id="acc-lbl-desc">사고 상황</h4>
       <p id="acc-desc"></p>
@@ -92,6 +96,8 @@
     <div class="accident-btns">
       <button class="btn-retry" id="acc-btn-retry" onclick="retryGame()">다시 시도</button>
       <button class="btn-hub" id="acc-btn-hub" onclick="goHub()">허브로</button>
+      <button class="btn-hub" id="acc-btn-lib" onclick="if(typeof toggleAccLib==='function')toggleAccLib()" style="background:rgba(120,30,30,0.8)"
+        data-lang-ko="📚 모든 사고" data-lang-en="📚 All Accidents" data-lang-vi="📚 Tất cả tai nạn" data-lang-ar="📚 كل الحوادث">📚 모든 사고</button>
     </div>
   </div>
 </div>

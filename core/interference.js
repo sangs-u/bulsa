@@ -160,13 +160,13 @@
       // 확률적 사고 — rule.prob 를 초당 위험률로 사용 (보수: 누적 6초 임계를 주 트리거로)
       const perFrameRisk = (c.rule.prob || 0) * delta * 0.04;
       if (Math.random() < perFrameRisk) {
-        _fireAccident(c.rule);
+        _fireAccident(c.rule, c.a, c.b);
         return;
       }
 
       // 임계 누적 사고 — 보수적 안전망
       if (track.sustainedS >= SUSTAIN_THRESHOLD_S) {
-        _fireAccident(c.rule);
+        _fireAccident(c.rule, c.a, c.b);
         return;
       }
     }
@@ -180,8 +180,15 @@
     }
   }
 
-  function _fireAccident(rule) {
+  function _fireAccident(rule, a, b) {
     if (typeof triggerAccident !== 'function') return;
+    // 사고 원인 글로벌 노출 — 사고 패널이 읽음
+    GAME._lastAccidentOrigin = {
+      kind: 'interference',
+      cond: rule.cond,
+      a:    a && _label(a.type),
+      b:    b && _label(b.type),
+    };
     // 모든 라인 정리
     for (const [, track] of _conflictTracks) _disposeLine(track.line);
     _conflictTracks.clear();

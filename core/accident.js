@@ -159,6 +159,25 @@ function showAccidentPanel(accidentId) {
   document.getElementById('acc-btn-retry').textContent = t('retry');
   document.getElementById('acc-btn-hub').textContent   = t('backToHub');
 
+  // v2.0 — 간섭 trigger origin 표시
+  const originWrap = document.getElementById('acc-origin-wrap');
+  const originLbl  = document.getElementById('acc-lbl-origin');
+  const originP    = document.getElementById('acc-origin');
+  if (originWrap && originP) {
+    const o = GAME._lastAccidentOrigin;
+    if (o && o.kind === 'interference') {
+      const lblTxt = { ko: '트리거 원인', en: 'Trigger cause', vi: 'Nguyên nhân kích hoạt', ar: 'سبب التفعيل' }[currentLang] || '트리거 원인';
+      if (originLbl) originLbl.textContent = lblTxt;
+      const condHuman = (typeof window !== 'undefined' && typeof o.cond === 'string') ? o.cond : '';
+      originP.textContent = (o.a || '?') + ' × ' + (o.b || '?') + ' — ' + condHuman;
+      originWrap.classList.remove('hidden');
+    } else {
+      originWrap.classList.add('hidden');
+    }
+    // 이번 사고에 한 번 사용 후 클리어
+    GAME._lastAccidentOrigin = null;
+  }
+
   document.getElementById('acc-desc').textContent  = pick('desc');
   document.getElementById('acc-cause').textContent = pick('cause');
   document.getElementById('acc-law').textContent   = pick('law');
