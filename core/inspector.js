@@ -48,6 +48,21 @@
   }
 
   // ── 출현: 사무실 쪽에서 워킹 입장 ────────────────────────────
+  const _INSP_L = {
+    arrived:  { ko: '🟦 안전관리자 도착 — 작업장 점검 중', en: '🟦 Inspector arrived — site check', vi: '🟦 Thanh tra đến — kiểm tra hiện trường', ar: '🟦 وصل المفتش — جاري الفحص' },
+    pass:     { ko: '✅ 점검 통과 — 위반사항 없음',         en: '✅ Inspection passed — no violations', vi: '✅ Đạt — không vi phạm',         ar: '✅ تم اجتياز الفحص — لا مخالفات' },
+    leave:    { ko: '안전관리자가 만족하고 떠납니다.',       en: 'The inspector is satisfied and leaves.', vi: 'Thanh tra hài lòng và rời đi.', ar: 'المفتش راضٍ ويغادر.' },
+    findings: { ko: '⚠ 안전관리자 적발',                    en: '⚠ Inspector Findings',                vi: '⚠ Phát hiện của thanh tra',      ar: '⚠ نتائج المفتش' },
+    accumFine:{ ko: '누적 과태료',                          en: 'Total fines',                          vi: 'Tổng phạt',                       ar: 'إجمالي الغرامات' },
+    ok:       { ko: '확인',                                  en: 'OK',                                   vi: 'OK',                              ar: 'موافق' },
+  };
+  function _ipl(k) {
+    const e = _INSP_L[k];
+    if (!e) return k;
+    const L = (typeof currentLang !== 'undefined' && currentLang) || 'ko';
+    return e[L] || e.ko;
+  }
+
   function _spawnInspector() {
     if (!GAME.scene) return;
     const group = _buildInspectorMesh();
@@ -59,7 +74,7 @@
     INSPECTOR.spawnedAt = INSPECTOR.elapsedSinceStart;
 
     if (typeof showActionNotif === 'function') {
-      showActionNotif('🟦 안전관리자 도착 — 작업장 점검 중', 3000);
+      showActionNotif(_ipl('arrived'), 3000);
     }
     if (typeof sfx === 'function') sfx('inspector');
   }
@@ -168,13 +183,11 @@
     // v2.0 task.flags 위반 합치기
     violations.push(..._taskFlagViolations());
 
-    const lang = (typeof getLang === 'function') ? getLang() : 'ko';
+    const lang = (typeof getLang === 'function') ? getLang() : (typeof currentLang !== 'undefined' ? currentLang : 'ko');
     if (violations.length === 0) {
       _showPanel({
-        title: lang === 'ko' ? '✅ 점검 통과 — 위반사항 없음' : '✅ Inspection passed — no violations',
-        lines: [
-          lang === 'ko' ? '안전관리자가 만족하고 떠납니다.' : 'The inspector is satisfied and leaves.',
-        ],
+        title: _ipl('pass'),
+        lines: [_ipl('leave')],
         totalKrw: 0,
       });
       return;
@@ -188,7 +201,7 @@
     if (typeof sfx === 'function') sfx('ticket');
 
     _showPanel({
-      title: lang === 'ko' ? '⚠ 안전관리자 적발' : '⚠ Inspector Findings',
+      title: _ipl('findings'),
       lines: violations.map(v => {
         const lbl = (v.label && typeof v.label === 'object')
           ? (v.label[lang] || v.label.ko || v.id)
@@ -228,11 +241,11 @@
       </div>
       ${total > 0 ? `
         <div style="font-size:15px;border-top:1px solid #4A5568;padding-top:10px;margin-bottom:14px">
-          누적 과태료: <b style="color:#F56565">₩${_fmt(GAME.state.finesKrw)}</b>
+          ${_ipl('accumFine')}: <b style="color:#F56565">₩${_fmt(GAME.state.finesKrw)}</b>
         </div>` : ''}
       <button id="inspector-close-btn"
         style="background:#2B6CB0;color:#fff;border:0;padding:8px 22px;
-               border-radius:4px;cursor:pointer;font-size:14px">확인</button>
+               border-radius:4px;cursor:pointer;font-size:14px">${_ipl('ok')}</button>
     `;
     p.style.display = 'block';
     document.getElementById('inspector-close-btn').onclick = _closeDialog;
