@@ -79,14 +79,22 @@ function _commitSessionPlayTime() {
   }
   SAVE._sessionStart = Date.now();
 }
+const _PT_UNITS = {
+  ko: { h: '시간', m: '분', s: '초' },
+  en: { h: 'h',    m: 'm',  s: 's' },
+  vi: { h: 'giờ',  m: 'phút', s: 'giây' },
+  ar: { h: 'س',    m: 'د',  s: 'ث' },
+};
 function saveFormatPlayTime(sec) {
   sec = Math.max(0, Math.floor(sec || 0));
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
   const s = sec % 60;
-  if (h > 0) return `${h}시간 ${m}분`;
-  if (m > 0) return `${m}분 ${s}초`;
-  return `${s}초`;
+  const L = (typeof currentLang !== 'undefined' && currentLang) || 'ko';
+  const u = _PT_UNITS[L] || _PT_UNITS.ko;
+  if (h > 0) return `${h}${u.h} ${m}${u.m}`;
+  if (m > 0) return `${m}${u.m} ${s}${u.s}`;
+  return `${s}${u.s}`;
 }
 
 // ── Export / Import / Reset ──────────────────────────────────
