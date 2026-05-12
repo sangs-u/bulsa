@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOTS = ['core', 'scenarios', 'i18n', 'qa'];
+const ROOTS = ['core', 'scenarios', 'i18n', 'qa', 'blueprints'];
 const SKIP_DIRS = new Set(['node_modules', '.git', 'vendor', 'assets']);
 
 function walk(dir, out) {

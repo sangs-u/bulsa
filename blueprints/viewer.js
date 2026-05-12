@@ -4,6 +4,7 @@
 const BLUEPRINT = {
   _activeTab: 'plan',
   _open: false,
+  _siteTimer: null,
 };
 
 // ── i18n 라벨 ───────────────────────────────────────────────────
@@ -12,6 +13,7 @@ const _BPL = {
   tabPlan:    { ko: '평면도',        en: 'Plan View',         vi: 'Mặt bằng',       ar: 'المسقط' },
   tabElev:    { ko: '입면도',        en: 'Elevation',         vi: 'Mặt đứng',       ar: 'الواجهة' },
   tabRig:     { ko: '줄걸이 도면',   en: 'Rigging Diagram',   vi: 'Sơ đồ buộc móc', ar: 'مخطط الربط' },
+  tabSite:    { ko: '🗺 부지 통합',   en: '🗺 Unified Site',    vi: '🗺 Mặt bằng tổng', ar: '🗺 الموقع المتكامل' },
   close:      { ko: '닫기',          en: 'Close',             vi: 'Đóng',            ar: 'إغلاق' },
   crane:      { ko: '크레인',        en: 'Crane',             vi: 'Cần cẩu',         ar: 'الرافعة' },
   beam:       { ko: 'RC 보',         en: 'RC Beam',           vi: 'Dầm RC',          ar: 'عارضة RC' },
@@ -36,6 +38,12 @@ function openBlueprintPanel() {
   if (typeof INTERACTION !== 'undefined') INTERACTION.popupOpen = true;
   BLUEPRINT._open = true;
 
+  // 통합 모드 첫 진입 — 부지 통합 탭 자동 선택
+  if (typeof GAME !== 'undefined' && GAME.unifiedMode && !BLUEPRINT._siteTabSeen) {
+    BLUEPRINT._activeTab = 'site';
+    BLUEPRINT._siteTabSeen = true;
+  }
+
   const panel = document.getElementById('blueprint-panel');
   if (!panel) return;
   panel.classList.remove('hidden');
@@ -45,6 +53,7 @@ function openBlueprintPanel() {
 
 function closeBlueprintPanel() {
   BLUEPRINT._open = false;
+  if (BLUEPRINT._siteTimer) { clearInterval(BLUEPRINT._siteTimer); BLUEPRINT._siteTimer = null; }
   if (typeof INTERACTION !== 'undefined') INTERACTION.popupOpen = false;
   const panel = document.getElementById('blueprint-panel');
   if (panel) panel.classList.add('hidden');
@@ -60,10 +69,17 @@ function _updateBlueprintUI() {
   _setTxt('bp-tab-plan', _bl('tabPlan'));
   _setTxt('bp-tab-elev', _bl('tabElev'));
   _setTxt('bp-tab-rig',  _bl('tabRig'));
+  _setTxt('bp-tab-site', _bl('tabSite'));
   _setTxt('bp-close-btn', _bl('close'));
 
+  // 통합 모드에서만 부지 통합 탭 노출
+  const siteTab = document.getElementById('bp-tab-site');
+  if (siteTab) {
+    siteTab.style.display = (typeof GAME !== 'undefined' && GAME.unifiedMode) ? '' : 'none';
+  }
+
   // 탭 active 클래스
-  ['plan','elev','rig'].forEach(t => {
+  ['plan','elev','rig','site'].forEach(t => {
     const el = document.getElementById('bp-tab-' + t);
     if (el) el.classList.toggle('active', BLUEPRINT._activeTab === t);
   });
@@ -99,7 +115,17 @@ function _renderTab(tab) {
   if (tab === 'plan') _drawPlan(ctx, canvas);
   else if (tab === 'elev') _drawElevation(ctx, canvas);
   else if (tab === 'rig')  _drawRigging(ctx, canvas);
+  else if (tab === 'site') _drawUnifiedSite(ctx, canvas);
   _drawTitleBlock(ctx, canvas);
+
+  // site 탭은 실시간 (NPC·작업 위치 변화 반영) — 1초 주기 재렌더
+  if (BLUEPRINT._siteTimer) { clearInterval(BLUEPRINT._siteTimer); BLUEPRINT._siteTimer = null; }
+  if (tab === 'site' && BLUEPRINT._open) {
+    BLUEPRINT._siteTimer = setInterval(() => {
+      if (!BLUEPRINT._open) { clearInterval(BLUEPRINT._siteTimer); BLUEPRINT._siteTimer = null; return; }
+      _renderTab('site');
+    }, 1000);
+  }
 }
 
 // ── 공통: 도면 배경 그리드 ──────────────────────────────────────
@@ -632,6 +658,237 @@ function _drawRigging(ctx, canvas) {
 
   // 슬링 규격 라벨
   _label(ctx, lx - 35, cy + armLen * 0.5, `${rig.slingType}\nφ${rig.slingDia}mm`, '#9B2C2C', 9);
+}
+
+// ── 탭 4: 부지 통합 (실시간 탑뷰 — 통합 모드 전용) ─────────────
+function _drawUnifiedSite(ctx, canvas) {
+  if (typeof BLUEPRINT_UNIFIED === 'undefined') return;
+  const U = BLUEPRINT_UNIFIED;
+
+  const LEGEND_W = 178;
+  const ox = 36, oy = 24;
+  const W = canvas.width  - ox - LEGEND_W - 12;
+  const H = canvas.height - oy - 70;
+  const { x0, x1, z0, z1 } = U.bounds;
+  const sx = W / (x1 - x0);
+  const sz = H / (z1 - z0);
+  const toC = (wx, wz) => ({ x: ox + (wx - x0) * sx, y: oy + (wz - z0) * sz });
+
+  // 배경 지면
+  ctx.fillStyle = '#ECEAE3';
+  ctx.fillRect(ox, oy, W, H);
+  // 5m 격자
+  ctx.strokeStyle = 'rgba(90,80,60,0.08)'; ctx.lineWidth = 0.4;
+  for (let w = Math.ceil(x0 / 5) * 5; w <= x1; w += 5) {
+    const cx = toC(w, 0).x;
+    ctx.beginPath(); ctx.moveTo(cx, oy); ctx.lineTo(cx, oy + H); ctx.stroke();
+  }
+  for (let z = Math.ceil(z0 / 5) * 5; z <= z1; z += 5) {
+    const ry = toC(0, z).y;
+    ctx.beginPath(); ctx.moveTo(ox, ry); ctx.lineTo(ox + W, ry); ctx.stroke();
+  }
+
+  // 외곽 울타리
+  ctx.strokeStyle = '#3A6840'; ctx.lineWidth = 2.5;
+  ctx.strokeRect(ox, oy, W, H);
+  ctx.fillStyle = '#3A6840'; ctx.font = 'bold 9px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('통합 부지 외곽 (HOARDING)', ox + W / 2, oy - 8);
+
+  // 5 영역 박스
+  U.zones.forEach(z => {
+    const tl = toC(z.ox - z.half, z.oz - z.half);
+    const br = toC(z.ox + z.half, z.oz + z.half);
+    const w = br.x - tl.x, h = br.y - tl.y;
+    // 영역 색 (반투명 fill + 진한 stroke)
+    ctx.fillStyle = z.color + '22';
+    ctx.fillRect(tl.x, tl.y, w, h);
+    ctx.strokeStyle = z.color;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([6, 3]);
+    ctx.strokeRect(tl.x, tl.y, w, h);
+    ctx.setLineDash([]);
+    // 라벨
+    ctx.fillStyle = z.color;
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${z.icon} ${z.label}`, (tl.x + br.x) / 2, tl.y + 16);
+    ctx.font = '8px monospace';
+    ctx.fillStyle = z.color + 'AA';
+    ctx.fillText(`(${z.ox}, ${z.oz})`, (tl.x + br.x) / 2, br.y - 4);
+  });
+
+  // ── 실시간 NPC dot ─────────────────────────────────────────
+  let npcCount = 0;
+  if (typeof GAME !== 'undefined' && Array.isArray(GAME.npcs)) {
+    const tmp = (typeof THREE !== 'undefined') ? new THREE.Vector3() : null;
+    GAME.npcs.forEach(n => {
+      if (!n || !n.mesh) return;
+      try { n.mesh.getWorldPosition(tmp); } catch (e) { return; }
+      if (tmp.x < x0 || tmp.x > x1 || tmp.z < z0 || tmp.z > z1) return;
+      const p = toC(tmp.x, tmp.z);
+      ctx.fillStyle = '#1A4E8C';
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      npcCount++;
+    });
+  }
+
+  // 작업 그룹 색 (task_chips.js _GROUP_BG 와 동일 톤, alpha 강화)
+  const _GROUP_COLOR = {
+    temporary:  '#5594C8',
+    main_once:  '#A07860',
+    main_cycle: '#C89650',
+    finish:     '#64B48C',
+    continuous: '#8C8CB4',
+  };
+  const _groupOf = (type) => {
+    const def = (typeof TASK_TYPES !== 'undefined') && TASK_TYPES[type];
+    return (def && def.group) || 'continuous';
+  };
+
+  // ── 실시간 활성 작업 dot ───────────────────────────────────
+  let taskCount = 0;
+  let interferenceFlagged = 0;
+  if (typeof GAME !== 'undefined' && Array.isArray(GAME.activeTasks)) {
+    GAME.activeTasks.forEach(t => {
+      if (!t || !t.loc || typeof t.loc.x !== 'number' || typeof t.loc.z !== 'number') return;
+      if (t.loc.x < x0 || t.loc.x > x1 || t.loc.z < z0 || t.loc.z > z1) return;
+      const p = toC(t.loc.x, t.loc.z);
+      const groupColor = _GROUP_COLOR[_groupOf(t.type)] || '#888';
+      const isFlagged = t.flags && Object.keys(t.flags).some(k => t.flags[k]);
+      ctx.fillStyle = groupColor;
+      ctx.strokeStyle = isFlagged ? '#FFA500' : '#1A1208';
+      ctx.lineWidth = isFlagged ? 2 : 0.8;
+      ctx.beginPath();
+      ctx.rect(p.x - 3, p.y - 3, 6, 6);
+      ctx.fill(); ctx.stroke();
+      if (isFlagged) interferenceFlagged++;
+      taskCount++;
+    });
+  }
+
+  // ── 간섭 라인 (evaluateInterference 호출) ──────────────────
+  let interferenceCount = 0;
+  if (typeof evaluateInterference === 'function') {
+    let conflicts = [];
+    try { conflicts = evaluateInterference() || []; } catch (e) {}
+    conflicts.forEach(c => {
+      if (!c || !c.a || !c.b || !c.a.loc || !c.b.loc) return;
+      const pa = toC(c.a.loc.x, c.a.loc.z);
+      const pb = toC(c.b.loc.x, c.b.loc.z);
+      ctx.strokeStyle = '#E53E3E';
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([3, 2]);
+      ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+      ctx.setLineDash([]);
+      interferenceCount++;
+    });
+  }
+
+  // ── 플레이어 마커 (현재 카메라 위치) ────────────────────
+  if (typeof GAME !== 'undefined' && GAME.camera) {
+    const px = GAME.camera.position.x, pz = GAME.camera.position.z;
+    if (px >= x0 && px <= x1 && pz >= z0 && pz <= z1) {
+      const p = toC(px, pz);
+      ctx.save();
+      ctx.fillStyle = '#48BB78';
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      // 시선 방향 (yaw)
+      const yaw = GAME.camera.rotation.y;
+      const fx = p.x + Math.sin(-yaw) * 14;
+      const fy = p.y - Math.cos(-yaw) * 14;
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(fx, fy); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // ── 범례 ────────────────────────────────────────────────
+  const legX = ox + W + 12, legY = oy;
+  const legH = canvas.height - oy - 70;
+  ctx.fillStyle = '#F6F2EA'; ctx.strokeStyle = '#3A3228'; ctx.lineWidth = 1;
+  ctx.fillRect(legX - 4, legY - 4, LEGEND_W, legH);
+  ctx.strokeRect(legX - 4, legY - 4, LEGEND_W, legH);
+  ctx.fillStyle = '#1A1208'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'left';
+  ctx.fillText('실시간 현황 / Live', legX, legY + 12);
+  ctx.strokeStyle = '#3A3228'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(legX - 4, legY + 18); ctx.lineTo(legX + LEGEND_W - 4, legY + 18); ctx.stroke();
+
+  let row = 0;
+  const _rowY = () => legY + 32 + row++ * 16;
+  ctx.font = '9px monospace';
+  ctx.fillStyle = '#2A2018';
+  ctx.fillText(`👷 NPC: ${npcCount}`, legX, _rowY());
+  ctx.fillText(`📋 활성 작업: ${taskCount}`, legX, _rowY());
+  if (interferenceFlagged > 0) {
+    ctx.fillStyle = '#D69E2E';
+    ctx.fillText(`🔶 flag 작업: ${interferenceFlagged}`, legX, _rowY());
+    ctx.fillStyle = '#2A2018';
+  }
+  if (interferenceCount > 0) {
+    ctx.fillStyle = '#E53E3E';
+    ctx.fillText(`⚠ 간섭 라인: ${interferenceCount}`, legX, _rowY());
+    ctx.fillStyle = '#2A2018';
+  }
+  row++;
+  // 범례 — 마커 의미
+  ctx.fillStyle = '#1A1208'; ctx.font = 'bold 9px monospace';
+  ctx.fillText('마커', legX, _rowY());
+  ctx.font = '9px monospace'; ctx.fillStyle = '#2A2018';
+  // NPC 동그라미
+  const ly1 = _rowY();
+  ctx.fillStyle = '#1A4E8C'; ctx.beginPath(); ctx.arc(legX + 8, ly1 - 3, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.fillStyle = '#2A2018'; ctx.fillText('NPC (작업자)', legX + 20, ly1);
+  // 작업 사각형
+  const ly2 = _rowY();
+  ctx.fillStyle = '#D69E2E'; ctx.fillRect(legX + 4, ly2 - 7, 8, 8);
+  ctx.strokeStyle = '#1A1208'; ctx.lineWidth = 0.8; ctx.strokeRect(legX + 4, ly2 - 7, 8, 8);
+  ctx.fillStyle = '#2A2018'; ctx.fillText('활성 작업', legX + 20, ly2);
+  // flag 작업
+  const ly3 = _rowY();
+  ctx.fillStyle = '#D69E2E'; ctx.fillRect(legX + 4, ly3 - 7, 8, 8);
+  ctx.strokeStyle = '#FFA500'; ctx.lineWidth = 2; ctx.strokeRect(legX + 4, ly3 - 7, 8, 8);
+  ctx.fillStyle = '#2A2018'; ctx.fillText('flag 작업', legX + 20, ly3);
+  // 간섭 라인
+  const ly4 = _rowY();
+  ctx.strokeStyle = '#E53E3E'; ctx.lineWidth = 1.4; ctx.setLineDash([3, 2]);
+  ctx.beginPath(); ctx.moveTo(legX + 2, ly4 - 3); ctx.lineTo(legX + 14, ly4 - 3); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#2A2018'; ctx.fillText('간섭 라인', legX + 20, ly4);
+  // 플레이어
+  const ly5 = _rowY();
+  ctx.fillStyle = '#48BB78'; ctx.beginPath(); ctx.arc(legX + 8, ly5 - 3, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = '#2A2018'; ctx.fillText('내 위치', legX + 20, ly5);
+
+  // 범례 하단 — 영역 색 매핑
+  row++;
+  ctx.fillStyle = '#1A1208'; ctx.font = 'bold 9px monospace';
+  ctx.fillText('영역', legX, _rowY());
+  ctx.font = '9px monospace';
+  U.zones.forEach(z => {
+    const ly = _rowY();
+    ctx.fillStyle = z.color; ctx.fillRect(legX + 4, ly - 7, 8, 8);
+    ctx.strokeStyle = z.color; ctx.lineWidth = 1; ctx.strokeRect(legX + 4, ly - 7, 8, 8);
+    ctx.fillStyle = '#2A2018'; ctx.fillText(`${z.icon} ${z.label}`, legX + 20, ly);
+  });
+
+  // 스케일 바
+  const sbX = ox + 14, sbY = oy + H - 22;
+  const s10 = 10 * sx;
+  ctx.fillStyle = '#3A3228'; ctx.fillRect(sbX, sbY - 3, s10, 6);
+  ctx.fillStyle = '#F0EDE6'; ctx.fillRect(sbX + s10, sbY - 3, s10, 6);
+  ctx.strokeStyle = '#3A3228'; ctx.lineWidth = 1;
+  ctx.strokeRect(sbX, sbY - 3, s10 * 2, 6);
+  ctx.fillStyle = '#3A3228'; ctx.font = '8px monospace'; ctx.textAlign = 'center';
+  ctx.fillText('0', sbX, sbY + 12);
+  ctx.fillText('10m', sbX + s10, sbY + 12);
+  ctx.fillText('20m', sbX + s10 * 2, sbY + 12);
+
+  // 방위
+  _drawNorthArrow(ctx, ox + W - 28, oy + H - 34);
 }
 
 // ── 타이틀 블록 (도면 하단) ──────────────────────────────────────
