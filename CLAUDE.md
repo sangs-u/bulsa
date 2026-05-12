@@ -110,6 +110,76 @@ tmux has-session -t bulsa 2>/dev/null || {
 - **L** — 사고 라이브러리 패널 (모든 사고 ID + 4언어 desc/cause/law/procedure)
 - **P/Esc** — 일시정지 메뉴 → 통계 탭 (시나리오별 ☠ + 사고 누적 TOP5 + 명령 7종 카운터)
 
+### 🏠 집 PC 검증 체크리스트 — v2.0 마라톤 30 batch 후 (BLOCKING)
+> 이 마라톤은 시각 검증 없이 진행됨. 집 도착하면 아래 순서로 즉시 검증 → 회귀 발견 시 그 자리에서 수정.
+
+**A. 통합 모드 진입** (game.html?s=unified)
+- [ ] index.html "🆕 자유 모드" 카드 클릭 → game.html?s=unified 진입
+- [ ] 인트로 "🏗 자유 모드 — 5 시나리오 통합 부지" 노출
+- [ ] Blocker "🏗 자유 모드 — 통합 부지" 라벨
+- [ ] 시작 3초 후 안내 토스트 8초 노출 ("H=히스토리 · L=사고도서관")
+- [ ] HUD 상단 "🏗 오픈 부지 (자유 모드)" + 미션 안내
+
+**B. 영역 분산 시각**
+- [ ] 카메라 z=22 시작, 부지 전체 조망 가능
+- [ ] 5 영역에 mesh 분포 — 중앙(lifting 크레인) / 좌상(excavation 구덩이) / 좌하(foundation 거푸집) / 우상(envelope 비계) / 우하(mep_finish 건물)
+- [ ] mesh 겹침 발견 → 각 scene.js 의 _build* 함수가 GAME.scene.add 대신 child group 사용 시 offset 적용 안 됨. engine.js 의 newChildren 추출이 group 직접 자식만 잡으므로 깊은 hierarchy 는 누락 가능
+- [ ] 자식 mesh 가 group 안에 있는데 collider 거리 검사가 부정확하면 → mesh.getWorldPosition() 으로 수정 필요 (interaction.js, hazard.js 등)
+- [ ] 14 NPC 가 분산 영역에 spawn (중앙 5 + 좌상 3 + 좌하 3 + 우상 3 + 우하 3)
+
+**C. 작업 큐 + 칩**
+- [ ] HUD 작업 칩 18+개 (excavation 4 + foundation 4 + envelope 6 + mep_finish 5 + lifting 지속 3 = 22개)
+- [ ] 그룹 색상 구분 (가설=하늘색, 본공사=주황, 마감=초록, 지속=보라)
+- [ ] hover 시 다중행 tooltip (type/floor/loc/flags)
+- [ ] 칩 영역 max-width:60vw / max-height:60px 초과 시 가려짐 정상
+
+**D. 명령 시스템**
+- [ ] NPC 에 E 키 → instruction popup 열림
+- [ ] 풀 ~80 항목 + type 그룹 헤더 ("— 형틀목공 · 0F —" 식)
+- [ ] safe → flag → danger 정렬
+- [ ] NPC 직종 불일치 명령은 옅게 + ✗ 마크
+- [ ] 위험 명령에 ⚠ 사고라벨 sub
+- [ ] hint footer 노출
+
+**E. 간섭 라인 (debug 콘솔)**
+- [ ] `__bulsa.tasks()` → 활성 task 목록
+- [ ] `__bulsa.addTask('rebar', {x:0, z:0})` → lift 반경 6m 안에 rebar 추가
+- [ ] 두 task 사이 적색 라인 등장 (sustained 강도 점점 증가)
+- [ ] 6초 후 worker_crush 사고 발동 + 사고 패널 origin "양중 × 철근 — 6m 반경 내"
+- [ ] H 히스토리에 ⚠ 간섭 + ☠ 사고 행 기록
+
+**F. 학습 UI**
+- [ ] H 키 → 우하단 명령 히스토리 패널 (사고 행 클릭 → 사고 라이브러리 자동 열림)
+- [ ] L 키 → 사고 라이브러리 패널 (검색 input 작동 + 칩 클릭 → 상세)
+- [ ] P 키 → 일시정지 통계 탭 (시나리오별 ☠ + 사고 TOP5 + 명령 7종 카운터)
+- [ ] `__bulsa.simulateAccident('falling_debris')` → 사고 패널 한국어 라벨 "낙하물" + 4언어 desc/cause/law/proc
+
+**G. 명(命) 게이미피케이션**
+- [ ] HUD `명 100` 표시 (4언어 라벨)
+- [ ] 위험 명령 발화 시 floating "-N" 적색 + bar pulse glow
+- [ ] 명 ≤30 시 화면 가장자리 적색 비네팅 (활성)
+- [ ] 명 ≤15 시 critical (애니메이션 빨라짐)
+
+**H. 인스펙터 flag 적발**
+- [ ] flag-trigger 명령 발화 (global_organic_solvent / global_start_dismantle 등) → 작업 칩에 🔶 주황 테두리
+- [ ] 일정 시간 후 인스펙터 등장 → flag 적발 + 과태료 부과
+- [ ] 안전 명령 (paint_vent / scaffold_anchor 등) 으로 flag 끄면 적발 안 됨
+
+**I. 통합 모드 업적**
+- [ ] 진입 즉시 `unified_enter` 🏗 unlock 알림
+- [ ] 5분 무사고 → `unified_5min` ⏱
+- [ ] 10분 간섭 0 → `unified_zero_int` 🛡
+
+**J. 단일 시나리오 회귀 검사** (기존 5 시나리오 깨지지 않았는지)
+- [ ] ?s=lifting / ?s=excavation / ?s=foundation / ?s=envelope / ?s=mep_finish 모두 정상 진입
+- [ ] 단일 시나리오에서 작업 칩 4~6개만 보이는지 (unified 와 다른지)
+- [ ] phase 진행 시스템 정상 작동
+- [ ] 사고 패널 origin 섹션 hidden (단일 시나리오는 간섭 trigger 가 없으므로)
+
+**회귀 발견 시**
+- 우선순위: 단일 시나리오 회귀 > 통합 모드 핵심 > 통합 모드 시각 분산
+- 핫픽스 1줄로 가능하면 즉시 commit, 큰 변경은 issue 메모 후 다음 세션
+
 ## 현재 구현 상태
 ```
 ✅ v1.x: Three.js 씬, 5 시나리오 분리 동작, NPC 5+ 명 4언어, 사고 패널, 수료증

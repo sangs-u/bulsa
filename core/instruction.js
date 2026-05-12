@@ -268,6 +268,25 @@ function openInstructionPopup(item) {
   // Instruction list
   const list = document.getElementById('inst-list');
   list.innerHTML = '';
+
+  // v2.0 — 풀이 많을 때(>15) 검색 input 자동 노출
+  const _placeholder = { ko: '명령 검색…', en: 'Search commands…', vi: 'Tìm lệnh…', ar: 'بحث الأوامر…' }[currentLang] || '명령 검색…';
+  const searchWrap = document.createElement('div');
+  searchWrap.style.cssText = 'margin-bottom:6px';
+  searchWrap.innerHTML = `<input id="inst-search" type="text" placeholder="${_placeholder}" style="width:100%;box-sizing:border-box;padding:4px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);border-radius:4px;color:#fff;font-family:monospace;font-size:12px">`;
+  list.appendChild(searchWrap);
+  setTimeout(() => {
+    const inp = document.getElementById('inst-search');
+    if (!inp) return;
+    inp.addEventListener('input', (e) => {
+      const f = (e.target.value || '').trim().toLowerCase();
+      list.querySelectorAll('.inst-item').forEach(el => {
+        const txt = (el.textContent || '').toLowerCase();
+        el.style.display = (!f || txt.indexOf(f) >= 0) ? '' : 'none';
+      });
+    });
+  }, 0);
+
   // v2.0: 활성 작업 큐 우선. 비어있으면 phase 풀로 폴백.
   let items;
   if (typeof buildInstructionPoolFromActiveTasks === 'function' &&
