@@ -21,7 +21,7 @@
     if (!tl) return null;
     _wrap = document.createElement('span');
     _wrap.id = 'hud-task-chips';
-    _wrap.style.cssText = 'display:inline-flex;flex-wrap:wrap;gap:4px;margin-left:8px;vertical-align:middle';
+    _wrap.style.cssText = 'display:inline-flex;flex-wrap:wrap;gap:4px;margin-left:8px;vertical-align:middle;max-width:60vw;max-height:60px;overflow:hidden';
     tl.appendChild(_wrap);
     return _wrap;
   }
