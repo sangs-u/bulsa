@@ -577,7 +577,7 @@
     </div>
 
     <div class="fp-tb-center">
-      <div class="fp-tb-drawing-title">시뮬레이션 훈련구역 배치도</div>
+      <div class="fp-tb-drawing-title" data-lang-ko="시뮬레이션 훈련구역 배치도" data-lang-en="Simulation Training Zone Layout" data-lang-vi="Sơ đồ khu huấn luyện mô phỏng" data-lang-ar="مخطط منطقة التدريب">시뮬레이션 훈련구역 배치도</div>
       <div class="fp-tb-drawing-sub">Simulation Training Zone · Floor Plan</div>
     </div>
 
@@ -650,14 +650,40 @@
     door: which corner the hinge is at (bl/br/tl/tr)
     win:  which exterior walls have windows
   */
+  // 시나리오 데이터 — title/desc 는 4언어 객체. renderPlan/makeRoom 이 currentLang 기준 선택
   const SCENARIOS = [
-    { id:'s01', num:'S-01', room:'ROOM A', dim:'18.0×24.0', title:'토공사 · 굴착',           desc:'부지 굴착 + 흙막이 가시설 + 매설물 사전조사',         kosha:'KOSHA C-39-2011', ready:true, url:'game.html?s=excavation', door:'door-br', win:['top','left'] },
-    { id:'s02', num:'S-02', room:'ROOM B', dim:'7.5×12.0',  title:'기초공사 · 매트 타설',     desc:'동바리·거푸집·철근·콘크리트 타설',                     kosha:'KOSHA C-67-2018', ready:true, url:'game.html?s=foundation', door:'door-bl', win:['top'] },
-    { id:'s03', num:'S-03', room:'ROOM C', dim:'7.5×12.0',  title:'골조 양중 · 줄걸이·인양',  desc:'5층 RC 보 크레인 인양 (3,000 kg)',                    kosha:'KOSHA G-133-2020', ready:true, url:'game.html?s=lifting', door:'door-br', win:['top','right'] },
-    { id:'s04', num:'S-04', room:'ROOM D', dim:'7.5×12.0',  title:'외장공사 · 비계·창호',     desc:'시스템 비계 + 외벽 패널 + 안전대 부착설비',           kosha:'KOSHA G-110-2020', ready:true, url:'game.html?s=envelope', door:'door-bl', win:[] },
-    { id:'s05', num:'S-05', room:'ROOM E', dim:'7.5×12.0',  title:'설비·마감 · LOTO',        desc:'전기 LOTO + 배관 + 가스 점검 + 환기',                  kosha:'KOSHA G-82-2018',  ready:true, url:'game.html?s=mep_finish', door:'door-br', win:['right'] },
-    { id:'s06', num:'S-06', room:'ROOM F', dim:'33.0×8.5',  title:'밀폐공간 / 전기 / 화재',   desc:'추가 시나리오 (v2 — 무사이 담당)',                     kosha:'-',                ready:false, door:'door-tl', win:['bottom'] },
+    { id:'s01', num:'S-01', room:'ROOM A', dim:'18.0×24.0',
+      title: { ko:'토공사 · 굴착', en:'Earthworks · Excavation', vi:'San nền · Đào', ar:'الحفر · أعمال التربة' },
+      desc:  { ko:'부지 굴착 + 흙막이 가시설 + 매설물 사전조사', en:'Site excavation + shoring + utility survey', vi:'Đào nền + chống vách + khảo sát ngầm', ar:'الحفر + الدعم + مسح المرافق' },
+      kosha:'KOSHA C-39-2011', ready:true, url:'game.html?s=excavation', door:'door-br', win:['top','left'] },
+    { id:'s02', num:'S-02', room:'ROOM B', dim:'7.5×12.0',
+      title: { ko:'기초공사 · 매트 타설', en:'Foundation · Mat Pour', vi:'Móng · Đổ bê tông', ar:'الأساسات · صب الخرسانة' },
+      desc:  { ko:'동바리·거푸집·철근·콘크리트 타설', en:'Shoring · formwork · rebar · pour', vi:'Chống · ván khuôn · thép · đổ', ar:'الدعم · القوالب · الحديد · الصب' },
+      kosha:'KOSHA C-67-2018', ready:true, url:'game.html?s=foundation', door:'door-bl', win:['top'] },
+    { id:'s03', num:'S-03', room:'ROOM C', dim:'7.5×12.0',
+      title: { ko:'골조 양중 · 줄걸이·인양', en:'RC Frame · Rigging & Lifting', vi:'Khung · Cẩu', ar:'الهيكل · الرفع' },
+      desc:  { ko:'5층 RC 보 크레인 인양 (3,000 kg)', en:'5F RC beam crane lift (3,000 kg)', vi:'Cẩu dầm BTCT 5 tầng (3,000 kg)', ar:'رفع عتبة خرسانية 5 طوابق (3,000 كغ)' },
+      kosha:'KOSHA G-133-2020', ready:true, url:'game.html?s=lifting', door:'door-br', win:['top','right'] },
+    { id:'s04', num:'S-04', room:'ROOM D', dim:'7.5×12.0',
+      title: { ko:'외장공사 · 비계·창호', en:'Envelope · Scaffold & Windows', vi:'Vỏ ngoài · Giàn giáo', ar:'الواجهة · السقالة' },
+      desc:  { ko:'시스템 비계 + 외벽 패널 + 안전대 부착설비', en:'System scaffold + cladding + lifeline anchors', vi:'Giàn giáo hệ + tấm + dây neo', ar:'سقالة نظامية + ألواح + مرساة' },
+      kosha:'KOSHA G-110-2020', ready:true, url:'game.html?s=envelope', door:'door-bl', win:[] },
+    { id:'s05', num:'S-05', room:'ROOM E', dim:'7.5×12.0',
+      title: { ko:'설비·마감 · LOTO', en:'MEP & Finishing · LOTO', vi:'M&E · LOTO', ar:'التركيب والتشطيب · LOTO' },
+      desc:  { ko:'전기 LOTO + 배관 + 가스 점검 + 환기', en:'Electrical LOTO + piping + gas check + ventilation', vi:'LOTO điện + ống + kiểm tra gas + thông gió', ar:'كهرباء LOTO + أنابيب + غاز + تهوية' },
+      kosha:'KOSHA G-82-2018', ready:true, url:'game.html?s=mep_finish', door:'door-br', win:['right'] },
+    { id:'s06', num:'S-06', room:'ROOM F', dim:'33.0×8.5',
+      title: { ko:'밀폐공간 / 전기 / 화재', en:'Confined / Electrical / Fire', vi:'Kín / Điện / Cháy', ar:'محصور / كهرباء / حريق' },
+      desc:  { ko:'추가 시나리오 (v2 — 무사이 담당)', en:'Additional scenarios (v2 — MUSAI)', vi:'Kịch bản thêm (v2 — MUSAI)', ar:'سيناريوهات إضافية (v2 — MUSAI)' },
+      kosha:'-', ready:false, door:'door-tl', win:['bottom'] },
   ];
+
+  // 다국어 객체에서 현재 언어 텍스트 선택 (fallback: en → ko)
+  function _l(field) {
+    if (field == null) return '';
+    if (typeof field === 'string') return field;
+    return field[currentLang] || field.en || field.ko || '';
+  }
 
   function makeRoom(s) {
     const div = document.createElement('div');
@@ -682,8 +708,8 @@
             ${s.ready ? t('scenarioReady') : t('scenarioSoon')}
           </span>
         </div>
-        <div class="fp-room-title">${s.title || t(s.titleKey)}</div>
-        <div class="fp-room-desc">${s.desc || t(s.descKey)}</div>
+        <div class="fp-room-title">${_l(s.title) || t(s.titleKey)}</div>
+        <div class="fp-room-desc">${_l(s.desc) || t(s.descKey)}</div>
         <div class="fp-room-kosha">${s.kosha || t(s.koshaKey)}</div>
         ${btnHtml}
       </div>
@@ -704,7 +730,8 @@
     /* Corridor between rows 2 and 4 */
     const corridor = document.createElement('div');
     corridor.className = 'fp-corridor';
-    corridor.innerHTML = `<span class="fp-corridor-label">CORRIDOR &nbsp;·&nbsp; 복도 &nbsp;·&nbsp; W = 3.0 m</span>`;
+    const corridorLabel = { ko: '복도', en: 'Corridor', vi: 'Hành lang', ar: 'الممر' }[currentLang] || '복도';
+    corridor.innerHTML = `<span class="fp-corridor-label">CORRIDOR &nbsp;·&nbsp; ${corridorLabel} &nbsp;·&nbsp; W = 3.0 m</span>`;
     grid.appendChild(corridor);
   }
 
