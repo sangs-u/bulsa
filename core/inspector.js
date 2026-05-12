@@ -164,7 +164,12 @@
 
     _showPanel({
       title: lang === 'ko' ? '⚠ 안전관리자 적발' : '⚠ Inspector Findings',
-      lines: violations.map(v => `• ${v.label || v.id} — ₩${_fmt(v.krw)} ${v.law ? `(${v.law})` : ''}`),
+      lines: violations.map(v => {
+        const lbl = (v.label && typeof v.label === 'object')
+          ? (v.label[lang] || v.label.ko || v.id)
+          : (v.label || v.id);
+        return `• ${lbl} — ₩${_fmt(v.krw)} ${v.law ? `(${v.law})` : ''}`;
+      }),
       totalKrw: total,
     });
   }
@@ -241,55 +246,55 @@
   function getViolations_lifting() {
     const v = [];
     if (typeof LIFT_STATE === 'undefined') return v;
-    if (!LIFT_STATE.planWritten)     v.push({ id:'no_worksplan',   label:'작업계획서 미작성',    krw:5_000_000, law:'산안법 §38' });
-    if (!LIFT_STATE.outriggerExtended) v.push({ id:'no_outrigger',  label:'아웃트리거 미설치',     krw:3_000_000, law:'산안법 §38' });
-    if (!LIFT_STATE.slingInspected)  v.push({ id:'no_sling_inspect',label:'슬링 점검 미실시',     krw:2_000_000, law:'산안법 §38' });
-    if (!LIFT_STATE.signalAssigned)  v.push({ id:'no_signal_person',label:'신호수 미배치',         krw:3_000_000, law:'산안법 §38 시행규칙 §40' });
+    if (!LIFT_STATE.planWritten)     v.push({ id:'no_worksplan',   label:{ ko:'작업계획서 미작성', en:'Work plan not prepared', vi:'Chưa lập kế hoạch công việc', ar:'لم يتم إعداد خطة العمل' },    krw:5_000_000, law:'산안법 §38' });
+    if (!LIFT_STATE.outriggerExtended) v.push({ id:'no_outrigger',  label:{ ko:'아웃트리거 미설치', en:'Outriggers not extended', vi:'Chưa hạ chân chống', ar:'لم يتم تمديد الدعامات' },     krw:3_000_000, law:'산안법 §38' });
+    if (!LIFT_STATE.slingInspected)  v.push({ id:'no_sling_inspect',label:{ ko:'슬링 점검 미실시', en:'Sling inspection skipped', vi:'Chưa kiểm tra dây cẩu', ar:'لم يتم فحص الأحزمة' },     krw:2_000_000, law:'산안법 §38' });
+    if (!LIFT_STATE.signalAssigned)  v.push({ id:'no_signal_person',label:{ ko:'신호수 미배치', en:'Signal person not assigned', vi:'Chưa bố trí người ra hiệu', ar:'لم يتم تعيين عامل الإشارة' },         krw:3_000_000, law:'산안법 §38 시행규칙 §40' });
     return v;
   }
 
   function getViolations_excavation() {
     const v = [];
     if (typeof EXCAV_STATE === 'undefined') return v;
-    if (!EXCAV_STATE.planWritten)      v.push({ id:'no_worksplan',  label:'굴착 작업계획서 미작성', krw:5_000_000, law:'산안법 §38' });
-    if (!EXCAV_STATE.planUnderground)  v.push({ id:'no_underground',label:'매설물 사전조사 미실시', krw:5_000_000, law:'산안법 §38' });
+    if (!EXCAV_STATE.planWritten)      v.push({ id:'no_worksplan',  label:{ ko:'굴착 작업계획서 미작성', en:'Excavation work plan not prepared', vi:'Chưa lập kế hoạch đào đất', ar:'لم يتم إعداد خطة الحفر' }, krw:5_000_000, law:'산안법 §38' });
+    if (!EXCAV_STATE.planUnderground)  v.push({ id:'no_underground',label:{ ko:'매설물 사전조사 미실시', en:'Underground utility survey skipped', vi:'Chưa khảo sát công trình ngầm', ar:'لم يتم مسح المرافق تحت الأرض' }, krw:5_000_000, law:'산안법 §38' });
     if (!EXCAV_STATE.shoringInstalled && (EXCAV_STATE.planDepth || 0) >= 1.5)
-      v.push({ id:'no_shoring',    label:'흙막이 가시설 미설치',    krw:5_000_000, law:'산안법 §38' });
+      v.push({ id:'no_shoring',    label:{ ko:'흙막이 가시설 미설치', en:'Earth retaining shoring not installed', vi:'Chưa lắp hệ chống vách', ar:'لم يتم تركيب دعامات الحفر' },    krw:5_000_000, law:'산안법 §38' });
     if (!EXCAV_STATE.railingInstalled && (EXCAV_STATE.planDepth || 0) >= 2.0)
-      v.push({ id:'no_railing',    label:'굴착단부 안전난간 미설치', krw:3_000_000, law:'산안법 §38' });
+      v.push({ id:'no_railing',    label:{ ko:'굴착단부 안전난간 미설치', en:'Edge guardrail not installed', vi:'Chưa lắp lan can mép hố', ar:'لم يتم تركيب حاجز حافة الحفر' }, krw:3_000_000, law:'산안법 §38' });
     if (!EXCAV_STATE.signalAssigned)
-      v.push({ id:'no_signal_person', label:'신호수 미배치',          krw:3_000_000, law:'산안법 §38 시행규칙 §40' });
+      v.push({ id:'no_signal_person', label:{ ko:'신호수 미배치', en:'Signal person not assigned', vi:'Chưa bố trí người ra hiệu', ar:'لم يتم تعيين عامل الإشارة' },          krw:3_000_000, law:'산안법 §38 시행규칙 §40' });
     return v;
   }
 
   function getViolations_foundation() {
     const v = [];
     if (typeof FOUND_STATE === 'undefined') return v;
-    if (!FOUND_STATE.planWritten)    v.push({ id:'no_worksplan',  label:'타설 작업계획서 미작성',  krw:5_000_000, law:'산안법 §38' });
-    if (!FOUND_STATE.rebarCapsOk)    v.push({ id:'no_rebar_caps', label:'철근 보호캡 미설치',      krw:2_000_000, law:'산안법 §38' });
-    if (!FOUND_STATE.formworkOk)     v.push({ id:'formwork_fail', label:'거푸집 결속선 불량',      krw:3_000_000, law:'산안법 §38' });
-    if (!FOUND_STATE.pumpOk)         v.push({ id:'no_outrigger',  label:'펌프카 아웃트리거 미확장', krw:3_000_000, law:'산안법 §38' });
+    if (!FOUND_STATE.planWritten)    v.push({ id:'no_worksplan',  label:{ ko:'타설 작업계획서 미작성', en:'Concrete pour plan not prepared', vi:'Chưa lập kế hoạch đổ bê tông', ar:'لم يتم إعداد خطة الصب' },  krw:5_000_000, law:'산안법 §38' });
+    if (!FOUND_STATE.rebarCapsOk)    v.push({ id:'no_rebar_caps', label:{ ko:'철근 보호캡 미설치', en:'Rebar protective caps missing', vi:'Chưa lắp mũ bảo vệ thép', ar:'لم يتم تركيب أغطية حماية حديد التسليح' },      krw:2_000_000, law:'산안법 §38' });
+    if (!FOUND_STATE.formworkOk)     v.push({ id:'formwork_fail', label:{ ko:'거푸집 결속선 불량', en:'Formwork tie defective', vi:'Dây buộc ván khuôn lỗi', ar:'ربط القوالب معيب' },      krw:3_000_000, law:'산안법 §38' });
+    if (!FOUND_STATE.pumpOk)         v.push({ id:'no_outrigger',  label:{ ko:'펌프카 아웃트리거 미확장', en:'Pump truck outriggers not extended', vi:'Chưa hạ chân chống xe bơm', ar:'لم يتم تمديد دعامات شاحنة المضخة' }, krw:3_000_000, law:'산안법 §38' });
     return v;
   }
 
   function getViolations_envelope() {
     const v = [];
     if (typeof ENV_STATE === 'undefined') return v;
-    if (!ENV_STATE.planWritten)        v.push({ id:'no_worksplan',  label:'외장 작업계획서 미작성', krw:5_000_000, law:'산안법 §38' });
-    if (!ENV_STATE.scaffoldInspected)  v.push({ id:'no_scaffold_chk',label:'비계 조립 점검 미실시', krw:5_000_000, law:'산안법 §38' });
-    if (!ENV_STATE.lifelineInstalled)  v.push({ id:'no_lifeline',   label:'안전대 부착설비 미설치', krw:3_000_000, law:'산안법 §38' });
-    if (!ENV_STATE.panelSecured)       v.push({ id:'no_panel_secured',label:'외장 패널 결속 미흡',  krw:2_000_000, law:'산안법 §38' });
+    if (!ENV_STATE.planWritten)        v.push({ id:'no_worksplan',  label:{ ko:'외장 작업계획서 미작성', en:'Facade work plan not prepared', vi:'Chưa lập kế hoạch ốp ngoài', ar:'لم يتم إعداد خطة الواجهة' }, krw:5_000_000, law:'산안법 §38' });
+    if (!ENV_STATE.scaffoldInspected)  v.push({ id:'no_scaffold_chk',label:{ ko:'비계 조립 점검 미실시', en:'Scaffold assembly inspection skipped', vi:'Chưa kiểm tra lắp giàn giáo', ar:'لم يتم فحص تركيب السقالات' }, krw:5_000_000, law:'산안법 §38' });
+    if (!ENV_STATE.lifelineInstalled)  v.push({ id:'no_lifeline',   label:{ ko:'안전대 부착설비 미설치', en:'Lifeline anchor not installed', vi:'Chưa lắp điểm móc dây an toàn', ar:'لم يتم تركيب نقاط تثبيت حبل الأمان' }, krw:3_000_000, law:'산안법 §38' });
+    if (!ENV_STATE.panelSecured)       v.push({ id:'no_panel_secured',label:{ ko:'외장 패널 결속 미흡', en:'Facade panel fastening insufficient', vi:'Cố định tấm ốp không đủ', ar:'تثبيت ألواح الواجهة غير كافٍ' },  krw:2_000_000, law:'산안법 §38' });
     return v;
   }
 
   function getViolations_mep_finish() {
     const v = [];
     if (typeof MEP_STATE === 'undefined') return v;
-    if (!MEP_STATE.planWritten)    v.push({ id:'no_worksplan', label:'설비 작업계획서 미작성', krw:5_000_000, law:'산안법 §38' });
-    if (!MEP_STATE.lotoApplied)    v.push({ id:'no_loto',      label:'LOTO 미적용 (활선)',     krw:5_000_000, law:'산안법 §38' });
-    if (!MEP_STATE.gasChecked)     v.push({ id:'no_gas_check', label:'가스 누설 점검 미실시',   krw:3_000_000, law:'산안법 §38' });
+    if (!MEP_STATE.planWritten)    v.push({ id:'no_worksplan', label:{ ko:'설비 작업계획서 미작성', en:'MEP work plan not prepared', vi:'Chưa lập kế hoạch cơ điện', ar:'لم يتم إعداد خطة الأعمال الميكانيكية والكهربائية' }, krw:5_000_000, law:'산안법 §38' });
+    if (!MEP_STATE.lotoApplied)    v.push({ id:'no_loto',      label:{ ko:'LOTO 미적용 (활선)', en:'LOTO not applied (live circuit)', vi:'Chưa áp dụng LOTO (đang có điện)', ar:'لم يتم تطبيق LOTO (دائرة حية)' },     krw:5_000_000, law:'산안법 §38' });
+    if (!MEP_STATE.gasChecked)     v.push({ id:'no_gas_check', label:{ ko:'가스 누설 점검 미실시', en:'Gas leak check skipped', vi:'Chưa kiểm tra rò rỉ khí', ar:'لم يتم فحص تسرب الغاز' },   krw:3_000_000, law:'산안법 §38' });
     if (!MEP_STATE.ventActivated && MEP_STATE.planFinishType === 'solvent')
-      v.push({ id:'no_vent',       label:'국소배기 미가동 (용제 사용)', krw:3_000_000, law:'산안법 §38' });
+      v.push({ id:'no_vent',       label:{ ko:'국소배기 미가동 (용제 사용)', en:'Local exhaust not running (solvent use)', vi:'Chưa bật hút cục bộ (dùng dung môi)', ar:'الشفط الموضعي متوقف (استخدام مذيبات)' }, krw:3_000_000, law:'산안법 §38' });
     return v;
   }
 
