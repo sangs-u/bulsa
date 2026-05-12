@@ -31,7 +31,43 @@
     danger_skipped:  { bg: '#a07028', kr: '운좋음',     en: 'Lucky',     vi: 'May mắn',     ar: 'محظوظ' },
     skill_fail:      { bg: '#707070', kr: '숙련부족',   en: 'Low skill', vi: 'Kém kỹ năng', ar: 'مهارة ضعيفة' },
     success:         { bg: '#2e7d32', kr: '성공',       en: 'OK',        vi: 'OK',          ar: 'نجح' },
+    accident:        { bg: '#7a0000', kr: '☠ 사고',     en: '☠ Accident',vi: '☠ Tai nạn',   ar: '☠ حادث' },
+    interference:    { bg: '#9a3030', kr: '⚠ 간섭',     en: '⚠ Interfere',vi: '⚠ Xung đột',  ar: '⚠ تداخل' },
   };
+
+  function recordAccidentEvent(accidentId, cause) {
+    const label = (typeof accidentLabel === 'function') ? accidentLabel(accidentId) : accidentId;
+    HIST.unshift({
+      t:      Date.now(),
+      npc:    cause || '—',
+      inst:   accidentId,
+      label,
+      risk:   'danger',
+      result: 'accident',
+    });
+    while (HIST.length > MAX) HIST.pop();
+    _save(HIST);
+    if (_open) _renderPanel();
+    _renderBtnBadge();
+  }
+
+  function recordInterferenceEvent(rule, aType, bType) {
+    const label = `${aType} × ${bType}`;
+    HIST.unshift({
+      t:      Date.now(),
+      npc:    '간섭',
+      inst:   rule.cond,
+      label,
+      risk:   'danger',
+      result: 'interference',
+    });
+    while (HIST.length > MAX) HIST.pop();
+    _save(HIST);
+    if (_open) _renderPanel();
+    _renderBtnBadge();
+  }
+  window.recordAccidentEvent     = recordAccidentEvent;
+  window.recordInterferenceEvent = recordInterferenceEvent;
 
   function _resultLabel(r) {
     const m = RESULT_META[r];

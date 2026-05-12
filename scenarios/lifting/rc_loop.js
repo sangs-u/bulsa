@@ -99,17 +99,22 @@ const _TASK_TYPE_TO_NPC_TRADE = {
 
 function updateRcLoopTaskLocs(/* delta */) {
   if (!GAME.npcs || !GAME.activeTasks || GAME.activeTasks.length === 0) return;
-  // trade → 가장 첫 NPC (가용 한정 — 다수일 경우 향후 NPC 별 할당 추가)
-  const tradeToNpc = {};
+  // trade → 해당 trade NPC 배열 (다중 NPC 지원)
+  const tradeToNpcs = {};
   for (const npc of GAME.npcs) {
     if (!npc.trade || !npc.group) continue;
-    if (!tradeToNpc[npc.trade]) tradeToNpc[npc.trade] = npc;
+    (tradeToNpcs[npc.trade] = tradeToNpcs[npc.trade] || []).push(npc);
   }
+  // type 별 task index — 같은 type 의 task 가 여러 개일 때 다른 NPC 와 매칭
+  const typeIdx = {};
   for (const task of GAME.activeTasks) {
     const trade = _TASK_TYPE_TO_NPC_TRADE[task.type];
     if (!trade) continue;
-    const npc = tradeToNpc[trade];
-    if (!npc) continue;
+    const npcs = tradeToNpcs[trade];
+    if (!npcs || npcs.length === 0) continue;
+    const idx = typeIdx[task.type] || 0;
+    const npc = npcs[idx % npcs.length];
+    typeIdx[task.type] = idx + 1;
     if (!task.loc) task.loc = { x: 0, z: 0 };
     task.loc.x = npc.group.position.x;
     task.loc.z = npc.group.position.z;

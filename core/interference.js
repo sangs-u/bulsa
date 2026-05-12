@@ -64,9 +64,33 @@
     return l || taskType;
   }
 
+  const _COND_PHRASE = {
+    within_radius_6m: { ko: '6m 반경 내', en: 'within 6m radius', vi: 'trong bán kính 6m', ar: 'ضمن نطاق 6م' },
+    within_5m:        { ko: '5m 이내',    en: 'within 5m',        vi: 'trong 5m',          ar: 'ضمن 5م' },
+    within_1m:        { ko: '1m 이내',    en: 'within 1m',        vi: 'trong 1m',          ar: 'ضمن 1م' },
+    below_floor:      { ko: '아래층 수직',en: 'directly below',   vi: 'tầng dưới',         ar: 'الطابق السفلي' },
+    same_floor:       { ko: '같은 층',    en: 'same floor',       vi: 'cùng tầng',         ar: 'الطابق نفسه' },
+    same_slab:        { ko: '같은 슬래브',en: 'same slab',        vi: 'cùng sàn',          ar: 'البلاطة نفسها' },
+    wind_gt_10mps:    { ko: '풍속 10m/s 초과', en: 'wind > 10m/s',vi: 'gió > 10m/s',       ar: 'الرياح > 10م/ث' },
+    no_signal:        { ko: '신호수 없음',en: 'no signaler',      vi: 'không người ra hiệu', ar: 'بلا مُوجِّه' },
+    dismantle:        { ko: '해체 중',    en: 'while dismantling',vi: 'đang tháo dỡ',      ar: 'أثناء التفكيك' },
+    unchecked:        { ko: '점검 누락',  en: 'unchecked',        vi: 'chưa kiểm tra',     ar: 'بدون فحص' },
+    organic:          { ko: '유기용제',   en: 'organic solvent',  vi: 'dung môi hữu cơ',   ar: 'مذيب عضوي' },
+    premature:        { ko: '양생 미완',  en: 'premature',        vi: 'chưa đủ dưỡng hộ',  ar: 'معالجة غير مكتملة' },
+  };
+
+  function _humanCond(cond) {
+    if (!cond) return '';
+    return cond.split('+').map(s => s.trim()).filter(Boolean).map(tok => {
+      const e = _COND_PHRASE[tok];
+      return (e && (e[currentLang] || e.ko)) || tok;
+    }).join(' + ');
+  }
+
   function _toastConflict(rule, a, b) {
     const prefix = { ko: '⚠ 간섭', en: '⚠ Interference', vi: '⚠ Xung đột', ar: '⚠ تداخل' }[currentLang] || '⚠ 간섭';
-    const msg    = prefix + ': ' + _label(a.type) + ' × ' + _label(b.type) + ' — ' + rule.cond;
+    const accLbl = (typeof accidentLabel === 'function') ? ' → ' + accidentLabel(rule.accident) : '';
+    const msg    = prefix + ': ' + _label(a.type) + ' × ' + _label(b.type) + ' — ' + _humanCond(rule.cond) + accLbl;
     if (typeof showActionNotif === 'function') { try { showActionNotif(msg, 3500); return; } catch (e) {} }
     if (typeof showHUDAlert    === 'function') { try { showHUDAlert(msg);          return; } catch (e) {} }
     if (typeof showAlert       === 'function') { try { showAlert(msg);             return; } catch (e) {} }
@@ -95,6 +119,9 @@
         };
         _conflictTracks.set(k, track);
         _toastConflict(c.rule, c.a, c.b);
+        if (typeof recordInterferenceEvent === 'function') {
+          try { recordInterferenceEvent(c.rule, _label(c.a.type), _label(c.b.type)); } catch (e) {}
+        }
       }
       track.sustainedS += delta;
       track.lastSeenT   = nowT;

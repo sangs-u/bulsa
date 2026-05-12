@@ -37,6 +37,9 @@ function triggerAccident(accidentId) {
   if (typeof recordAccident === 'function') {
     try { recordAccident(GAME.scenarioId, accidentId); } catch (e) {}
   }
+  if (typeof recordAccidentEvent === 'function') {
+    try { recordAccidentEvent(accidentId); } catch (e) {}
+  }
 
   _triggerAccidentVFX(accidentId);
 
