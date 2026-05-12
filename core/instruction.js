@@ -194,6 +194,11 @@ const TRAPS_GLOBAL = [
   { id:'global_no_ppe',      icon:'⚠', labelKo:'PPE 없이 작업해',     labelEn:'Work without PPE',      labelVi:'Làm không PPE',      labelAr:'العمل بلا معدات وقاية', applicableTrades:null, risk:'danger', accidentIfDanger:'worker_fall' },
   { id:'global_ignore_wind', icon:'⚠', labelKo:'풍속 무시하고 강행',  labelEn:'Ignore wind, proceed',  labelVi:'Bỏ qua gió',         labelAr:'تجاهل الرياح',           applicableTrades:null, risk:'danger', accidentIfDanger:'swing_drop' },
   { id:'global_stop_all',    icon:'✋', labelKo:'작업 중단',           labelEn:'Stop all work',         labelVi:'Dừng tất cả',        labelAr:'أوقف كل العمل',         applicableTrades:null, risk:'safe' },
+  // v2.0 — flag set 명령: 사용자가 강행하면 간섭 매트릭스 조건 활성화 (사고 발현 트리거)
+  { id:'global_start_dismantle', icon:'🛠', labelKo:'비계 해체 시작',  labelEn:'Start scaffold dismantle', labelVi:'Bắt đầu tháo giàn giáo', labelAr:'بدء تفكيك السقالة', applicableTrades:['scaffold'], risk:'safe', setFlagOnTask: { type:'scaffold', flag:'dismantling' } },
+  { id:'global_premature_load',  icon:'⚠', labelKo:'양생 미완에 상부 적재', labelEn:'Load before cure done', labelVi:'Chất tải khi chưa dưỡng đủ', labelAr:'تحميل قبل اكتمال المعالجة', applicableTrades:null, risk:'danger', accidentIfDanger:'premature_load', setFlagOnTask:{ type:'cure', flag:'premature' } },
+  { id:'global_organic_solvent', icon:'⚠', labelKo:'유성 도료 사용',  labelEn:'Use solvent paint',     labelVi:'Dùng sơn dung môi',  labelAr:'استخدم دهان مذيب',     applicableTrades:['painting'], risk:'safe', setFlagOnTask:{ type:'paint', flag:'organic' } },
+  { id:'global_skip_shoring_check', icon:'⚠', labelKo:'동바리 점검 생략', labelEn:'Skip shoring check', labelVi:'Bỏ kiểm chống', labelAr:'تخطي فحص الدعم', applicableTrades:['formwork'], risk:'safe', setFlagOnTask:{ type:'formwork_support', flag:'unchecked' } },
 ];
 
 // Track which instructions have been given (per NPC per phase)
@@ -354,6 +359,14 @@ function _evalInstructionFit(npc, inst) {
   return { ok: true, reason: 'safe' };
 }
 
+function _applyInstructionFlag(spec) {
+  if (!spec || !GAME.activeTasks) return;
+  GAME.activeTasks.filter(t => t.type === spec.type).forEach(t => {
+    t.flags = t.flags || {};
+    t.flags[spec.flag] = true;
+  });
+}
+
 function giveInstruction(npc, inst) {
   _givenInstructions.add(`${npc.id}_${inst.id}`);
   const _record = (r) => {
@@ -407,6 +420,7 @@ function giveInstruction(npc, inst) {
     // 운 좋게 사고 안 남 — 안전지수만 깎임
     applySafetyPenalty(12);
     updateHUD();
+    if (inst.setFlagOnTask) _applyInstructionFlag(inst.setFlagOnTask);
     _record('danger_skipped');
     return;
   }
@@ -480,6 +494,7 @@ function giveInstruction(npc, inst) {
 
   applySafetyReward(3);
   updateHUD();
+  if (inst.setFlagOnTask) _applyInstructionFlag(inst.setFlagOnTask);
   _record('success');
 }
 
