@@ -353,5 +353,20 @@
       PHASE_CONTROLLER.advance();
       return PHASE_CONTROLLER.dump();
     };
+    // v3 — 검증용 강제 advance (canAdvance 체크 무시 + 진행 100% 가정)
+    window.__bulsa.fastForward = function (n) {
+      const steps = (typeof n === 'number' && n > 0) ? Math.min(n, PHASES.length) : PHASES.length;
+      const log = [];
+      for (let i = 0; i < steps; i++) {
+        if (PHASE_CONTROLLER._currentIdx >= PHASES.length - 1) {
+          log.push('reached final');
+          break;
+        }
+        const cur = PHASE_CONTROLLER.current();
+        log.push(`force-advance from ${cur && cur.key}`);
+        PHASE_CONTROLLER.advance(true);  // force=true
+      }
+      return { log, dump: PHASE_CONTROLLER.dump() };
+    };
   }
 })();

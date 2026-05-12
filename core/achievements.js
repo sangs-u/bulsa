@@ -29,6 +29,13 @@
     { id: 'unified_enter',   ko:'자유 모드 입장',  en:'Free Mode',        vi:'Vào Tự do',         ar:'وضع حر',           desc_ko:'통합 부지 첫 진입',               desc_en:'First entry to unified site',       desc_vi:'Lần đầu vào khu thống nhất',      desc_ar:'أول دخول للموقع الموحد',           emoji:'🏗' },
     { id: 'unified_5min',    ko:'자유 5분 무사고', en:'Free 5min Safe',   vi:'Tự do 5p',          ar:'حر 5 دقائق',       desc_ko:'통합 부지에서 5분 사고없이 진행', desc_en:'5 min in unified site with no accident', desc_vi:'5 phút trong khu không tai nạn', desc_ar:'5 دقائق بلا حادث',                 emoji:'⏱' },
     { id: 'unified_zero_int',ko:'간섭 0',          en:'Zero Interference',vi:'Không Xung Đột',    ar:'بلا تداخل',        desc_ko:'10분 진행 동안 간섭 0회',         desc_en:'10 min with zero interference',     desc_vi:'10 phút không xung đột',          desc_ar:'10 دقائق بلا تداخل',               emoji:'🛡' },
+    // v3 페이즈별 통과 업적 (튜토리얼 진행 마일스톤)
+    { id: 'phase_excavation', ko:'굴착 통과',       en:'Excavation Done',  vi:'Hoàn tất Đào',      ar:'اكتمال الحفر',     desc_ko:'페이즈 1 굴착·흙막이 통과',      desc_en:'Cleared phase 1 excavation',         desc_vi:'Vượt phase 1 đào',               desc_ar:'اجتياز المرحلة 1 الحفر',           emoji:'⛏' },
+    { id: 'phase_foundation', ko:'기초 통과',       en:'Foundation Done',  vi:'Hoàn tất Móng',     ar:'اكتمال الأساس',    desc_ko:'페이즈 2 기초공사 통과',         desc_en:'Cleared phase 2 foundation',         desc_vi:'Vượt phase 2 móng',              desc_ar:'اجتياز المرحلة 2 الأساس',          emoji:'🧱' },
+    { id: 'phase_lifting',    ko:'골조 통과',       en:'Frame Done',       vi:'Hoàn tất Khung',    ar:'اكتمال الهيكل',    desc_ko:'페이즈 3 골조 양중 통과',        desc_en:'Cleared phase 3 RC frame',           desc_vi:'Vượt phase 3 khung',             desc_ar:'اجتياز المرحلة 3 الهيكل',          emoji:'🏗' },
+    { id: 'phase_envelope',   ko:'외장 통과',       en:'Envelope Done',    vi:'Hoàn tất Vỏ',       ar:'اكتمال الواجهة',   desc_ko:'페이즈 4 외장공사 통과',         desc_en:'Cleared phase 4 envelope',           desc_vi:'Vượt phase 4 vỏ ngoài',          desc_ar:'اجتياز المرحلة 4 الواجهة',         emoji:'🪟' },
+    { id: 'phase_mep',        ko:'마감 통과',       en:'MEP Done',         vi:'Hoàn tất M&E',      ar:'اكتمال التركيب',   desc_ko:'페이즈 5 설비·마감 통과',        desc_en:'Cleared phase 5 MEP & finishing',    desc_vi:'Vượt phase 5 M&E',               desc_ar:'اجتياز المرحلة 5 التركيب',         emoji:'⚡' },
+    { id: 'tutorial_complete',ko:'튜토리얼 완주',   en:'Tutorial Cleared', vi:'Hoàn thành Hướng dẫn', ar:'اكتمل التعليم', desc_ko:'5 페이즈 모두 완료 — 작업반장 입문', desc_en:'All 5 phases cleared — Foreman ready', desc_vi:'5 phase hoàn tất — Trưởng nhóm sẵn sàng', desc_ar:'اكتمال 5 مراحل — رئيس عمال جاهز', emoji:'🎓' },
   ];
   window.ACHIEVEMENTS = ACHIEVEMENTS;
 

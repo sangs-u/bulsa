@@ -28,7 +28,16 @@ function initHUD() {
 
 function _onPhaseChange(ev) {
   if (typeof showActionNotif !== 'function') return;
+  // 통과한 페이즈에 해당하는 업적 unlock
+  const PHASE_ACH = ['phase_excavation','phase_foundation','phase_lifting','phase_envelope','phase_mep'];
+  if (ev.fromPhase && typeof unlockAchievement === 'function') {
+    const achId = PHASE_ACH[ev.fromPhase.id - 1];
+    if (achId) try { unlockAchievement(achId); } catch (e) {}
+  }
   if (ev.isFinal) {
+    if (typeof unlockAchievement === 'function') {
+      try { unlockAchievement('tutorial_complete'); } catch (e) {}
+    }
     const m = { ko: '🏁 튜토리얼 완료 — 모든 페이즈 클리어!', en: '🏁 Tutorial complete — all phases cleared!', vi: '🏁 Hoàn thành tutorial!', ar: '🏁 اكتمل التعليم!' };
     showActionNotif(m[currentLang] || m.ko, 6000);
     return;
