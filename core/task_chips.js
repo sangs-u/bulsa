@@ -64,13 +64,22 @@
       const inConflict = conflicting.has(t.id);
       const bg = _GROUP_BG[_group(t.type)] || _GROUP_BG.continuous;
       chip.style.cssText =
-        'padding:2px 8px;border-radius:10px;font-family:monospace;font-size:12px;letter-spacing:0.3px;' +
+        'padding:2px 8px;border-radius:10px;font-family:monospace;font-size:12px;letter-spacing:0.3px;cursor:default;' +
         'color:#fff;background:' + bg + ';' +
         'border:1.5px solid ' + (inConflict ? '#ff5050' : 'rgba(255,255,255,0.18)') + ';' +
         (inConflict ? 'box-shadow:0 0 6px rgba(255,80,80,0.6);' : '');
       const floorTag = (t.floor != null) ? (' ' + t.floor + 'F') : '';
       chip.textContent = (inConflict ? '⚠ ' : '') + _label(t.type) + floorTag;
-      chip.title = t.id + (t.loc ? ` @(${t.loc.x.toFixed(1)},${t.loc.z.toFixed(1)})` : '');
+      // 풍부한 tooltip — type · floor · loc · flags
+      const flags = (t.flags && Object.keys(t.flags).filter(k => t.flags[k])) || [];
+      const tip = [
+        `${_label(t.type)} (${t.type})`,
+        t.floor != null ? `층: ${t.floor}F` : null,
+        t.loc ? `위치: (${t.loc.x.toFixed(1)}, ${t.loc.z.toFixed(1)})` : null,
+        flags.length ? `flags: ${flags.join(', ')}` : null,
+        inConflict ? '⚠ 간섭 진행 중' : null,
+      ].filter(Boolean).join('\n');
+      chip.title = tip;
       wrap.appendChild(chip);
     });
   }

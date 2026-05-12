@@ -83,8 +83,12 @@ window.persistFines = persistFines;
     envelope:   { build: 'buildEnvelopeScene',   register: 'registerEnvelopeHazards' },
     mep_finish: { build: 'buildMepFinishScene',  register: 'registerMepFinishHazards' },
   };
-  const _active = _scenarios[_scenarioId] || _scenarios.lifting;
-  GAME.scenarioId = _scenarioId in _scenarios ? _scenarioId : 'lifting';
+  // v2.0 unified — 한 부지 통합 모드 (?s=unified). baseline scene 은 lifting 사용,
+  // 모든 시나리오의 task seed 를 합쳐서 활성화. 향후 점진적 hazard 통합 토대.
+  GAME.unifiedMode = (_scenarioId === 'unified');
+  const _activeId  = GAME.unifiedMode ? 'lifting' : (_scenarioId in _scenarios ? _scenarioId : 'lifting');
+  const _active    = _scenarios[_activeId];
+  GAME.scenarioId  = GAME.unifiedMode ? 'unified' : _activeId;
 
   // 공정 시퀀스 — showCompletePanel 에서 "다음 공정" 버튼 노출
   GAME.scenarioOrder = ['excavation', 'foundation', 'lifting', 'envelope', 'mep_finish'];
@@ -109,7 +113,14 @@ window.persistFines = persistFines;
   }
 
   // v2.0 — 시나리오별 초기 작업 큐 시드 (lifting 은 RC_LOOP 가 동적 enqueue)
-  if (typeof enqueueScenarioTasks === 'function') enqueueScenarioTasks(GAME.scenarioId);
+  if (typeof enqueueScenarioTasks === 'function') {
+    if (GAME.unifiedMode) {
+      // 통합 모드 — 모든 시나리오의 task seed 를 합쳐 enqueue (큐가 풍부해짐)
+      ['excavation', 'foundation', 'envelope', 'mep_finish'].forEach(s => enqueueScenarioTasks(s));
+    } else {
+      enqueueScenarioTasks(GAME.scenarioId);
+    }
+  }
 
   initPlayer();
   initInteraction();
