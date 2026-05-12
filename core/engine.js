@@ -209,6 +209,20 @@ window.persistFines = persistFines;
   const fallbackTitle = { ko: '안전 시뮬레이터', en: 'Safety Simulator', vi: 'Mô phỏng an toàn', ar: 'محاكي السلامة' }[currentLang] || '안전 시뮬레이터';
   if (nameSub) nameSub.textContent = (scenarioTitles[GAME.scenarioId] || fallbackTitle) + subSuffix;
 
+  // v2.0 통합 모드 — 게임 시작 후 자유 모드 안내 토스트 (3초 후 등장 8초 노출)
+  if (GAME.unifiedMode) {
+    setTimeout(() => {
+      if (typeof showActionNotif !== 'function') return;
+      const msg = {
+        ko: '🏗 자유 모드 — 영역별로 NPC 14명과 작업 18+개가 활성. H=히스토리 · L=사고도서관',
+        en: '🏗 Free Mode — 14 NPCs + 18+ tasks active across zones. H=history · L=lib',
+        vi: '🏗 Tự do — 14 NPC + 18+ task hoạt động khắp khu. H=lịch sử · L=thư viện',
+        ar: '🏗 وضع حر — 14 عامل + 18+ مهمة في المناطق. H=السجل · L=المكتبة',
+      };
+      showActionNotif(msg[currentLang] || msg.ko, 8000);
+    }, 3000);
+  }
+
   GAME.clock.start();
   _loop();
 })();
