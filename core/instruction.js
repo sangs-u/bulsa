@@ -17,31 +17,31 @@ function _instLangSwitchLabel() {
 // ── Instruction database ─────────────────────────────────────
 const INSTRUCTIONS = {
   1: [  // Phase 1 — 작업계획서
-    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
-    { id: 'check_weather', icon: '🌤', labelKo: '기상·풍속 확인해',       labelEn: 'Check wind & weather',  targetRole: null, npcId: null  },
+    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', labelVi: 'Đeo mũ bảo hộ và dây an toàn', labelAr: 'البس الخوذة وحزام السلامة', targetRole: null, npcId: null  },
+    { id: 'check_weather', icon: '🌤', labelKo: '기상·풍속 확인해',       labelEn: 'Check wind & weather',  labelVi: 'Kiểm tra thời tiết và tốc độ gió', labelAr: 'تحقق من الطقس وسرعة الرياح', targetRole: null, npcId: null  },
   ],
   2: [  // Phase 2 — 안전성 검토
-    { id: 'check_spec',    icon: '📋', labelKo: '사양서 확인해',          labelEn: 'Check specifications',  targetRole: '슬링작업자', npcId: 'park'  },
-    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
+    { id: 'check_spec',    icon: '📋', labelKo: '사양서 확인해',          labelEn: 'Check specifications',  labelVi: 'Kiểm tra bản thông số kỹ thuật', labelAr: 'راجع المواصفات الفنية', targetRole: '슬링작업자', npcId: 'park'  },
+    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', labelVi: 'Đeo mũ bảo hộ và dây an toàn', labelAr: 'البس الخوذة وحزام السلامة', targetRole: null, npcId: null  },
   ],
   3: [  // Phase 3 — 장비 세팅
-    { id: 'outrigger_check', icon: '🔩', labelKo: '아웃트리거 확인해',   labelEn: 'Check outriggers',      targetRole: null, npcId: null  },
-    { id: 'wear_ppe',        icon: '⛑',  labelKo: '안전모·안전대 착용해', labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
+    { id: 'outrigger_check', icon: '🔩', labelKo: '아웃트리거 확인해',   labelEn: 'Check outriggers',      labelVi: 'Kiểm tra chân chống cẩu (outrigger)', labelAr: 'افحص الدعامات الجانبية للرافعة', targetRole: null, npcId: null  },
+    { id: 'wear_ppe',        icon: '⛑',  labelKo: '안전모·안전대 착용해', labelEn: 'Wear helmet & harness', labelVi: 'Đeo mũ bảo hộ và dây an toàn', labelAr: 'البس الخوذة وحزام السلامة', targetRole: null, npcId: null  },
   ],
   4: [  // Phase 4 — 줄걸이 점검
-    { id: 'check_sling',   icon: '🔍', labelKo: '슬링 상태 확인해',      labelEn: 'Check sling condition', targetRole: '슬링작업자', npcId: 'park'  },
-    { id: 'secure_pin',    icon: '🔐', labelKo: '안전핀 체결 확인해',    labelEn: 'Confirm pin secured',   targetRole: '슬링작업자', npcId: 'park'  },
-    { id: 'measure_angle', icon: '📐', labelKo: '슬링 각도 측정해',       labelEn: 'Measure sling angle',   targetRole: '슬링작업자', npcId: 'park'  },
-    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
+    { id: 'check_sling',   icon: '🔍', labelKo: '슬링 상태 확인해',      labelEn: 'Check sling condition', labelVi: 'Kiểm tra tình trạng dây cẩu', labelAr: 'افحص حالة حبال الرفع', targetRole: '슬링작업자', npcId: 'park'  },
+    { id: 'secure_pin',    icon: '🔐', labelKo: '안전핀 체결 확인해',    labelEn: 'Confirm pin secured',   labelVi: 'Xác nhận chốt an toàn đã khóa (LOTO)', labelAr: 'تأكد من إحكام مسمار الأمان', targetRole: '슬링작업자', npcId: 'park'  },
+    { id: 'measure_angle', icon: '📐', labelKo: '슬링 각도 측정해',       labelEn: 'Measure sling angle',   labelVi: 'Đo góc dây cẩu', labelAr: 'قس زاوية حبل الرفع', targetRole: '슬링작업자', npcId: 'park'  },
+    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', labelVi: 'Đeo mũ bảo hộ và dây an toàn', labelAr: 'البس الخوذة وحزام السلامة', targetRole: null, npcId: null  },
   ],
   5: [  // Phase 5 — 현장 세팅
-    { id: 'signal_pos',    icon: '📍', labelKo: '신호수 위치 서',         labelEn: 'Take signal position',  targetRole: '신호수', npcId: 'gimc'  },
-    { id: 'evacuate',      icon: '🚶', labelKo: '작업반경 밖으로 나가',   labelEn: 'Leave lift zone',       targetRole: null, npcId: null  },
-    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', targetRole: null, npcId: null  },
+    { id: 'signal_pos',    icon: '📍', labelKo: '신호수 위치 서',         labelEn: 'Take signal position',  labelVi: 'Vào vị trí người ra hiệu', labelAr: 'اتخذ موقع المُشير', targetRole: '신호수', npcId: 'gimc'  },
+    { id: 'evacuate',      icon: '🚶', labelKo: '작업반경 밖으로 나가',   labelEn: 'Leave lift zone',       labelVi: 'Ra khỏi vùng bán kính cẩu', labelAr: 'اخرج من نطاق الرفع', targetRole: null, npcId: null  },
+    { id: 'wear_ppe',      icon: '⛑',  labelKo: '안전모·안전대 착용해',  labelEn: 'Wear helmet & harness', labelVi: 'Đeo mũ bảo hộ và dây an toàn', labelAr: 'البس الخوذة وحزام السلامة', targetRole: null, npcId: null  },
   ],
   6: [  // Phase 6 — 인양 실행
-    { id: 'start_lift',    icon: '▶',  labelKo: '인양 시작 준비됐어',    labelEn: 'Ready to begin lift',   targetRole: '신호수', npcId: 'gimc'  },
-    { id: 'stop',          icon: '✋', labelKo: '멈춰',                   labelEn: 'Stop',                  targetRole: null, npcId: null  },
+    { id: 'start_lift',    icon: '▶',  labelKo: '인양 시작 준비됐어',    labelEn: 'Ready to begin lift',   labelVi: 'Sẵn sàng bắt đầu cẩu', labelAr: 'جاهز لبدء عملية الرفع', targetRole: '신호수', npcId: 'gimc'  },
+    { id: 'stop',          icon: '✋', labelKo: '멈춰',                   labelEn: 'Stop',                  labelVi: 'Dừng lại', labelAr: 'توقف', targetRole: null, npcId: null  },
   ],
 };
 
@@ -128,8 +128,10 @@ function openInstructionPopup(item) {
 
     const btn = document.createElement('div');
     btn.className = 'inst-item' + (_givenInstructions.has(`${npc.id}_${inst.id}`) ? ' given' : '');
+    const langSuffix = (instructionLang || 'ko').charAt(0).toUpperCase() + (instructionLang || 'ko').slice(1);
+    const label = inst['label' + langSuffix] || inst.labelEn || inst.labelKo;
     btn.innerHTML = `<span class="inst-icon">${inst.icon}</span>
-      <span>${instructionLang === 'en' ? inst.labelEn : inst.labelKo}</span>`;
+      <span>${label}</span>`;
 
     btn.onclick = () => {
       if (_givenInstructions.has(`${npc.id}_${inst.id}`)) return;
@@ -308,8 +310,10 @@ function toggleInstructionLang() {
         if (inst.npcId && inst.npcId !== npc.id) return;
         const btn2 = document.createElement('div');
         btn2.className = 'inst-item' + (_givenInstructions.has(`${npc.id}_${inst.id}`) ? ' given' : '');
+        const langSuffix2 = (instructionLang || 'ko').charAt(0).toUpperCase() + (instructionLang || 'ko').slice(1);
+        const label2 = inst['label' + langSuffix2] || inst.labelEn || inst.labelKo;
         btn2.innerHTML = `<span class="inst-icon">${inst.icon}</span>
-          <span>${instructionLang === 'en' ? inst.labelEn : inst.labelKo}</span>`;
+          <span>${label2}</span>`;
         btn2.onclick = () => {
           if (_givenInstructions.has(`${npc.id}_${inst.id}`)) return;
           giveInstruction(npc, inst);

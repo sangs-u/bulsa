@@ -135,18 +135,20 @@ window.persistFines = persistFines;
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
-  const scenarioTitles = {
-    excavation: '토공사 · 굴착·흙막이',
-    foundation: '기초공사 · 거푸집·철근·타설',
-    lifting:    '골조 양중 · 줄걸이·인양',
-    envelope:   '외장공사 · 비계·창호',
-    mep_finish: '설비·마감 · 전기·배관',
+  const scenarioTitlesByLang = {
+    ko: { excavation: '토공사 · 굴착·흙막이', foundation: '기초공사 · 거푸집·철근·타설', lifting: '골조 양중 · 줄걸이·인양', envelope: '외장공사 · 비계·창호', mep_finish: '설비·마감 · 전기·배관' },
+    en: { excavation: 'Earthworks · Excavation', foundation: 'Foundation · Formwork & Pour', lifting: 'RC Frame · Lifting', envelope: 'Envelope · Scaffold & Glass', mep_finish: 'MEP & Finishing · Electrical/Piping' },
+    vi: { excavation: 'San nền · Đào', foundation: 'Móng · Ván khuôn & Đổ', lifting: 'Khung · Cẩu', envelope: 'Vỏ ngoài · Giàn giáo', mep_finish: 'M&E · Điện/Ống' },
+    ar: { excavation: 'الحفر · أعمال التربة', foundation: 'الأساسات · القوالب والصب', lifting: 'الهيكل · الرفع', envelope: 'الواجهة · السقالة', mep_finish: 'التركيب والتشطيب · كهرباء/أنابيب' },
   };
+  const scenarioTitles = scenarioTitlesByLang[currentLang] || scenarioTitlesByLang.ko;
   if (bScenario) bScenario.textContent = scenarioTitles[GAME.scenarioId] || t('s01Title');
   if (bControls) bControls.textContent = t('blockerControls');
   // 이름 입력 패널의 부제목도 갱신
   const nameSub = document.querySelector('.name-input-sub');
-  if (nameSub) nameSub.textContent = (scenarioTitles[GAME.scenarioId] || '안전 시뮬레이터') + ' 시나리오';
+  const subSuffix = { ko: ' 시나리오', en: ' scenario', vi: ' kịch bản', ar: ' السيناريو' }[currentLang] || ' 시나리오';
+  const fallbackTitle = { ko: '안전 시뮬레이터', en: 'Safety Simulator', vi: 'Mô phỏng an toàn', ar: 'محاكي السلامة' }[currentLang] || '안전 시뮬레이터';
+  if (nameSub) nameSub.textContent = (scenarioTitles[GAME.scenarioId] || fallbackTitle) + subSuffix;
 
   GAME.clock.start();
   _loop();
