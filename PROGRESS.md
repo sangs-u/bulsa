@@ -1,9 +1,10 @@
 # BULSA 개발 현황
 > 작업 완료 시 이 파일만 업데이트. 내용은 항상 30줄 이내로 유지.
 
-## 최근 완료 (2026-05-12) — v2.0 batch #41~42 · i18n + 디버그 보강
+## 최근 완료 (2026-05-12) — v2.0 batch #41~43 · i18n + 디버그 보강
 - **#41 i18n** — pause 메뉴 라벨 4언어 (타이틀·4탭·메뉴 4버튼·설정·난이도·튜토리얼·저장 탭·통계 5섹션 + 5 시나리오명 + 6 결과·retry/quit confirm). 언어 변경 시 패널 자동 재빌드. save.js 플레이타임 단위 4언어. index 환영 바·등급 칩 4언어. CLAUDE.md "모든 텍스트 i18n" 위반 정리.
 - **#42 디버그** — `__bulsa = Object.assign(...)` 안전 머지 (save/callNpc 보호). 신규: `dumpStats()` · `seedStats({scenario,grade,runs,deaths})` · `seedProfile({name,hours})` · `clearAllSeed()` · `phase(n)` · `fines(krw)` · `npcs()` · `allConflicts()` · 카테고리 정렬된 `help()`.
+- **#43 인스펙터 i18n + 검토** — 인스펙터 다이얼로그/도착 토스트 4언어 (이전: ko 또는 ko/en 분기). 코드 검토 결과 batch #40 fix 가 inspector flag path 에 회귀 없음 확인 (GAME.activeTasks 직접 읽음, zone offset 무관).
 
 ## 직전 완료 — v2.0 batch #36~40
 - #36 N 키 NPC 호출 / #37 저장 시스템 1단계 / #38 부지 통합 도면 / #39 허브 강화 / #40 hazard 통합 회귀 fix
