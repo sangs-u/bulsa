@@ -148,7 +148,42 @@ const INSTRUCTION_POOLS_BY_TASK = {
   excavate: [
     { id:'excav_signal',     icon:'📍', labelKo:'신호수 배치',         labelEn:'Assign signal',       labelVi:'Bố trí người ra hiệu',labelAr:'تعيين الإشاري',         taskType:'excavate', applicableTrades:['signal','excavator'], risk:'safe' },
     { id:'excav_underground',icon:'🗺', labelKo:'매설물 사전조사',    labelEn:'Survey underground',  labelVi:'Khảo sát ngầm',      labelAr:'مسح المرافق',           taskType:'excavate', applicableTrades:['earthwork','excavator'], risk:'safe' },
-    { id:'excav_no_survey',  icon:'⚠', labelKo:'조사 없이 굴착',      labelEn:'Excavate w/o survey', labelVi:'Đào không khảo sát', labelAr:'احفر بلا مسح',           taskType:'excavate', applicableTrades:['excavator'], risk:'danger', accidentIfDanger:'underground_strike' },
+    { id:'excav_no_survey',  icon:'⚠', labelKo:'조사 없이 굴착',      labelEn:'Excavate w/o survey', labelVi:'Đào không khảo sát', labelAr:'احفر بلا مسح',           taskType:'excavate', applicableTrades:['excavator'], risk:'danger', accidentIfDanger:'excavator_crush' },
+  ],
+  found_pour: [
+    { id:'found_pour_order',  icon:'🚚', labelKo:'기초 타설 순서 확인', labelEn:'Confirm foundation pour order', labelVi:'Xác nhận trình tự đổ móng', labelAr:'تأكيد ترتيب صب الأساس', taskType:'found_pour', applicableTrades:['pour','concrete'], risk:'safe' },
+    { id:'found_pour_skip_test', icon:'⚠', labelKo:'슬럼프 시험 생략',  labelEn:'Skip slump test',     labelVi:'Bỏ qua thử độ sụt',   labelAr:'تخطي اختبار الانهيار', taskType:'found_pour', applicableTrades:['pour'], risk:'danger', accidentIfDanger:'form_collapse' },
+  ],
+  // 가설공사 추가
+  formwork_support: [
+    { id:'fwsupp_check',     icon:'🔧', labelKo:'동바리 수직도 점검',   labelEn:'Inspect shoring plumb', labelVi:'Kiểm tra chống thẳng', labelAr:'فحص استقامة الدعم',    taskType:'formwork_support', applicableTrades:['formwork'], risk:'safe' },
+    { id:'fwsupp_no_check',  icon:'⚠', labelKo:'점검 없이 타설',       labelEn:'Pour without shoring check', labelVi:'Đổ không kiểm chống', labelAr:'صب بلا فحص الدعم',     taskType:'formwork_support', applicableTrades:['formwork','pour'], risk:'danger', accidentIfDanger:'form_collapse' },
+  ],
+  guardrail: [
+    { id:'guard_install',    icon:'🚧', labelKo:'안전난간 설치',       labelEn:'Install guardrail',   labelVi:'Lắp lan can',         labelAr:'تركيب الحاجز',          taskType:'guardrail', applicableTrades:['scaffold','envelope'], risk:'safe' },
+    { id:'guard_skip',       icon:'⚠', labelKo:'난간 없이 작업',      labelEn:'Work without rail',   labelVi:'Làm không lan can',   labelAr:'العمل بلا حاجز',         taskType:'guardrail', applicableTrades:null, risk:'danger', accidentIfDanger:'worker_fall' },
+  ],
+  // 마감 추가
+  panel: [
+    { id:'panel_anchor_check', icon:'🔗', labelKo:'외장 패널 앵커 점검', labelEn:'Inspect panel anchors', labelVi:'Kiểm tra mỏ neo tấm vỏ', labelAr:'فحص مثبتات الألواح', taskType:'panel', applicableTrades:['envelope','scaffold'], risk:'safe' },
+    { id:'panel_install',    icon:'🧱', labelKo:'외장 패널 설치',      labelEn:'Install panel',       labelVi:'Lắp tấm vỏ',          labelAr:'تركيب اللوح',           taskType:'panel', applicableTrades:['envelope'], risk:'safe' },
+    { id:'panel_during_dismantle', icon:'⚠', labelKo:'비계 해체 중 패널 설치', labelEn:'Install panel during scaffold dismantle', labelVi:'Lắp tấm khi tháo giàn giáo', labelAr:'تركيب اللوح أثناء تفكيك السقالة', taskType:'panel', applicableTrades:['envelope'], risk:'danger', accidentIfDanger:'panel_drop' },
+  ],
+  glass: [
+    { id:'glass_double_check', icon:'👀', labelKo:'유리 결속 2회 확인', labelEn:'Double-check glazing', labelVi:'Kiểm tra kính lần 2', labelAr:'فحص الزجاج مرتين',     taskType:'glass', applicableTrades:['envelope'], risk:'safe' },
+    { id:'glass_drop_zone',   icon:'⚠', labelKo:'하부 통제 없이 유리 인양', labelEn:'Hoist glass w/o exclusion zone', labelVi:'Cẩu kính không khu vực cấm', labelAr:'رفع الزجاج بلا منطقة منع', taskType:'glass', applicableTrades:['envelope','lifting'], risk:'danger', accidentIfDanger:'falling_debris' },
+  ],
+  ext_install: [
+    { id:'ext_place',        icon:'🧯', labelKo:'소화기 정위치 배치',  labelEn:'Place extinguisher correctly', labelVi:'Đặt bình chữa cháy', labelAr:'وضع الطفاية بشكل صحيح', taskType:'ext_install', applicableTrades:['envelope','helper'], risk:'safe' },
+  ],
+  // 지속 작업 추가
+  survey: [
+    { id:'survey_wind',      icon:'🌬', labelKo:'풍속·기상 모니터링',  labelEn:'Monitor wind/weather',labelVi:'Giám sát gió/thời tiết', labelAr:'مراقبة الرياح/الطقس', taskType:'survey', applicableTrades:['signal','helper'], risk:'safe' },
+    { id:'survey_underground', icon:'🗺', labelKo:'매설물 도면 확인',  labelEn:'Verify underground plan', labelVi:'Xem bản vẽ ngầm',   labelAr:'تحقق مخطط المرافق',     taskType:'survey', applicableTrades:['signal','earthwork'], risk:'safe' },
+  ],
+  inspect: [
+    { id:'inspect_watch',    icon:'👁', labelKo:'작업반경 감시',       labelEn:'Watch work zone',     labelVi:'Giám sát khu vực',    labelAr:'مراقبة منطقة العمل',    taskType:'inspect', applicableTrades:['signal','helper'], risk:'safe' },
+    { id:'inspect_in_radius',icon:'⚠', labelKo:'인양 반경 안에서 감시', labelEn:'Watch inside lift radius', labelVi:'Giám sát trong vùng cẩu', labelAr:'مراقبة داخل نطاق الرفع', taskType:'inspect', applicableTrades:['signal','helper'], risk:'danger', accidentIfDanger:'worker_crush' },
   ],
 };
 
@@ -321,12 +356,16 @@ function _evalInstructionFit(npc, inst) {
 
 function giveInstruction(npc, inst) {
   _givenInstructions.add(`${npc.id}_${inst.id}`);
+  const _record = (r) => {
+    if (typeof recordInstructionEvent === 'function') recordInstructionEvent(npc, inst, r);
+  };
 
   // 0단계: 언어 미스매치
   const match = npc.receiveInstruction(instructionLang);
   if (!match) {
     _doMismatchBehavior(npc, inst);
     applySafetyPenalty(10);
+    _record('mismatch');
     return;
   }
 
@@ -343,6 +382,7 @@ function giveInstruction(npc, inst) {
       const m = { ko:`❌ ${npc.name} 거부 — ${penalty}점 차감`, en:`❌ ${npc.name} refused — -${penalty}`, vi:`❌ ${npc.name} từ chối — -${penalty}`, ar:`❌ ${npc.name} رفض — -${penalty}` };
       showActionNotif(m[currentLang] || m.ko, 2800);
     }
+    _record(fit.reason === 'trade' ? 'reject_trade' : 'reject_phase');
     return;
   }
 
@@ -353,18 +393,21 @@ function giveInstruction(npc, inst) {
       _showWorldBubble(npc, `"${_rejectLine('danger')}"`);
       applySafetyPenalty(2);
       updateHUD();
+      _record('danger_refused');
       return;
     }
     // 마지못해 수행 → 사고 확률 70%
     _showWorldBubble(npc, '...');
     if (Math.random() < 0.7 && inst.accidentIfDanger && typeof triggerAccident === 'function') {
       applySafetyPenalty(15);
+      _record('danger_accident');
       setTimeout(() => triggerAccident(inst.accidentIfDanger), 1200);
       return;
     }
     // 운 좋게 사고 안 남 — 안전지수만 깎임
     applySafetyPenalty(12);
     updateHUD();
+    _record('danger_skipped');
     return;
   }
 
@@ -384,6 +427,7 @@ function giveInstruction(npc, inst) {
         const m = { ko:`⚠ ${npc.name} 숙련도 부족 — 작업 실패`, en:`⚠ ${npc.name} skill too low — failed`, vi:`⚠ ${npc.name} kỹ năng kém — thất bại`, ar:`⚠ ${npc.name} مهارة غير كافية — فشل` };
         showActionNotif(m[currentLang] || m.ko, 3000);
       }
+      _record('skill_fail');
       return;
     }
   }
@@ -436,6 +480,7 @@ function giveInstruction(npc, inst) {
 
   applySafetyReward(3);
   updateHUD();
+  _record('success');
 }
 
 function _doMismatchBehavior(npc, inst) {
