@@ -303,7 +303,13 @@
     }
 
     // 일반 페이즈: 활성 task 중 required 타입 진척도 평균
-    const tasks = (typeof window.getActiveTasks === 'function') ? window.getActiveTasks() : [];
+    let tasks = [];
+    try {
+      if (typeof window.getActiveTasks === 'function') {
+        const out = window.getActiveTasks();
+        if (Array.isArray(out)) tasks = out;
+      }
+    } catch (e) {}
     if (!tasks.length) return 0;
 
     const reqTypes = ph.completion.requiredTaskTypes || [];
