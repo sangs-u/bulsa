@@ -360,7 +360,8 @@ function _applyVerticalPhysics(delta) {
         const severity = Math.round((v - 9) * 6);  // 9~13 → 0~24
         if (typeof applySafetyPenalty === 'function') applySafetyPenalty(severity);
         if (typeof showActionNotif === 'function') {
-          showActionNotif(`💥 경상 — 안전지수 -${severity} (충격 ${v.toFixed(1)} m/s)`, 2800);
+          const _siLbl = (typeof t === 'function') ? t('safetyIndex') : '명';
+          showActionNotif(`💥 경상 — ${_siLbl} -${severity} (충격 ${v.toFixed(1)} m/s)`, 2800);
         }
         _flashFallImpact();
         if (typeof cameraShake === 'function') cameraShake(0.7, 0.45);

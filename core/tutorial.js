@@ -23,7 +23,7 @@
         <b>도구함:</b> 1·2·3·4 · <b>도면:</b> M · <b>일시정지:</b> P/ESC · <b>FPS:</b> F3<br><br>
         <b>목표:</b> 산업안전보건법에 따라 위반 없이 작업 완료.<br>
         <b>안전관리자</b>가 무작위 출현해 위반 사항을 적발 → 과태료 부과.<br>
-        <b>안전지수</b>가 0 되거나 사고 발생 시 게임 종료.`,
+        <b>명(命)</b>이 0 되거나 사고 발생 시 게임 종료.`,
         start: '시작',
       },
       en: {
@@ -34,7 +34,7 @@
         <b>Tools:</b> 1·2·3·4 · <b>Blueprint:</b> M<br><br>
         <b>Goal:</b> Complete work without violations under OSH law.<br>
         <b>Inspector</b> appears randomly → fines for violations.<br>
-        Game ends on accident or safety index = 0.`,
+        Game ends on accident or <b>Lives</b> = 0.`,
         start: 'Start',
       },
       vi: {
@@ -45,7 +45,7 @@
         <b>Công cụ:</b> 1·2·3·4 · <b>Bản vẽ:</b> M<br><br>
         <b>Mục tiêu:</b> Hoàn thành công việc không vi phạm an toàn lao động.<br>
         <b>Thanh tra</b> xuất hiện ngẫu nhiên → phạt vi phạm.<br>
-        Trò chơi kết thúc khi xảy ra tai nạn hoặc chỉ số an toàn về 0.`,
+        Trò chơi kết thúc khi xảy ra tai nạn hoặc <b>Mạng</b> về 0.`,
         start: 'Bắt đầu',
       },
       ar: {
@@ -56,7 +56,7 @@
         <b>الأدوات:</b> 1·2·3·4 · <b>المخططات:</b> M<br><br>
         <b>الهدف:</b> إكمال العمل دون مخالفات وفق نظام السلامة المهنية.<br>
         <b>المفتش</b> يظهر عشوائياً → غرامات على المخالفات.<br>
-        تنتهي اللعبة عند وقوع حادث أو وصول مؤشر السلامة إلى 0.`,
+        تنتهي اللعبة عند وقوع حادث أو وصول <b>الأرواح</b> إلى 0.`,
         start: 'ابدأ',
       },
     };

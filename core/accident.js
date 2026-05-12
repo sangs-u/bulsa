@@ -266,7 +266,7 @@ function showCompletePanel() {
     const sumDiv = document.createElement('div');
     sumDiv.style.cssText = 'margin-top:12px;border-top:1px solid #4A5568;padding-top:10px;font-size:13px;line-height:1.7';
     sumDiv.innerHTML = `
-      <div>🛡 안전지수: <b style="color:${si >= 80 ? '#48BB78' : si >= 50 ? '#ED8936' : '#F56565'}">${si}/100</b></div>
+      <div>🛡 ${t('safetyIndex')}: <b style="color:${si >= 80 ? '#48BB78' : si >= 50 ? '#ED8936' : '#F56565'}">${si}/100</b></div>
       <div>💰 누적 과태료: <b style="color:${fines === 0 ? '#48BB78' : '#F56565'}">₩${fines.toLocaleString('ko-KR')}</b></div>
       <div style="margin-top:6px">🏅 종합 등급: <b style="color:${grade.color};font-size:16px">${grade.label}</b></div>
     `;

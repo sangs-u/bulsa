@@ -45,7 +45,7 @@ const STRINGS = {
     s06Desc:  '굴착기·지게차 등 차량계 기계 작업계획 수립',
     s06Kosha: '산안규칙 제98~101조',
 
-    safetyIndex: '안전지수',
+    safetyIndex: '명',
     phase1:      '점검',
     phase2:      '인양',
     phase3:      '완료',
@@ -244,7 +244,7 @@ const STRINGS = {
     s06Desc:  'Work planning for excavators, forklifts, and similar machinery',
     s06Kosha: 'OSH Act §98–101',
 
-    safetyIndex: 'Safety',
+    safetyIndex: 'Lives',
     phase1:      'Inspect',
     phase2:      'Lift',
     phase3:      'Done',
@@ -443,7 +443,7 @@ const STRINGS = {
     s06Desc:  'Lập kế hoạch làm việc cho máy xúc, xe nâng và thiết bị tương tự',
     s06Kosha: 'Điều 98~101 Quy định ATVSLĐ',
 
-    safetyIndex: 'Chỉ số an toàn',
+    safetyIndex: 'Mạng',
     phase1:      'Kiểm tra',
     phase2:      'Nâng tải',
     phase3:      'Hoàn thành',
@@ -642,7 +642,7 @@ const STRINGS = {
     s06Desc:  'تخطيط العمل للحفارات والرافعات الشوكية والآليات المماثلة',
     s06Kosha: 'المادة 98~101',
 
-    safetyIndex: 'مؤشر السلامة',
+    safetyIndex: 'أرواح',
     phase1:      'الفحص',
     phase2:      'الرفع',
     phase3:      'اكتمل',

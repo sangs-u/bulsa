@@ -207,7 +207,7 @@
     });
     body.innerHTML = `
       <div style="margin-bottom:8px;font-weight:bold;color:#48BB78">현재 세션</div>
-      <div>🛡 안전지수: ${si}/100</div>
+      <div>🛡 ${typeof t === 'function' ? t('safetyIndex') : '명'}: ${si}/100</div>
       <div>💰 누적 과태료: ₩${fines.toLocaleString('ko-KR')}</div>
       <div style="margin:10px 0 6px;font-weight:bold;color:#48BB78">시나리오 기록</div>
       ${rows.join('')}
