@@ -1059,6 +1059,24 @@ html, body {
   transition: opacity 0.08s;
 }
 
+/* ── LOW-LIVES VIGNETTE — 명 ≤ 30 일 때 화면 가장자리 적색 ─ */
+#hud-low-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 80;
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(245,80,80,0.55) 100%);
+  transition: opacity 0.5s ease-out;
+  animation: low-lives-pulse 1.8s ease-in-out infinite;
+}
+#hud-low-vignette.active { opacity: 0.6; }
+#hud-low-vignette.critical { opacity: 0.85; animation-duration: 0.9s; }
+@keyframes low-lives-pulse {
+  0%, 100% { filter: brightness(0.85); }
+  50%      { filter: brightness(1.2); }
+}
+
 /* ── MOBILE JOYSTICK ───────────────────────────────────── */
 #joystick-wrap {
   position: fixed;

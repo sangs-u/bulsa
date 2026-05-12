@@ -209,8 +209,9 @@
     // 사고 누적 — 상위 5종
     const acc = (stats._global && stats._global.accidents) || {};
     const sortedAcc = Object.entries(acc).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const _accLbl = (id) => (typeof accidentLabel === 'function' ? accidentLabel(id) : id);
     const accRows = sortedAcc.length
-      ? sortedAcc.map(([id, cnt]) => `<div style="opacity:0.85">  · ${id} × ${cnt}</div>`).join('')
+      ? sortedAcc.map(([id, cnt]) => `<div style="opacity:0.85">  · ${_accLbl(id)} × ${cnt}</div>`).join('')
       : '<div style="opacity:0.55">(기록 없음)</div>';
     const totalDeaths = (stats._global && stats._global.totalDeaths) || 0;
     body.innerHTML = `

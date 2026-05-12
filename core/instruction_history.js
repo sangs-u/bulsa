@@ -7,7 +7,16 @@
 //   토글 키: H
 
 (function () {
-  const HIST = (window._instructionHistory = window._instructionHistory || []);
+  const STORAGE_KEY = 'bulsa_instr_history';
+  function _load() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+  function _save(arr) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch (e) {}
+  }
+
+  const HIST = (window._instructionHistory = window._instructionHistory || _load());
   const MAX  = 30;
   let _panel  = null;
   let _btn    = null;
@@ -44,9 +53,18 @@
       result,
     });
     while (HIST.length > MAX) HIST.pop();
+    _save(HIST);
     if (_open) _renderPanel();
     _renderBtnBadge();
   }
+
+  function clearHistory() {
+    HIST.length = 0;
+    _save(HIST);
+    if (_open) _renderPanel();
+    _renderBtnBadge();
+  }
+  window.clearInstructionHistory = clearHistory;
 
   function _stats() {
     const s = { total: HIST.length, success: 0, accident: 0, reject: 0, other: 0 };

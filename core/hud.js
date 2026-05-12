@@ -34,6 +34,12 @@ function updateHUD() {
   }
   const numEl = document.getElementById('hud-si-num');
   if (numEl) numEl.textContent = pct;
+  // 임계 비네팅 — 명 ≤ 30 활성, ≤ 15 critical
+  const vig = document.getElementById('hud-low-vignette');
+  if (vig) {
+    vig.classList.toggle('active',   pct <= 30 && pct > 15);
+    vig.classList.toggle('critical', pct <= 15 && pct > 0);
+  }
 
   // Phase label (시나리오 인식)
   const phase = Math.max(1, Math.min(6, s.phase || 1));
