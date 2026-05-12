@@ -150,13 +150,15 @@ function updateInteraction() {
     closest = eligible.find(i => i.mesh === hits[0].object);
   }
 
-  // Proximity fallback for large/invisible triggers
+  // Proximity fallback for large/invisible triggers — world position 사용 (unified zone group offset 호환)
   if (!closest) {
     const cam = GAME.camera.position;
     let minD  = 2.8;
+    const _wp = new THREE.Vector3();
     eligible.forEach(item => {
       if (!item.mesh) return;
-      const d = cam.distanceTo(item.mesh.position);
+      item.mesh.getWorldPosition(_wp);
+      const d = cam.distanceTo(_wp);
       if (d < minD) { minD = d; closest = item; }
     });
   }

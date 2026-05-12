@@ -3,8 +3,8 @@
 
 function registerLiftingHazards() {
   const scene = GAME.scene;
-  GAME.hazards      = [];
-  GAME.interactables = [];
+  GAME.hazards       = GAME.hazards       || [];
+  GAME.interactables = GAME.interactables || [];
 
   function makeMesh(geo, color, pos, opacity) {
     const mat  = new THREE.MeshLambertMaterial({ color, transparent: opacity < 1, opacity: opacity ?? 1 });

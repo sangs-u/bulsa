@@ -2,8 +2,8 @@
 
 function registerFoundationHazards() {
   const scene = GAME.scene;
-  GAME.hazards      = [];
-  GAME.interactables = [];
+  GAME.hazards       = GAME.hazards       || [];
+  GAME.interactables = GAME.interactables || [];
 
   function invisTrigger(pos, r) {
     const m = new THREE.Mesh(
