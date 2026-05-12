@@ -7,15 +7,31 @@
 (function () {
   'use strict';
 
-  // 매니페스트 — 로컬 우선 (assets/glb/*.glb), 파일 없으면 8초 타임아웃 후 폴백
-  // 사용자가 Kenney Vehicle Pack 등 CC0 GLB를 다운로드해 assets/glb/ 에 떨어뜨리면 자동 적용
-  // 런타임 오버라이드: ASSETS.setUrl('excavator', 'https://cdn.example.com/excavator.glb')
+  // 매니페스트 두 갈래:
+  //   1) 건설 장비/캐릭터 — 로컬 우선 (assets/glb/*.glb). 파일 없으면 HEAD 사전점검으로 즉시 폴백
+  //      사용자가 Kenney Vehicle Pack 등 CC0 zip을 받아 assets/glb/ 에 떨어뜨리면 자동 적용
+  //   2) 도시 배경 — Kenney Starter-Kit-City-Builder (CC0) jsdelivr CDN 직링크
+  //      라이선스: CC0 1.0 (kenney.nl/license) — 상업/수정/재배포 자유
+  //   런타임 오버라이드: ASSETS.setUrl('excavator', 'https://cdn.example.com/excavator.glb')
+  const _KENNEY_CITY = 'https://cdn.jsdelivr.net/gh/KenneyNL/Starter-Kit-City-Builder/models/';
   const MANIFEST = {
+    // 1) 로컬 우선 — 사용자가 zip 풀어서 채울 자리
     excavator:    'assets/glb/excavator.glb',
     pump_truck:   'assets/glb/pump_truck.glb',
     tower_crane:  'assets/glb/tower_crane.glb',
     scaffold_kit: 'assets/glb/scaffold_kit.glb',
     hardhat:      'assets/glb/hardhat.glb',
+    // 2) Kenney CC0 시티빌더 — 외곽 도시 배경 (즉시 사용 가능)
+    city_building_a:        _KENNEY_CITY + 'building-small-a.glb',
+    city_building_b:        _KENNEY_CITY + 'building-small-b.glb',
+    city_building_c:        _KENNEY_CITY + 'building-small-c.glb',
+    city_building_d:        _KENNEY_CITY + 'building-small-d.glb',
+    city_garage:            _KENNEY_CITY + 'building-garage.glb',
+    city_road_straight:     _KENNEY_CITY + 'road-straight.glb',
+    city_road_corner:       _KENNEY_CITY + 'road-corner.glb',
+    city_road_intersection: _KENNEY_CITY + 'road-intersection.glb',
+    city_grass_trees:       _KENNEY_CITY + 'grass-trees.glb',
+    city_grass:             _KENNEY_CITY + 'grass.glb',
   };
 
   // 로컬 GLB가 없을 때 빠르게 폴백 (404 즉시 감지 → 8초 대기 불필요)

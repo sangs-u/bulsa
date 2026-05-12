@@ -78,6 +78,35 @@
       scene.add(grp);
     }
 
+    // 도시 배경 — Kenney CC0 GLB (반경 38m 외곽, 가설울타리 바깥쪽)
+    if (window.ASSETS) {
+      const cityRadius = 44;
+      const buildingKeys = ['city_building_a', 'city_building_b', 'city_building_c', 'city_building_d', 'city_garage'];
+      const grassKeys    = ['city_grass_trees', 'city_grass'];
+      // 빌딩 12채 — 8방향 + 보강
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2 + (Math.random() - 0.5) * 0.18;
+        const r = cityRadius + (Math.random() - 0.5) * 6;
+        const key = buildingKeys[Math.floor(Math.random() * buildingKeys.length)];
+        ASSETS.attach(scene, key, {
+          pos:   [Math.cos(a) * r, 0, Math.sin(a) * r],
+          rot:   [0, Math.atan2(-Math.cos(a), -Math.sin(a)) + (Math.random() - 0.5) * 0.6, 0],
+          scale: 2.2 + Math.random() * 0.8,
+        });
+      }
+      // 풀밭/나무 18 — 더 멀리 산포
+      for (let i = 0; i < 18; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const r = 38 + Math.random() * 18;
+        const key = grassKeys[Math.floor(Math.random() * grassKeys.length)];
+        ASSETS.attach(scene, key, {
+          pos:   [Math.cos(a) * r, 0, Math.sin(a) * r],
+          rot:   [0, Math.random() * Math.PI * 2, 0],
+          scale: 1.5 + Math.random() * 0.8,
+        });
+      }
+    }
+
     // 가설울타리 — 컬러 줄무늬 (현장 외곽)
     const fenceMat = new THREE.MeshStandardMaterial({ color: 0xD4A217, roughness: 0.7 });
     const fenceWhiteMat = new THREE.MeshStandardMaterial({ color: 0xF0F0F0, roughness: 0.85 });

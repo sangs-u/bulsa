@@ -46,3 +46,12 @@
 2. `core/assets.js` 에서 GLTFLoader 로 로드 + 캐싱
 3. 각 scene/hazards.js 에서 기하학 메시 자리에 `addGLBInstance(name, pos, rot, scale)`
 4. 로드 실패 시 자동 폴백 = 현재 기하학 메시 유지
+
+## 적용 완료 (2026-05-12)
+- **Kenney CC0 시티빌더 10종** (CDN: jsdelivr `KenneyNL/Starter-Kit-City-Builder`)
+  - building-small-a/b/c/d, building-garage, road-straight/corner/intersection, grass, grass-trees
+  - `core/assets.js` MANIFEST 매핑됨 → `scene_decor.js` 가 외곽 반경 38~50m에 자동 산포
+  - 총 약 290KB, GitHub raw → jsdelivr CDN 캐시
+- **건설 장비 (excavator/pump_truck/tower_crane)**: GitHub에 검증된 CC0 GLB 없음.
+  - Kenney/Quaternius zip 패키지를 `assets/glb/` 에 수동 압축해제 후 `ASSETS.setUrl('excavator', 'assets/glb/excavator.glb')` 로 주입
+  - 또는 Sketchfab CC0 모델을 다운로드해 같은 경로 주입
