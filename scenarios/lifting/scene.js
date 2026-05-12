@@ -194,19 +194,24 @@ function _buildStructure(scene) {
 }
 
 // ── Tower crane ────────────────────────────────────────────
+// 정적 구조물(마스트/지브/캐빈 등)은 craneStaticGroup 으로 묶고, GLB 로드 시 visible=false.
+// 훅 블록/케이블은 양중 애니메이션이 의존하므로 항상 보이게 분리.
 function _buildCrane(scene) {
-  const yellow = new THREE.MeshLambertMaterial({ color: 0xD4A217 }); // muted crane yellow
+  const yellow = new THREE.MeshLambertMaterial({ color: 0xD4A217 });
   const dark   = new THREE.MeshLambertMaterial({ color: 0x3A3830 });
-  const cabin  = new THREE.MeshLambertMaterial({ color: 0xD2CEC4 }); // off-white
+  const cabin  = new THREE.MeshLambertMaterial({ color: 0xD2CEC4 });
 
-  // ── Mast — round CylinderGeometry ──────────────────────
+  const craneStaticGroup = new THREE.Group();
+  craneStaticGroup.name = 'craneStaticGroup';
+
+  // Mast
   const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.54, 0.58, 22, 20), yellow);
   mast.position.set(14, 11, -8);
   mast.castShadow = true;
-  scene.add(mast);
+  craneStaticGroup.add(mast);
   GAME.colliders.push(mast);
 
-  // Lattice bracing — thin cylinders at 45° around mast
+  // Lattice bracing
   const brace = new THREE.MeshLambertMaterial({ color: 0xC09814 });
   for (let y = 2; y < 21; y += 2.8) {
     for (let i = 0; i < 4; i++) {
@@ -215,49 +220,72 @@ function _buildCrane(scene) {
       br.position.set(14 + Math.cos(a) * 0.52, y, -8 + Math.sin(a) * 0.52);
       br.rotation.z = 0.38;
       br.rotation.y = a;
-      scene.add(br);
+      craneStaticGroup.add(br);
     }
   }
 
   // Turntable
   const tt = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.4, 0.58, 22), yellow);
   tt.position.set(14, 22.29, -8);
-  scene.add(tt);
+  craneStaticGroup.add(tt);
 
-  // Jib (main arm) — chord + web structure
+  // Jib
   const jib = new THREE.Mesh(new THREE.BoxGeometry(16, 0.52, 0.48), yellow);
   jib.position.set(6, 22.58, -8);
   jib.castShadow = true;
-  scene.add(jib);
+  craneStaticGroup.add(jib);
 
-  // Jib top chord (diagonal stays)
+  // Jib top chord
   const topChord = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 16.2, 10), brace);
   topChord.position.set(6, 23.35, -8);
   topChord.rotation.z = Math.PI / 2;
-  scene.add(topChord);
+  craneStaticGroup.add(topChord);
 
   // Counter-jib
   const cjib = new THREE.Mesh(new THREE.BoxGeometry(5.8, 0.48, 0.44), yellow);
   cjib.position.set(17, 22.58, -8);
-  scene.add(cjib);
+  craneStaticGroup.add(cjib);
 
-  // Counterweight (realistic concrete block stack)
+  // Counterweight
   const cw = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.2, 1.6), dark);
   cw.position.set(19.6, 21.98, -8);
-  scene.add(cw);
+  craneStaticGroup.add(cw);
   const cw2 = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.6, 1.4), dark);
   cw2.position.set(19.6, 23.0, -8);
-  scene.add(cw2);
+  craneStaticGroup.add(cw2);
 
-  // A-frame head (CylinderGeometry, round struts)
+  // A-frame head
   [-1.4, 1.4].forEach(dx => {
     const af = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 6.2, 12), yellow);
     af.position.set(14 + dx, 25.1, -8);
     af.rotation.z = dx < 0 ? 0.30 : -0.30;
-    scene.add(af);
+    craneStaticGroup.add(af);
   });
 
-  // Main hoist cable
+  // Operator cabin
+  const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.4, 2.2), cabin);
+  cabinMesh.position.set(14, 1.2, -5.4);
+  cabinMesh.castShadow = true;
+  craneStaticGroup.add(cabinMesh);
+  GAME.colliders.push(cabinMesh);
+
+  // Cabin window
+  const winMat = new THREE.MeshLambertMaterial({ color: 0x7BAABB, transparent: true, opacity: 0.62 });
+  const win = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.0), winMat);
+  win.position.set(14, 1.4, -4.29);
+  craneStaticGroup.add(win);
+
+  // Control panel
+  const panelMat = new THREE.MeshLambertMaterial({ color: 0x2A2E3A });
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 0.28), panelMat);
+  panel.position.set(14, 1.3, -4.0);
+  craneStaticGroup.add(panel);
+  scene.add(craneStaticGroup);
+
+  GAME._cranePanelMesh    = panel;
+  GAME._craneStaticGroup  = craneStaticGroup;
+
+  // ── 훅 시스템 (별도 — 양중 애니메이션이 의존, 항상 보임) ──
   const wireMat = new THREE.LineBasicMaterial({ color: 0x282420 });
   const hoistCableGeo = new THREE.BufferGeometry().setFromPoints([
     new THREE.Vector3(-2, 22.58, -8),
@@ -266,7 +294,6 @@ function _buildCrane(scene) {
   const hoistCable = new THREE.Line(hoistCableGeo, wireMat);
   scene.add(hoistCable);
 
-  // Hook block (CylinderGeometry) + torus curve
   const hookBlock = new THREE.Mesh(new THREE.CylinderGeometry(0.20, 0.22, 0.42, 18), dark);
   hookBlock.position.set(-2, 0.88, -8);
   scene.add(hookBlock);
@@ -284,32 +311,12 @@ function _buildCrane(scene) {
     hoistCable: hoistCable,
   };
 
-  // Operator cabin
-  const cabinMesh = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.4, 2.2), cabin);
-  cabinMesh.position.set(14, 1.2, -5.4);
-  cabinMesh.castShadow = true;
-  scene.add(cabinMesh);
-  GAME.colliders.push(cabinMesh);
-
-  // Cabin window
-  const winMat = new THREE.MeshLambertMaterial({ color: 0x7BAABB, transparent: true, opacity: 0.62 });
-  const win = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.0), winMat);
-  win.position.set(14, 1.4, -4.29);
-  scene.add(win);
-
-  // Control panel (interactive trigger)
-  const panelMat = new THREE.MeshLambertMaterial({ color: 0x2A2E3A });
-  const panel = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.0, 0.28), panelMat);
-  panel.position.set(14, 1.3, -4.0);
-  scene.add(panel);
-
-  GAME._cranePanelMesh = panel;
-
-  // GLB가 로컬에 있으면 추가 (현재 procedural 메시들은 그룹화되어 있지 않아 자동 숨김 불가 — 추후 그룹화 시 onAttached 로 끄기)
+  // GLB 로드 성공 시 procedural 정적 부분만 숨김 (훅/케이블은 유지)
   if (typeof ASSETS !== 'undefined') {
     ASSETS.attach(scene, 'tower_crane', {
       pos:   [14, 0, -8],
       scale: 1.0,
+      onAttached: () => { craneStaticGroup.visible = false; },
     });
   }
 }

@@ -44,9 +44,22 @@ function _renderRcHud() {
     vi: ['Ván khuôn',   'Cẩu',  'Đổ/dưỡng hộ'],
     ar: ['القوالب',     'الرفع','الصب'],
   };
+  const tips = {
+    ko: 'RC 골조 진행 (층/세부단계)',
+    en: 'RC frame progress (floor/sub-step)',
+    vi: 'Tiến độ khung RC (tầng/bước con)',
+    ar: 'تقدم الهيكل (الطابق/المرحلة الفرعية)',
+  };
   const labels = stepLabels[currentLang] || stepLabels.ko;
   el.textContent = `🏗 ${s.floor}/${RC_LOOP.totalFloors}F · ${labels[s.stepIdx]}`;
+  el.title       = tips[currentLang] || tips.ko;
 }
+
+// 언어 전환 외부 트리거용
+function refreshRcLoopI18n() { _renderRcHud(); }
+window.refreshRcLoopI18n = refreshRcLoopI18n;
+// _renderRcHud 도 외부 접근 가능하게
+RC_LOOP._renderRcHud = _renderRcHud;
 
 // 한 sub-step 완료 시 호출 — 다음 sub-step 또는 다음 층으로 전환
 function advanceRcStep() {

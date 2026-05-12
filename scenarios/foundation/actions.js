@@ -18,6 +18,13 @@ const FOUND_CHECKS = [
     accidentId: 'form_collapse', prob: 0.85 },
   { test: () => !FOUND_STATE.pumpOk,      accidentId: 'pump_burst',    prob: 0.55 },
   { test: () => !FOUND_STATE.pourOrderAgreed, accidentId: 'pour_crush', prob: 0.55 },
+  // 계획서 매개변수 양방향 검증
+  { test: () => (FOUND_STATE.planRebarSpacing || 0) > 0.30,
+    accidentId: 'rebar_stab',   prob: 0.50, planReason: 'rebar_spacing_excessive' },
+  { test: () => FOUND_STATE.planConcStrength !== null && FOUND_STATE.planConcStrength < 24,
+    accidentId: 'form_collapse', prob: 0.55, planReason: 'concrete_strength_low' },
+  { test: () => (FOUND_STATE.planMatArea || 0) > 200 && !FOUND_STATE.pourOrderAgreed,
+    accidentId: 'pour_crush',    prob: 0.45, planReason: 'large_pour_no_order' },
 ];
 
 function getCurrentFoundPhase() {
@@ -39,6 +46,7 @@ function evaluateFoundation() {
     if (GAME.state.gameOver) return;
     for (const check of FOUND_CHECKS) {
       if (check.test() && Math.random() < check.prob) {
+        if (check.planReason) console.log('[foundation] plan-mismatch:', check.planReason);
         triggerAccident(check.accidentId);
         return;
       }

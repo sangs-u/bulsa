@@ -2,28 +2,23 @@
 > 작업 완료 시 이 파일만 업데이트. 내용은 항상 30줄 이내로 유지.
 
 ## 최근 완료 (2026-05-12)
-- **v1.0 잔여 9건 일괄 처리**
-  · GLB MANIFEST 로컬 우선 (`assets/glb/<name>.glb` · HEAD 사전점검 → 폴백)
-  · 4종 시나리오 scene.js 에 `ASSETS.attach` 후크업 (excavator/pump_truck/tower_crane/scaffold_kit)
-  · 18시 타임아웃 — 전용 패널 + 다시하기/홈 버튼 + 4개국어
-  · 시계 위젯 툴팁 4개국어 + refreshClockI18n
-  · 5공정 완료 시 8초 자동 진행 카운트다운 (allDone 한정 · 클릭 시 취소 · 4언어)
-  · rc_frame sub-step 2종: formwork_minigame.js · pour_minigame.js (createInspectionMinigame 재사용, 층별 4지점)
-  · rc_loop.js — 5층 × 3 sub-step 컨트롤러 + HUD 위젯
-  · interaction.js _onBeamPlaced 에 RC sub-step 흐름 후크업 (양중→타설→다음 층 형틀→양중)
-  · core/motion.js — Mixamo 클립 10종 + 도구 5종 캐시, attachTool IK 본 탐색, setMotion 폴백
-  · NPC.build 에 직종별 도구 자동 부착 (signal=flag, formwork=hammer, rebar=wrench, mep=welder, survey=detector)
-  · 크레인 운전원 거부권 확장 — 계획서 매개변수(SWL/각도/서명여부) 위반 시 거부 + 4개국어
+- **v1.1 3건 처리**
+  · i18n/strings.js setLang → refreshClockI18n + RC_LOOP._renderRcHud + refreshRcLoopI18n 즉시 호출
+  · rc_loop HUD title 툴팁 4언어 + 외부 노출 RC_LOOP._renderRcHud
+  · lifting `_buildCrane` 정적 메시 → craneStaticGroup 으로 분리, GLB 로드 시 visible=false (훅·케이블·hook block 은 양중 애니용으로 유지)
+  · envelope `_buildScaffolding` → scaffoldGroup 그룹화 + onAttached 자동 숨김
+  · 사고 ↔ 계획서 양방향 검증 — lifting `_validateLiftPlan()` (SWL 사용률·각도·가닥수 분기) + foundation FOUND_CHECKS 에 planRebarSpacing/planConcStrength/planMatArea 추가 (excavation 은 이미 적용됨)
+- **v1.0 잔여 9건 일괄 처리** (이전 커밋)
 
 ## 검증 상태
-- node 구문 검사 14/14 OK · 시각 플레이쓰루 미실시
+- node 구문 검사 6/6 OK · 시각 플레이쓰루 미실시
 
 ## v1.1 다음 작업
 1. Mixamo 실제 클립 7~10개 다운로드 → assets/glb/anim_*.glb (현재는 폴백 동작)
 2. 무사이 작업계획서 UI 인게임 이식 (현장사무소 PC/태블릿)
-3. rc_loop HUD 위젯 i18n applyLang 트리거 연결
-4. ASSETS.attach 로 GLB 교체 시 procedural 자동 그룹화 + 숨김 (lifting/envelope crane/scaffold)
-5. 사고 ↔ 계획서 매개변수 양방향 검증 (현재는 단방향)
+3. excavation/foundation 시나리오 모든 NPC 거부권 확장 (현재 lifting 만)
+4. 모바일 SSH+tmux 원격 작업환경 가이드 PROGRESS.md 외부에 기록 (현재 채팅에만)
+5. v1.0 시각 플레이쓰루 — 실 브라우저에서 5공정 통과 검증
 
 ## 핵심 결정사항
 - 물리: cannon.js 0.6.2 UMD · BGM: Web Audio 합성 · PWA: network-first

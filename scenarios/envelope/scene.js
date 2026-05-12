@@ -71,74 +71,68 @@ function _buildScaffolding(scene) {
   const railMat = new THREE.LineBasicMaterial({ color: 0xCC4010 });
 
   const cx = 0, cz = -17;
-  const offset = 6.2;  // 건물 외곽보다 1m 밖
+  const offset = 6.2;
   const totalH = 20;
   const bayH = 1.8;
   const bayW = 1.5;
 
-  // 4면에 비계 — 수직 기둥
-  const corners = [
-    { x: -offset, z: -offset + cz, axis: 'z', length: offset * 2 },
-    { x:  offset, z: -offset + cz, axis: 'z', length: offset * 2 },
-    { x: -offset, z: -offset + cz, axis: 'x', length: offset * 2 },
-    { x: -offset, z:  offset + cz, axis: 'x', length: offset * 2 },
-  ];
-  // 단순화: 4변 각각에 수직 기둥 + 가로 작업발판
-  // 앞·뒤 면 (z-direction span)
+  const scaffoldGroup = new THREE.Group();
+  scaffoldGroup.name = 'scaffoldGroup';
+
+  // 앞·뒤 면
   [cz - offset, cz + offset].forEach(zSide => {
     for (let x = -offset; x <= offset; x += bayW) {
-      // 수직 강관
       const v = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, totalH, 8), tubeMat);
       v.position.set(x, totalH/2, zSide);
-      scene.add(v);
+      scaffoldGroup.add(v);
     }
-    // 작업발판 + 안전난간 (각 층)
     for (let fl = 0; fl < Math.floor(totalH/bayH); fl++) {
       const fy = fl * bayH + 0.05;
-      // 작업발판 (서있을 수 있도록 collider 등록)
       const plank = new THREE.Mesh(new THREE.BoxGeometry(offset*2, 0.05, 0.6), plateMat);
       plank.position.set(0, fy, zSide);
-      scene.add(plank);
+      scaffoldGroup.add(plank);
       GAME.colliders.push(plank);
-      // 안전난간 (3단)
       [0.45, 0.9, 1.05].forEach(rh => {
         const pts = [
           new THREE.Vector3(-offset, fy + rh, zSide),
           new THREE.Vector3( offset, fy + rh, zSide),
         ];
-        const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), railMat);
-        scene.add(line);
+        scaffoldGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), railMat));
       });
     }
   });
 
-  // 좌·우 면 (x-direction span)
+  // 좌·우 면
   [-offset, offset].forEach(xSide => {
     for (let z = -offset; z <= offset; z += bayW) {
       const v = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, totalH, 8), tubeMat);
       v.position.set(xSide, totalH/2, cz + z);
-      scene.add(v);
+      scaffoldGroup.add(v);
     }
     for (let fl = 0; fl < Math.floor(totalH/bayH); fl++) {
       const fy = fl * bayH + 0.05;
       const plank = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.05, offset*2), plateMat);
       plank.position.set(xSide, fy, cz);
-      scene.add(plank);
+      scaffoldGroup.add(plank);
       GAME.colliders.push(plank);
       [0.45, 0.9, 1.05].forEach(rh => {
         const pts = [
           new THREE.Vector3(xSide, fy + rh, cz - offset),
           new THREE.Vector3(xSide, fy + rh, cz + offset),
         ];
-        scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), railMat));
+        scaffoldGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), railMat));
       });
     }
   });
+
+  scene.add(scaffoldGroup);
+  GAME._scaffoldGroup = scaffoldGroup;
 
   if (typeof ASSETS !== 'undefined') {
     ASSETS.attach(scene, 'scaffold_kit', {
       pos:   [0, 0, -17],
       scale: 1.0,
+      onAttached: () => { scaffoldGroup.visible = false; },
     });
   }
 }

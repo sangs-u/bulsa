@@ -793,5 +793,11 @@ function setLang(lang) {
     currentLang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
+    // 동적으로 텍스트가 들어가는 HUD/위젯 즉시 갱신
+    if (typeof refreshClockI18n === 'function') { try { refreshClockI18n(); } catch (e) {} }
+    if (typeof RC_LOOP !== 'undefined' && typeof RC_LOOP._renderRcHud === 'function') {
+      try { RC_LOOP._renderRcHud(); } catch (e) {}
+    }
+    if (typeof refreshRcLoopI18n === 'function') { try { refreshRcLoopI18n(); } catch (e) {} }
   }
 }
