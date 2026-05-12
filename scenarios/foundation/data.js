@@ -10,8 +10,12 @@ const FOUNDATION_DATA = {
     form_collapse: {
       descKo: '거푸집 동바리 강도 부족으로 콘크리트 타설 중 거푸집이 붕괴되었습니다.',
       descEn: 'Formwork collapsed during pour due to inadequate shoring strength.',
+      descVi: 'Cốp pha bị sập trong khi đổ bê tông do hệ giáo chống (shoring) không đủ cường độ.',
+      descAr: 'انهارت القوالب الخرسانية أثناء صب الخرسانة بسبب ضعف نظام الدعامات (الشورنغ).',
       causeKo: '동바리 간격 과다 / 수직도 미확보',
       causeEn: 'Excessive shoring spacing / verticality not maintained',
+      causeVi: 'Khoảng cách cây chống quá lớn / không đảm bảo độ thẳng đứng',
+      causeAr: 'تباعد مفرط بين الدعامات / عدم ضبط الاستقامة الرأسية',
       lawKo: '산업안전보건기준에 관한 규칙 제331조 (거푸집 동바리)\nKOSHA GUIDE C-72-2017 4.3항',
       lawEn: 'OSH Standards Rule §331 (Formwork shoring)\nKOSHA GUIDE C-72-2017 §4.3',
       procedureKo: [
@@ -28,8 +32,12 @@ const FOUNDATION_DATA = {
     rebar_stab: {
       descKo: '노출 철근에 보호캡 미설치로 작업자가 철근에 찔렸습니다.',
       descEn: 'A worker was impaled on exposed rebar lacking protective caps.',
+      descVi: 'Công nhân bị thép chờ đâm vào người do không lắp chụp bảo vệ (rebar cap) đầu thép.',
+      descAr: 'تعرّض أحد العمال للوخز بقضبان التسليح البارزة بسبب عدم تركيب أغطية حماية على أطراف الحديد.',
       causeKo: '노출 철근 보호캡 미설치',
       causeEn: 'No protective caps on exposed rebar ends',
+      causeVi: 'Không lắp chụp bảo vệ đầu thép chờ lộ thiên',
+      causeAr: 'عدم تركيب أغطية حماية على أطراف قضبان التسليح المكشوفة',
       lawKo: '산업안전보건기준에 관한 규칙 제42조\nKOSHA GUIDE C-67-2018',
       lawEn: 'OSH Standards Rule §42\nKOSHA GUIDE C-67-2018',
       procedureKo: [
@@ -46,8 +54,12 @@ const FOUNDATION_DATA = {
     pump_burst: {
       descKo: '콘크리트 펌프카 호스 점검 미실시로 압력 호스가 파열되었습니다.',
       descEn: 'Concrete pump hose burst due to skipped pre-use inspection.',
+      descVi: 'Ống áp lực của xe bơm bê tông bị nổ do không kiểm tra ống và mối nối trước khi sử dụng.',
+      descAr: 'انفجر خرطوم الضغط في مضخة الخرسانة بسبب إهمال الفحص المسبق للخرطوم ووصلاته.',
       causeKo: '펌프카 호스 마모/접속부 점검 미실시',
       causeEn: 'Skipped inspection of pump hose wear and couplings',
+      causeVi: 'Không kiểm tra mức hao mòn ống và các mối nối của xe bơm',
+      causeAr: 'إهمال فحص اهتراء خرطوم المضخة ووصلاته',
       lawKo: '산업안전보건기준에 관한 규칙 제335조\nKOSHA GUIDE C-72-2017 5.2항',
       lawEn: 'OSH Standards Rule §335\nKOSHA GUIDE C-72-2017 §5.2',
       procedureKo: [
@@ -64,8 +76,12 @@ const FOUNDATION_DATA = {
     pour_crush: {
       descKo: '타설 순서를 어겨 거푸집 측압이 집중되며 일부가 무너졌습니다.',
       descEn: 'Pour sequence error concentrated lateral pressure and partial collapse.',
+      descVi: 'Đổ bê tông sai trình tự khiến áp lực ngang dồn cục bộ vào cốp pha và gây sập một phần.',
+      descAr: 'تسبّب الإخلال بتسلسل صبّ الخرسانة في تركّز الضغط الجانبي على القوالب وانهيار جزء منها.',
       causeKo: '타설 순서 위반 / 일일 타설량 초과',
       causeEn: 'Pour sequence violation / daily pour limit exceeded',
+      causeVi: 'Vi phạm trình tự đổ bê tông / vượt khối lượng đổ trong ngày',
+      causeAr: 'الإخلال بتسلسل الصبّ / تجاوز الحد اليومي لكميّة الصبّ',
       lawKo: '산업안전보건기준에 관한 규칙 제334조\nKOSHA GUIDE C-67-2018 4.4항',
       lawEn: 'OSH Standards Rule §334\nKOSHA GUIDE C-67-2018 §4.4',
       procedureKo: [

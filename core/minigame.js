@@ -1,11 +1,6 @@
 // 공통 미니게임 헬퍼 — 모든 시나리오 행동 기반 미니게임이 공유
 // 월드 피드백 우선 (HUD 위젯 없이 3D 오브젝트로 진행 상태 표시)
-
-// 숙련도 카운터
-function bumpSkill(toolId) {
-  GAME.state.skill = GAME.state.skill || {};
-  GAME.state.skill[toolId] = (GAME.state.skill[toolId] || 0) + 1;
-}
+// 숙련도 카운터는 core/skill.js 의 bumpSkill(toolId, xpAmount) 사용 (XP+레벨 시스템)
 
 // 화면 우상단 작은 인디케이터 (모달 아닌, 게임 진행 방해 X)
 function showTaskHint(text, color) {
@@ -132,7 +127,13 @@ function createInspectionMinigame(config) {
     });
     const lvHint = typeof getSkillLevel === 'function'
       ? ` (Lv.${getSkillLevel(config.id)} 적용 ${_effectiveHold().toFixed(1)}s)` : '';
-    showActionNotif(`🔍 ${config.label} — [E] 직접 ${baseHold.toFixed(1)}s${lvHint} · [Q] 동료 위임`, 5500);
+    const tpl = {
+      ko: `🔍 ${config.label} — [E] 직접 ${baseHold.toFixed(1)}s${lvHint} · [Q] 동료 위임`,
+      en: `🔍 ${config.label} — [E] hold ${baseHold.toFixed(1)}s${lvHint} · [Q] delegate`,
+      vi: `🔍 ${config.label} — [E] giữ ${baseHold.toFixed(1)}s${lvHint} · [Q] giao`,
+      ar: `🔍 ${config.label} — [E] ${baseHold.toFixed(1)}ث${lvHint} · [Q] فوّض`,
+    }[currentLang] || `🔍 ${config.label} — [E] ${baseHold.toFixed(1)}s`;
+    showActionNotif(tpl, 5500);
     // 위임 선택지 활성화 (이 mini-game이 현재 활성이므로 dispatcher가 인식)
     DELEGATION_CHOICE.current = { game: api, config };
   }
@@ -180,7 +181,8 @@ function createInspectionMinigame(config) {
       if (spot.progress >= HOLD) {
         spot.inspected = true;
         spot.marker.ring.material.color.setHex(0x22C55E);
-        showActionNotif(`✅ ${spot.label} 점검 완료`, 2000);
+        const done = { ko: '점검 완료', en: 'inspection complete', vi: 'kiểm tra xong', ar: 'الفحص مكتمل' }[currentLang] || '점검 완료';
+        showActionNotif(`✅ ${spot.label} ${done}`, 2000);
         if (state.spots.every(s => s.inspected)) {
           bumpSkill(config.id, 10);
           end();
@@ -217,26 +219,37 @@ const DELEGATION_CHOICE = { current: null };
 
 function tryDelegateCurrent() {
   if (!DELEGATION_CHOICE.current) {
-    if (typeof showActionNotif === 'function') showActionNotif('위임할 작업이 없습니다', 2000);
+    if (typeof showActionNotif === 'function') showActionNotif({ ko: '위임할 작업이 없습니다', en: 'No task to delegate', vi: 'Không có việc để giao', ar: 'لا توجد مهمة للتفويض' }[currentLang] || '위임할 작업이 없습니다', 2000);
     return false;
   }
   const { config } = DELEGATION_CHOICE.current;
   const trade = config.trade;
   if (!trade) {
-    if (typeof showActionNotif === 'function') showActionNotif('이 작업은 공종 정보가 없어 위임 불가', 2500);
+    if (typeof showActionNotif === 'function') showActionNotif({ ko: '이 작업은 공종 정보가 없어 위임 불가', en: 'Cannot delegate — no trade info', vi: 'Không thể giao — thiếu nghề', ar: 'لا يمكن التفويض — لا توجد مهنة' }[currentLang] || '이 작업은 공종 정보가 없어 위임 불가', 2500);
     return false;
   }
   // 같은 공종 NPC 중 스킬 최고
   const eligible = (GAME.npcs || []).filter(n => n.trade === trade);
   if (eligible.length === 0) {
-    if (typeof showActionNotif === 'function') showActionNotif(`${trade} 공종 동료가 없습니다 — 직접 수행 필요`, 2800);
+    if (typeof showActionNotif === 'function') showActionNotif({
+      ko: `${trade} 공종 동료가 없습니다 — 직접 수행 필요`,
+      en: `No coworker for ${trade} trade — perform yourself`,
+      vi: `Không có đồng nghiệp nghề ${trade} — tự làm`,
+      ar: `لا يوجد زميل لمهنة ${trade} — قم بنفسك`,
+    }[currentLang] || `${trade} 공종 동료가 없습니다`, 2800);
     return false;
   }
   eligible.sort((a, b) => b.skill - a.skill);
   const best = eligible[0];
   const ok = DELEGATION_CHOICE.current.game.delegateToNPC(best.id);
   if (ok && typeof showActionNotif === 'function') {
-    showActionNotif(`👷 ${best.name} (${best.role}·경력 ${best.experience}년) 에게 ${config.label} 지시`, 3500);
+    const tpl = {
+      ko: `👷 ${best.name} (${best.role}·경력 ${best.experience}년) 에게 ${config.label} 지시`,
+      en: `👷 Assigned ${config.label} to ${best.name} (${best.role}·${best.experience}y exp.)`,
+      vi: `👷 Giao ${config.label} cho ${best.name} (${best.role}·${best.experience}năm)`,
+      ar: `👷 تعيين ${config.label} لـ ${best.name} (${best.role}·خبرة ${best.experience}س)`,
+    }[currentLang] || `👷 ${best.name} → ${config.label}`;
+    showActionNotif(tpl, 3500);
   }
   return ok;
 }

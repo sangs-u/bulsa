@@ -10,8 +10,12 @@ const MEP_DATA = {
     electric_shock: {
       descKo: '활선 상태에서 LOTO(잠금) 미실시로 배선 작업 중 작업자가 감전되었습니다.',
       descEn: 'A worker was shocked while wiring on a live circuit due to skipped LOTO.',
+      descVi: 'Công nhân bị điện giật khi đấu nối dây trên mạch còn điện do không thực hiện LOTO (khóa và treo biển).',
+      descAr: 'تعرّض أحد العمال للصعق الكهربائي أثناء أعمال التمديدات على دائرة حيّة بسبب عدم تطبيق إجراء LOTO (إقفال ووسم المصدر).',
       causeKo: 'LOTO 잠금/표지 미실시 / 활선 상태 점검 누락',
       causeEn: 'No LOTO lock-out/tag-out / live circuit not verified',
+      causeVi: 'Không khóa và gắn thẻ LOTO / không kiểm tra mạch còn điện',
+      causeAr: 'عدم تطبيق الإقفال والوسم (LOTO) / إهمال التحقق من انعدام التيار',
       lawKo: '산업안전보건기준에 관한 규칙 제310조 (감전위험 작업)\nKOSHA GUIDE G-82-2018 4.2항',
       lawEn: 'OSH Standards Rule §310 (Electric shock prevention)\nKOSHA GUIDE G-82-2018 §4.2',
       procedureKo: [
@@ -30,8 +34,12 @@ const MEP_DATA = {
     gas_explosion: {
       descKo: '가스 누설 점검 미실시 상태에서 용접 작업 중 가스가 점화되어 폭발했습니다.',
       descEn: 'Gas ignited during welding without prior leak inspection — explosion.',
+      descVi: 'Hàn khi chưa kiểm tra rò rỉ khí khiến khí bắt lửa và gây nổ.',
+      descAr: 'اشتعل الغاز وانفجر أثناء أعمال اللحام بسبب عدم فحص التسريبات الغازية مسبقاً.',
       causeKo: '가스 누설 점검 미실시 / 환기 미가동',
       causeEn: 'No gas leak inspection / ventilation off',
+      causeVi: 'Không kiểm tra rò rỉ khí / không vận hành hệ thống thông gió',
+      causeAr: 'عدم فحص تسرّب الغاز / عدم تشغيل التهوية',
       lawKo: '산업안전보건기준에 관한 규칙 제232조 (가스폭발 위험)\nKOSHA GUIDE G-119-2020',
       lawEn: 'OSH Standards Rule §232 (Gas explosion hazard)\nKOSHA GUIDE G-119-2020',
       procedureKo: [
@@ -50,8 +58,12 @@ const MEP_DATA = {
     fire_outbreak: {
       descKo: '소화기 미비치 상태에서 마감재가 발화하여 화재로 번졌습니다.',
       descEn: 'Finishing material caught fire and spread due to missing extinguishers.',
+      descVi: 'Vật liệu hoàn thiện bốc cháy và lan rộng do khu vực thi công không bố trí bình chữa cháy.',
+      descAr: 'اشتعلت مواد التشطيب وانتشر الحريق نتيجة عدم توفير طفايات الحريق في موقع العمل.',
       causeKo: '소화기 배치 누락 / 가연성 자재 부적정 보관',
       causeEn: 'No extinguishers / improper storage of flammables',
+      causeVi: 'Không bố trí bình chữa cháy / bảo quản vật liệu dễ cháy không đúng quy định',
+      causeAr: 'عدم توفير طفايات الحريق / تخزين المواد القابلة للاشتعال بشكل غير سليم',
       lawKo: '소방시설법 + 산업안전보건기준에 관한 규칙 제240조',
       lawEn: 'Fire Safety Act + OSH Standards Rule §240',
       procedureKo: [
@@ -68,8 +80,12 @@ const MEP_DATA = {
     toxic_exposure: {
       descKo: '국소배기 미가동 상태에서 도장 작업 중 작업자가 유해물질에 노출되었습니다.',
       descEn: 'A worker was exposed to toxic vapors during painting without local exhaust.',
+      descVi: 'Công nhân bị phơi nhiễm hơi dung môi độc hại khi sơn do không vận hành hệ thống hút cục bộ.',
+      descAr: 'تعرّض أحد العمال لأبخرة المواد الكيميائية الضارة أثناء أعمال الدهان بسبب عدم تشغيل نظام الشفط الموضعي.',
       causeKo: '국소배기 미가동 / 방독마스크 미착용',
       causeEn: 'Local exhaust off / no respirator',
+      causeVi: 'Không vận hành hút cục bộ / không đeo mặt nạ phòng độc',
+      causeAr: 'عدم تشغيل الشفط الموضعي / عدم ارتداء كمامة الحماية من الأبخرة',
       lawKo: '산업안전보건기준에 관한 규칙 제422조 (관리대상 유해물질)\nKOSHA GUIDE H-27-2017',
       lawEn: 'OSH Standards Rule §422 (Controlled toxic substances)\nKOSHA GUIDE H-27-2017',
       procedureKo: [

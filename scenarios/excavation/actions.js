@@ -26,6 +26,10 @@ const EXCAV_CHECKS = [
   { test: () => !EXCAV_STATE.railingInstalled && EXCAV_STATE.planDepth >= 2.0,
     accidentId: 'edge_fall', prob: 0.55 },
   { test: () => !EXCAV_STATE.signalAssigned, accidentId: 'excavator_crush', prob: 0.55 },
+  // 계획서 구배 검증 — KOSHA C-39-2011 기준 (모래 1:1.8 / 풍화암 1:1.0 / 일반토사 1:1.2)
+  // planSlope 가 매우 가파를 때 (1:N 의 N < 0.5) 토사 붕괴 확률↑
+  { test: () => EXCAV_STATE.planSlope !== null && EXCAV_STATE.planSlope < 0.5 && EXCAV_STATE.planDepth >= 2.0,
+    accidentId: 'soil_collapse', prob: 0.70, planReason: 'slope_too_steep' },
 ];
 
 // Phase 게이팅

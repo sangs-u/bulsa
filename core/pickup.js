@@ -45,7 +45,12 @@
       if (d < bestD) { bestD = d; best = m; }
     }
     if (!best) {
-      if (typeof showActionNotif === 'function') showActionNotif('근처에 들 수 있는 물건이 없어요', 1800);
+      if (typeof showActionNotif === 'function') showActionNotif({
+        ko: '근처에 들 수 있는 물건이 없어요',
+        en: 'Nothing to pick up nearby',
+        vi: 'Không có gì để nhặt gần đây',
+        ar: 'لا شيء للالتقاط بالقرب',
+      }[currentLang] || '근처에 들 수 있는 물건이 없어요', 1800);
       return;
     }
     // 픽업 — 카메라 자식으로 부착

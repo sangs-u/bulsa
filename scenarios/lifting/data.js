@@ -6,8 +6,12 @@ const LIFTING_DATA = {
     sling_snap: {
       descKo: '손상된 슬링(킹크)을 교체하지 않고 인양을 시도하여 슬링이 파단되었고, RC 보가 지상으로 낙하했습니다.',
       descEn: 'A damaged sling (kink) was not replaced. It snapped under load and the RC beam fell.',
+      descVi: 'Dây cáp cẩu bị xoắn gập (kink) không được thay thế, dẫn đến đứt cáp khi nâng tải và dầm bê tông cốt thép rơi xuống.',
+      descAr: 'لم يتم استبدال حبل الرفع التالف (به ثنية)، فانقطع تحت الحمل وسقطت العتبة الخرسانية المسلحة على الأرض.',
       causeKo: '슬링 사전 점검 미이행 / 손상 슬링 계속 사용',
       causeEn: 'No pre-use sling inspection / continued use of damaged sling',
+      causeVi: 'Không kiểm tra dây cáp trước khi sử dụng / tiếp tục dùng cáp đã hư hỏng',
+      causeAr: 'عدم إجراء فحص حبل الرفع قبل الاستخدام / استمرار استعمال حبل تالف',
       lawKo: '산업안전보건기준에 관한 규칙 제163조 (달기구의 안전계수)\n제164조 (달기구의 점검 등)\nKOSHA GUIDE G-133-2020 4.3항',
       lawEn: 'OSH Standards Rule §163 (Safety factor of rigging)\n§164 (Rigging inspection)\nKOSHA GUIDE G-133-2020 §4.3',
       procedureKo: [
@@ -26,8 +30,12 @@ const LIFTING_DATA = {
     pin_drop: {
       descKo: '안전핀이 체결되지 않은 훅에서 인양 중 슬링이 이탈하여 RC 보가 낙하했습니다.',
       descEn: 'The sling disengaged from an unsecured hook during lifting; the beam fell.',
+      descVi: 'Móc cẩu không khóa chốt an toàn (latch) khiến dây cáp tuột ra khỏi móc trong khi nâng và dầm bê tông cốt thép rơi xuống.',
+      descAr: 'انفلت حبل الرفع من خطاف غير مؤمَّن بمزلاج الأمان أثناء عملية الرفع، فسقطت العتبة الخرسانية.',
       causeKo: '안전핀(래치) 체결 미확인',
       causeEn: 'Safety pin (latch) not checked',
+      causeVi: 'Không kiểm tra việc khóa chốt an toàn (latch) của móc cẩu',
+      causeAr: 'عدم التحقق من إغلاق مزلاج الأمان (Latch) في خطاف الرفع',
       lawKo: '산업안전보건기준에 관한 규칙 제147조 (훅·샤클 등의 안전장치)\nKOSHA GUIDE G-133-2020 5.1항',
       lawEn: 'OSH Standards Rule §147 (Hook safety device)\nKOSHA GUIDE G-133-2020 §5.1',
       procedureKo: [
@@ -44,8 +52,12 @@ const LIFTING_DATA = {
     worker_crush: {
       descKo: '인양 반경 내 근로자를 대피시키지 않은 상태에서 작업하여, 낙하 하중에 의한 압사 사고가 발생했습니다.',
       descEn: 'A worker inside the lifting radius was struck by the falling load.',
+      descVi: 'Công nhân chưa được sơ tán khỏi bán kính nâng tải, bị tải trọng rơi đè gây tai nạn chấn thương nặng.',
+      descAr: 'لم يتم إخلاء العمال من نطاق دائرة الرفع، فأصيب أحدهم نتيجة سقوط الحمولة عليه.',
       causeKo: '인양 작업 반경 내 근로자 존재 / 접근 통제 미실시',
       causeEn: 'Worker present in lifting radius / no access control',
+      causeVi: 'Có công nhân trong bán kính nâng tải / không kiểm soát ra vào khu vực',
+      causeAr: 'وجود عمال داخل نطاق الرفع / عدم تطبيق ضوابط منع الدخول',
       lawKo: '산업안전보건기준에 관한 규칙 제138조 (작업 반경 내의 위험방지)\n제140조 (운전위치 이탈의 제한)',
       lawEn: 'OSH Standards Rule §138 (Hazard prevention in operating radius)\n§140 (Prohibition on leaving operating position)',
       procedureKo: [
@@ -62,8 +74,12 @@ const LIFTING_DATA = {
     overload: {
       descKo: '정격하중을 초과한 하중을 인양하다 크레인 붐이 파손되었습니다.',
       descEn: 'The crane boom failed under a load exceeding rated capacity.',
+      descVi: 'Cẩu nâng tải vượt tải trọng định mức làm gãy cần cẩu.',
+      descAr: 'انكسرت ذراع الرافعة بسبب رفع حمل يتجاوز الحمولة المقررة.',
       causeKo: '하중 초과 확인 없이 작업 강행',
       causeEn: 'Lift proceeded without verifying load vs. rated capacity',
+      causeVi: 'Tiến hành nâng tải mà không kiểm tra tải trọng so với định mức',
+      causeAr: 'الشروع في الرفع دون التحقق من مطابقة الحمل للحمولة المقررة',
       lawKo: '산업안전보건기준에 관한 규칙 제132조 (과부하 제한장치)\n제134조 (제한하중 준수)',
       lawEn: 'OSH Standards Rule §132 (Overload limiter)\n§134 (Rated load compliance)',
       procedureKo: [
@@ -80,8 +96,12 @@ const LIFTING_DATA = {
     angle_break: {
       descKo: '슬링 인양각도 60° 초과 상태에서 인양하여 슬링 장력이 급증, 파단이 발생했습니다.',
       descEn: 'Lifting with sling angle >60° caused excessive tension and sling breakage.',
+      descVi: 'Nâng tải với góc dây cáp vượt quá 60° làm lực căng tăng đột ngột và dây cáp bị đứt.',
+      descAr: 'أدى الرفع بزاوية حبل تتجاوز 60° إلى ارتفاع شدة الشد بشكل مفرط وانقطاع الحبل.',
       causeKo: '슬링 인양각도 미확인 / 각도 초과 상태로 작업 강행',
       causeEn: 'Sling angle not checked / operation continued beyond 60°',
+      causeVi: 'Không kiểm tra góc dây cáp / vẫn tiến hành khi góc vượt 60°',
+      causeAr: 'عدم التحقق من زاوية حبل الرفع / استمرار العمل رغم تجاوز 60°',
       lawKo: 'KOSHA GUIDE G-133-2020 4.4항 (인양각도 제한)\n산업안전보건기준에 관한 규칙 제163조',
       lawEn: 'KOSHA GUIDE G-133-2020 §4.4 (Sling angle limit)\nOSH Standards Rule §163',
       procedureKo: [
@@ -98,8 +118,12 @@ const LIFTING_DATA = {
     no_signal: {
       descKo: '신호수 없이 작업하다 작업자와 크레인 훅이 충돌하는 사고가 발생했습니다.',
       descEn: 'Without a signal person, the crane hook struck a worker.',
+      descVi: 'Làm việc không có người ra hiệu (signaler) khiến móc cẩu va đập vào công nhân.',
+      descAr: 'وقع اصطدام بين خطاف الرافعة وأحد العمال بسبب العمل دون وجود مُشير (signaler).',
       causeKo: '신호수 미배치 / 신호 전달 체계 없이 작업 강행',
       causeEn: 'No signal person assigned / no communication protocol',
+      causeVi: 'Không bố trí người ra hiệu / không có hệ thống truyền tín hiệu',
+      causeAr: 'عدم تعيين مُشير / غياب نظام لتبادل الإشارات',
       lawKo: '산업안전보건기준에 관한 규칙 제146조 (유도자 배치)\n제145조 (신호)',
       lawEn: 'OSH Standards Rule §146 (Guide person placement)\n§145 (Signaling)',
       procedureKo: [

@@ -93,7 +93,8 @@ function bumpSkill(toolId, xpAmount) {
   if (cur.level > oldLv) {
     const def = SKILL_DEFS[toolId] || { ko: toolId, icon: '🎯' };
     if (typeof showActionNotif === 'function') {
-      showActionNotif(`🎉 LEVEL UP! ${def.icon} ${def.ko} Lv.${cur.level}`, 4500);
+      const lvUp = { ko: 'LEVEL UP', en: 'LEVEL UP', vi: 'LÊN CẤP', ar: 'ارتقاء' }[currentLang] || 'LEVEL UP';
+      showActionNotif(`🎉 ${lvUp}! ${def.icon} ${def.ko} Lv.${cur.level}`, 4500);
     }
   } else if (typeof showActionNotif === 'function') {
     const def = SKILL_DEFS[toolId] || { ko: toolId, icon: '🎯' };
@@ -197,7 +198,13 @@ function assignTaskToNPC(npcId, taskId, target, baseTime, onComplete) {
   npc._targetPos = new THREE.Vector3(target[0], 0, target[2]);
   npc.setState && npc.setState(NPC_STATES.WORKING);
   if (typeof showActionNotif === 'function') {
-    showActionNotif(`👷 ${npc.name} 에게 작업 지시 — 예상 ${eta.toFixed(1)}초`, 3000);
+    const tpl = {
+      ko: `👷 ${npc.name} 에게 작업 지시 — 예상 ${eta.toFixed(1)}초`,
+      en: `👷 Task assigned to ${npc.name} — ETA ${eta.toFixed(1)}s`,
+      vi: `👷 Giao ${npc.name} — Dự kiến ${eta.toFixed(1)}s`,
+      ar: `👷 تعيين ${npc.name} — المتوقع ${eta.toFixed(1)}ث`,
+    }[currentLang] || `👷 ${npc.name} — ${eta.toFixed(1)}s`;
+    showActionNotif(tpl, 3000);
   }
   return true;
 }
@@ -210,7 +217,13 @@ function updateDelegation(delta) {
     if (t.elapsed >= t.eta) {
       const npc = GAME.npcs && GAME.npcs.find(n => n.id === t.npcId);
       if (npc && typeof showActionNotif === 'function') {
-        showActionNotif(`✅ ${npc.name}: ${t.taskId} 완료`, 3000);
+        const tpl = {
+          ko: `✅ ${npc.name}: ${t.taskId} 완료`,
+          en: `✅ ${npc.name}: ${t.taskId} complete`,
+          vi: `✅ ${npc.name}: ${t.taskId} hoàn thành`,
+          ar: `✅ ${npc.name}: ${t.taskId} مكتمل`,
+        }[currentLang] || `✅ ${npc.name}: ${t.taskId}`;
+        showActionNotif(tpl, 3000);
       }
       if (t.onComplete) t.onComplete();
       DELEGATION.active.splice(i, 1);

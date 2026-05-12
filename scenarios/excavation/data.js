@@ -10,8 +10,12 @@ const EXCAVATION_DATA = {
     soil_collapse: {
       descKo: '굴착면 기울기 미확보 + 흙막이 미설치 상태에서 작업 중 토사가 붕괴되었습니다.',
       descEn: 'The trench wall collapsed due to inadequate slope and missing shoring.',
+      descVi: 'Vách hố đào bị sạt lở do không đảm bảo độ dốc taluy và không lắp đặt hệ chống vách.',
+      descAr: 'انهار جدار الحفر أثناء العمل بسبب عدم تأمين ميل التربة وعدم تركيب نظام تدعيم جوانب الحفر.',
       causeKo: '굴착 기울기 미확보 / 흙막이 가시설 미설치',
       causeEn: 'Inadequate excavation slope / no shoring installed',
+      causeVi: 'Không đảm bảo độ dốc đào / không lắp hệ chống vách (shoring)',
+      causeAr: 'عدم توفير ميل الحفر الآمن / عدم تركيب نظام تدعيم جوانب الحفر',
       lawKo: '산업안전보건기준에 관한 규칙 제340조 (지반 등의 굴착작업)\nKOSHA GUIDE C-39-2011 4.2항',
       lawEn: 'OSH Standards Rule §340 (Ground excavation)\nKOSHA GUIDE C-39-2011 §4.2',
       procedureKo: [
@@ -28,8 +32,12 @@ const EXCAVATION_DATA = {
     underground_strike: {
       descKo: '매설물 사전 조사 없이 굴착 중 도시가스관을 파손하였습니다.',
       descEn: 'Gas line was struck during excavation due to missing underground survey.',
+      descVi: 'Đào trúng đường ống khí đốt thành phố do không khảo sát công trình ngầm trước khi thi công.',
+      descAr: 'تم اختراق أنبوب الغاز الحضري أثناء الحفر بسبب عدم إجراء مسح للمرافق المدفونة.',
       causeKo: '매설물 사전 조사 미실시 / 도시가스 도면 미확인',
       causeEn: 'No underground survey / city gas drawings not checked',
+      causeVi: 'Không khảo sát công trình ngầm / không kiểm tra bản vẽ đường khí đốt',
+      causeAr: 'عدم إجراء مسح المرافق المدفونة / عدم مراجعة مخططات شبكة الغاز',
       lawKo: '산업안전보건기준에 관한 규칙 제344조\n도시가스사업법 시행규칙 제51조',
       lawEn: 'OSH Standards Rule §344\nCity Gas Business Act Enforcement Rule §51',
       procedureKo: [
@@ -46,8 +54,12 @@ const EXCAVATION_DATA = {
     excavator_crush: {
       descKo: '굴착기 작업반경 내 출입통제 미실시로 작업자가 협착되었습니다.',
       descEn: 'A worker was struck inside the excavator swing radius (no access control).',
+      descVi: 'Công nhân bị kẹp/va chạm trong bán kính xoay của máy đào do không kiểm soát ra vào khu vực thi công.',
+      descAr: 'تعرّض أحد العمال للسحق داخل نطاق دوران الحفّارة بسبب غياب ضوابط منع الدخول.',
       causeKo: '작업반경 출입통제 미실시 / 신호수 미배치',
       causeEn: 'No exclusion zone / no signal person',
+      causeVi: 'Không thiết lập vùng cấm vào / không bố trí người ra hiệu',
+      causeAr: 'عدم تحديد منطقة عزل / عدم تعيين مُشير',
       lawKo: '산업안전보건기준에 관한 규칙 제200조 (운전위치 이탈의 제한)\n제40조 (신호)',
       lawEn: 'OSH Standards Rule §200 (Operator position) / §40 (Signaling)',
       procedureKo: [
@@ -64,8 +76,12 @@ const EXCAVATION_DATA = {
     edge_fall: {
       descKo: '굴착단부 안전난간 미설치로 작업자가 굴착 구덩이로 추락하였습니다.',
       descEn: 'A worker fell into the pit due to missing edge protection.',
+      descVi: 'Công nhân rơi xuống hố đào do không lắp đặt lan can an toàn ở mép hố.',
+      descAr: 'سقط أحد العمال داخل حفرة الحفر بسبب عدم تركيب حواجز السلامة على حافة الحفر.',
       causeKo: '굴착단부 안전난간 미설치 / 추락방지망 미설치',
       causeEn: 'No edge guardrail / no fall-arrest netting',
+      causeVi: 'Không lắp lan can mép hố đào / không lắp lưới chống rơi',
+      causeAr: 'عدم تركيب حاجز السلامة عند حافة الحفر / عدم تركيب شبكة منع السقوط',
       lawKo: '산업안전보건기준에 관한 규칙 제42조 (추락의 방지)\n제43조 (개구부 등의 방호조치)',
       lawEn: 'OSH Standards Rule §42 (Fall prevention) / §43 (Opening protection)',
       procedureKo: [

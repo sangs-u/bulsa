@@ -20,6 +20,14 @@ const ENV_CHECKS = [
   { test: () => ENV_STATE.planPanelType === 'glass' && !ENV_STATE.panelSecured,
     accidentId: 'glass_shatter', prob: 0.55 },
   { test: () => !ENV_STATE.signalAssigned,    accidentId: 'panel_fall',    prob: 0.40 },
+  // 계획서 매개변수 양방향 검증
+  // 비계 높이 vs 타입 — 시스템비계가 아닌 강관/이동식이 15m 초과면 붕괴 확률↑
+  { test: () => (ENV_STATE.planScaffoldHeight || 0) >= 15 &&
+                ENV_STATE.planScaffoldType !== 'system',
+    accidentId: 'scaffold_collapse', prob: 0.70, planReason: 'tall_nonsystem_scaffold' },
+  // 높이 20m 초과 + 안전대 부착설비 미설치 → 추락 사고
+  { test: () => (ENV_STATE.planScaffoldHeight || 0) >= 20 && !ENV_STATE.lifelineInstalled,
+    accidentId: 'envelope_fall', prob: 0.65, planReason: 'high_scaffold_no_lifeline' },
 ];
 
 function getCurrentEnvPhase() {

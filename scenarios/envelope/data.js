@@ -10,8 +10,12 @@ const ENVELOPE_DATA = {
     scaffold_collapse: {
       descKo: '비계 조립검사 미실시 상태에서 자재 적재 중 비계가 붕괴되었습니다.',
       descEn: 'Scaffold collapsed during material loading without proper inspection.',
+      descVi: 'Giàn giáo bị sập khi đang chất vật liệu do chưa kiểm tra nghiệm thu lắp dựng giàn giáo.',
+      descAr: 'انهارت السقالة أثناء تحميل المواد عليها بسبب عدم إجراء فحص ما بعد التركيب.',
       causeKo: '비계 조립검사 미실시 / 결속·벽이음 부족',
       causeEn: 'No scaffold inspection / inadequate ties and bracing',
+      causeVi: 'Không nghiệm thu giàn giáo / thiếu giằng chéo và neo tường',
+      causeAr: 'عدم فحص السقالة / نقص في الروابط والربط بالجدار',
       lawKo: '산업안전보건기준에 관한 규칙 제56조 (비계의 점검 및 보수)\nKOSHA GUIDE G-110-2020 4.3항',
       lawEn: 'OSH Standards Rule §56 (Scaffold inspection)\nKOSHA GUIDE G-110-2020 §4.3',
       procedureKo: [
@@ -28,8 +32,12 @@ const ENVELOPE_DATA = {
     envelope_fall: {
       descKo: '안전대 부착설비 미설치로 외장 작업 중 작업자가 추락하였습니다.',
       descEn: 'A worker fell during cladding work due to missing lifeline anchor.',
+      descVi: 'Công nhân bị rơi khi thi công ốp ngoài do không lắp đặt điểm neo dây cứu sinh.',
+      descAr: 'سقط عامل أثناء أعمال الكسوة الخارجية نتيجة عدم تركيب نقطة تثبيت حبل النجاة (Lifeline).',
       causeKo: '안전대 부착설비 미설치 / 안전대 미체결',
       causeEn: 'No lifeline anchor / harness not connected',
+      causeVi: 'Không lắp điểm neo dây cứu sinh / không móc dây an toàn',
+      causeAr: 'عدم تركيب نقطة تثبيت لحبل النجاة / عدم تثبيت حزام السلامة',
       lawKo: '산업안전보건기준에 관한 규칙 제42조, 제44조\nKOSHA GUIDE G-110-2020',
       lawEn: 'OSH Standards Rule §42, §44\nKOSHA GUIDE G-110-2020',
       procedureKo: [
@@ -46,8 +54,12 @@ const ENVELOPE_DATA = {
     panel_fall: {
       descKo: '외장 패널 결속 불량으로 인양 중 패널이 낙하하였습니다.',
       descEn: 'Cladding panel fell during lift due to inadequate securing.',
+      descVi: 'Tấm ốp ngoài bị rơi khi đang nâng do buộc cố định không đảm bảo.',
+      descAr: 'سقطت لوحة الكسوة الخارجية أثناء الرفع بسبب سوء تثبيتها.',
       causeKo: '외장재 결속선/클램프 미체결',
       causeEn: 'Inadequate ties or clamps on cladding panel',
+      causeVi: 'Không buộc dây cố định / kẹp tấm ốp không đầy đủ',
+      causeAr: 'عدم تثبيت لوحة الكسوة بالحبال أو المشابك بشكل كافٍ',
       lawKo: 'KOSHA GUIDE G-133-2020 (양중) + C-101-2017 (외장)',
       lawEn: 'KOSHA GUIDE G-133-2020 (Lifting) + C-101-2017 (Cladding)',
       procedureKo: [
@@ -64,8 +76,12 @@ const ENVELOPE_DATA = {
     glass_shatter: {
       descKo: '유리 패널 운반 중 부적절한 취급으로 유리가 파손되며 작업자가 다쳤습니다.',
       descEn: 'Glass panel shattered during handling, injuring a worker.',
+      descVi: 'Tấm kính bị vỡ trong quá trình vận chuyển do thao tác không đúng, gây thương tích cho công nhân.',
+      descAr: 'تحطّمت لوحة زجاجية أثناء النقل بسبب سوء المناولة وأصيب أحد العمال.',
       causeKo: '유리 운반 보호구 미착용 / 운반 도구 부적절',
       causeEn: 'No PPE for glass handling / improper tools',
+      causeVi: 'Không đeo bảo hộ chuyên dụng cho kính / dụng cụ vận chuyển không phù hợp',
+      causeAr: 'عدم ارتداء معدات الوقاية الخاصة بمناولة الزجاج / استخدام أدوات نقل غير ملائمة',
       lawKo: '산업안전보건기준에 관한 규칙 제32조 (보호구)\nKOSHA GUIDE C-101-2017',
       lawEn: 'OSH Standards Rule §32 (PPE)\nKOSHA GUIDE C-101-2017',
       procedureKo: [

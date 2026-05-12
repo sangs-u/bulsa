@@ -285,7 +285,7 @@ function _spawnConstructionDust(stageIdx) {
   requestAnimationFrame(step);
 }
 
-function _shakeCamera(intensity, duration) {
+function _shakeCameraBuild(intensity, duration) {
   if (!GAME.camera) return;
   const cam = GAME.camera;
   if (cam._shakeT) return; // 이미 진행 중
@@ -313,7 +313,7 @@ function _fadeInStage(stageIdx, onDone) {
   const DROP = 4.5;
   _captureFinalY(stageIdx, DROP);
   _spawnConstructionDust(stageIdx);
-  _shakeCamera(0.06, 0.5);
+  _shakeCameraBuild(0.06, 0.5);
   // 사운드 큐 (있을 때만)
   try {
     if (window.SFX_LIB && SFX_LIB.drop) SFX_LIB.drop();
@@ -347,7 +347,7 @@ function _fadeInStage(stageIdx, onDone) {
           if (obj.isMesh && obj._finalY !== undefined) obj.position.y = obj._finalY;
         });
       }
-      _shakeCamera(0.12, 0.25); // 착지 임팩트
+      _shakeCameraBuild(0.12, 0.25); // 착지 임팩트
       if (onDone) onDone();
     }
   }

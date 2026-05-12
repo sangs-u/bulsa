@@ -11,6 +11,52 @@ const INTERACTION = {
   _eDown:        false,
 };
 
+// ── Action notif 4언어 사전 ──────────────────────────────────
+const _NOTIF = {
+  plan_already:        { ko: '작업계획서 이미 작성됨',        en: 'Work plan already signed',           vi: 'Kế hoạch đã ký',              ar: 'الخطة موقعة بالفعل' },
+  plan_first:          { ko: '계획서 먼저',                    en: 'Sign work plan first',                vi: 'Ký kế hoạch trước',           ar: 'وقّع الخطة أولاً' },
+  survey_first:        { ko: '매설물 조사 먼저',              en: 'Survey underground utilities first',  vi: 'Khảo sát ngầm trước',         ar: 'مسح المرافق أولاً' },
+  shoring_first:       { ko: '흙막이 먼저',                    en: 'Install shoring first',               vi: 'Lắp chống vách trước',        ar: 'ركّب الدعم أولاً' },
+  railing_first:       { ko: '안전난간 먼저',                  en: 'Install guardrail first',             vi: 'Lắp lan can trước',           ar: 'ركّب الحاجز أولاً' },
+  signal_first:        { ko: '신호수 배치 먼저',              en: 'Assign signal person first',          vi: 'Bố trí người ra hiệu trước', ar: 'عيّن عامل الإشارة أولاً' },
+  rebar_first:         { ko: '철근 먼저',                      en: 'Inspect rebar caps first',            vi: 'Kiểm tra cốt thép trước',     ar: 'افحص الحديد أولاً' },
+  formwork_first:      { ko: '거푸집 먼저',                    en: 'Inspect formwork first',              vi: 'Kiểm tra ván khuôn trước',    ar: 'افحص القوالب أولاً' },
+  pump_first:          { ko: '펌프카 먼저',                    en: 'Inspect pump truck first',            vi: 'Kiểm tra xe bơm trước',       ar: 'افحص المضخة أولاً' },
+  pour_order_first:    { ko: '타설 순서 합의 먼저',            en: 'Agree pour order first',              vi: 'Thống nhất trình tự đổ',      ar: 'اتفق على ترتيب الصب' },
+  scaffold_first:      { ko: '비계 점검 먼저',                  en: 'Inspect scaffold first',              vi: 'Kiểm tra giàn giáo trước',    ar: 'افحص السقالة أولاً' },
+  lifeline_first:      { ko: '안전대 먼저',                    en: 'Install lifeline first',              vi: 'Lắp dây neo trước',           ar: 'ركّب المرساة أولاً' },
+  panel_secure_first:  { ko: '결속 먼저',                      en: 'Secure panels first',                 vi: 'Cố định tấm trước',           ar: 'ثبّت الألواح أولاً' },
+  loto_first:          { ko: 'LOTO 먼저',                      en: 'Apply LOTO first',                    vi: 'Khóa LOTO trước',             ar: 'طبّق LOTO أولاً' },
+  gas_first:           { ko: '가스 점검 먼저',                  en: 'Check gas leak first',                vi: 'Kiểm tra rò gas trước',       ar: 'افحص الغاز أولاً' },
+  vent_first:          { ko: '환기 먼저',                      en: 'Activate ventilation first',          vi: 'Bật thông gió trước',         ar: 'فعّل التهوية أولاً' },
+  ext_first:           { ko: '소화기 점검 먼저',                en: 'Verify extinguishers first',          vi: 'Kiểm tra bình chữa cháy trước', ar: 'افحص الطفايات أولاً' },
+  done_shoring:        { ko: '✅ 흙막이 가시설 점검 완료',      en: '✅ Shoring inspection complete',     vi: '✅ Đã kiểm tra chống vách',  ar: '✅ تم فحص الدعم' },
+  done_railing:        { ko: '✅ 안전난간 설치 완료',          en: '✅ Guardrails installed',             vi: '✅ Lan can đã lắp',           ar: '✅ تم تركيب الحاجز' },
+  done_signal_excav:   { ko: '✅ 신호수 배치 완료 — 굴착기 운전석으로', en: '✅ Signal posted — board excavator', vi: '✅ Đã bố trí — lên cabin xúc', ar: '✅ تم — اصعد كابينة الحفّار' },
+  done_rebar:          { ko: '✅ 철근 보호캡 점검 완료',         en: '✅ Rebar caps verified',              vi: '✅ Đã kiểm tra nắp thép',     ar: '✅ تم فحص أغطية الحديد' },
+  done_formwork:       { ko: '✅ 거푸집·동바리 점검 완료',       en: '✅ Formwork/shoring verified',        vi: '✅ Đã kiểm tra ván/chống',    ar: '✅ تم فحص القوالب' },
+  done_pump:           { ko: '✅ 펌프카 점검 완료',             en: '✅ Pump truck verified',              vi: '✅ Đã kiểm tra xe bơm',       ar: '✅ تم فحص المضخة' },
+  done_pour_order:     { ko: '✅ 타설 순서 합의 완료 — 제어반으로', en: '✅ Pour order agreed — go to console', vi: '✅ Thống nhất — đến bảng điều khiển', ar: '✅ متفق — اذهب للوحة' },
+  done_scaffold:       { ko: '✅ 비계 조립검사 완료',           en: '✅ Scaffold inspection complete',     vi: '✅ Đã kiểm tra giàn giáo',    ar: '✅ تم فحص السقالة' },
+  done_lifeline:       { ko: '✅ 안전대 부착설비 설치 완료',     en: '✅ Lifeline anchors installed',       vi: '✅ Đã lắp dây neo',           ar: '✅ تم تركيب المرساة' },
+  done_panel:          { ko: '✅ 외장재 결속 점검 완료',         en: '✅ Panel fastening verified',         vi: '✅ Đã cố định tấm',           ar: '✅ تم تثبيت الألواح' },
+  done_signal_env:     { ko: '✅ 신호수 배치 완료 — 인양 트리거로', en: '✅ Signal posted — go to lift trigger', vi: '✅ Đã bố trí — đến điểm cẩu', ar: '✅ تم — اذهب للرفع' },
+  done_loto:           { ko: '✅ LOTO 잠금·표지 부착 완료',      en: '✅ LOTO applied',                     vi: '✅ Đã khóa LOTO',             ar: '✅ تم تطبيق LOTO' },
+  done_gas:            { ko: '✅ 가스누설 점검 완료',            en: '✅ Gas leak check complete',          vi: '✅ Đã kiểm tra rò gas',       ar: '✅ تم فحص الغاز' },
+  done_vent:           { ko: '✅ 환기·국소배기 가동 완료',        en: '✅ Ventilation active',               vi: '✅ Thông gió bật',            ar: '✅ التهوية فعّالة' },
+  done_ext:            { ko: '✅ 소화기 배치 점검 완료 — 준공검사로', en: '✅ Extinguishers verified — final inspection', vi: '✅ Đã kiểm tra bình — kiểm tra cuối', ar: '✅ تم — التفتيش النهائي' },
+  excav_plan_done:     { ko: '✅ 작업계획서 서명 완료 — 탐지기 들고 부지 수색 시작', en: '✅ Plan signed — start utility survey', vi: '✅ Đã ký — bắt đầu khảo sát', ar: '✅ موقّع — ابدأ المسح' },
+  found_plan_done:     { ko: '✅ 기초 작업계획서 서명 완료 — 철근 점검 시작', en: '✅ Foundation plan signed — start rebar inspection', vi: '✅ Đã ký móng — kiểm tra thép', ar: '✅ موقّع — افحص الحديد' },
+  env_plan_done:       { ko: '✅ 외장 작업계획서 서명 완료 — 비계 점검 시작', en: '✅ Envelope plan signed — start scaffold inspection', vi: '✅ Đã ký vỏ ngoài — kiểm tra giàn giáo', ar: '✅ موقّع — افحص السقالة' },
+  mep_plan_done:       { ko: '✅ 설비·마감 작업계획서 서명 완료 — LOTO 단계 시작', en: '✅ MEP plan signed — start LOTO', vi: '✅ Đã ký M&E — bắt đầu LOTO', ar: '✅ موقّع — ابدأ LOTO' },
+};
+
+function _notif(key) {
+  const e = _NOTIF[key];
+  if (!e) return key;
+  return e[currentLang] || e.ko;
+}
+
 // ── Init ───────────────────────────────────────────────────────
 function initInteraction() {
   INTERACTION.raycaster = new THREE.Raycaster();
@@ -276,7 +322,7 @@ function performAction(actionId) {
     // ── Excavation actions ──────────────────────────────────
     case 'write_excav_plan':
       if (EXCAV_STATE.planWritten) {
-        showActionNotif('작업계획서 이미 작성됨', 2000);
+        showActionNotif(_notif('plan_already'), 2000);
         break;
       }
       openExcavPlanPanel();
@@ -287,170 +333,170 @@ function performAction(actionId) {
 
     case 'install_shoring':
       if (EXCAV_STATE.shoringInstalled) return;
-      if (!EXCAV_STATE.surveyDone) { showActionNotif('매설물 조사 먼저', 2000); break; }
+      if (!EXCAV_STATE.surveyDone) { showActionNotif(_notif('survey_first'), 2000); break; }
       EXCAV_STATE.shoringInstalled = true;
       _dimActionMesh('install_shoring');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 흙막이 가시설 점검 완료', 2500);
+      showActionNotif(_notif('done_shoring'), 2500);
       break;
 
     case 'install_railing':
       if (EXCAV_STATE.railingInstalled) return;
-      if (!EXCAV_STATE.shoringInstalled) { showActionNotif('흙막이 먼저', 2000); break; }
+      if (!EXCAV_STATE.shoringInstalled) { showActionNotif(_notif('shoring_first'), 2000); break; }
       EXCAV_STATE.railingInstalled = true;
       _dimActionMesh('install_railing');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 안전난간 설치 완료', 2500);
+      showActionNotif(_notif('done_railing'), 2500);
       break;
 
     case 'assign_signal_excav':
       if (EXCAV_STATE.signalAssigned) return;
-      if (!EXCAV_STATE.railingInstalled) { showActionNotif('안전난간 먼저', 2000); break; }
+      if (!EXCAV_STATE.railingInstalled) { showActionNotif(_notif('railing_first'), 2000); break; }
       EXCAV_STATE.signalAssigned = true;
       _dimActionMesh('assign_signal_excav');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 신호수 배치 완료 — 굴착기 운전석으로', 3000);
+      showActionNotif(_notif('done_signal_excav'), 3000);
       break;
 
     // ── Foundation actions ──────────────────────────────────
     case 'write_found_plan':
-      if (FOUND_STATE.planWritten) { showActionNotif('작업계획서 이미 작성됨', 2000); break; }
+      if (FOUND_STATE.planWritten) { showActionNotif(_notif('plan_already'), 2000); break; }
       openFoundPlanPanel();
       break;
 
     case 'check_rebar_caps':
       if (FOUND_STATE.rebarCapsOk) return;
-      if (!FOUND_STATE.planWritten) { showActionNotif('계획서 먼저', 2000); break; }
+      if (!FOUND_STATE.planWritten) { showActionNotif(_notif('plan_first'), 2000); break; }
       FOUND_STATE.rebarCapsOk = true;
       _dimActionMesh('check_rebar_caps');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 철근 보호캡 점검 완료', 2500);
+      showActionNotif(_notif('done_rebar'), 2500);
       break;
 
     case 'inspect_formwork':
       if (FOUND_STATE.formworkOk) return;
-      if (!FOUND_STATE.rebarCapsOk) { showActionNotif('철근 먼저', 2000); break; }
+      if (!FOUND_STATE.rebarCapsOk) { showActionNotif(_notif('rebar_first'), 2000); break; }
       FOUND_STATE.formworkOk = true;
       _dimActionMesh('inspect_formwork');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 거푸집·동바리 점검 완료', 2500);
+      showActionNotif(_notif('done_formwork'), 2500);
       break;
 
     case 'inspect_pump':
       if (FOUND_STATE.pumpOk) return;
-      if (!FOUND_STATE.formworkOk) { showActionNotif('거푸집 먼저', 2000); break; }
+      if (!FOUND_STATE.formworkOk) { showActionNotif(_notif('formwork_first'), 2000); break; }
       FOUND_STATE.pumpOk = true;
       _dimActionMesh('inspect_pump');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 펌프카 점검 완료', 2500);
+      showActionNotif(_notif('done_pump'), 2500);
       break;
 
     case 'agree_pour_order':
       if (FOUND_STATE.pourOrderAgreed) return;
-      if (!FOUND_STATE.pumpOk) { showActionNotif('펌프카 먼저', 2000); break; }
+      if (!FOUND_STATE.pumpOk) { showActionNotif(_notif('pump_first'), 2000); break; }
       FOUND_STATE.pourOrderAgreed = true;
       _dimActionMesh('agree_pour_order');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 타설 순서 합의 완료 — 제어반으로', 3000);
+      showActionNotif(_notif('done_pour_order'), 3000);
       break;
 
     // ── Envelope (외장) actions ─────────────────────────────
     case 'write_env_plan':
-      if (ENV_STATE.planWritten) { showActionNotif('작업계획서 이미 작성됨', 2000); break; }
+      if (ENV_STATE.planWritten) { showActionNotif(_notif('plan_already'), 2000); break; }
       openEnvPlanPanel();
       break;
 
     case 'inspect_scaffold':
       if (ENV_STATE.scaffoldInspected) return;
-      if (!ENV_STATE.planWritten) { showActionNotif('계획서 먼저', 2000); break; }
+      if (!ENV_STATE.planWritten) { showActionNotif(_notif('plan_first'), 2000); break; }
       ENV_STATE.scaffoldInspected = true;
       _dimActionMesh('inspect_scaffold');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 비계 조립검사 완료', 2500);
+      showActionNotif(_notif('done_scaffold'), 2500);
       break;
 
     case 'install_lifeline':
       if (ENV_STATE.lifelineInstalled) return;
-      if (!ENV_STATE.scaffoldInspected) { showActionNotif('비계 점검 먼저', 2000); break; }
+      if (!ENV_STATE.scaffoldInspected) { showActionNotif(_notif('scaffold_first'), 2000); break; }
       ENV_STATE.lifelineInstalled = true;
       _dimActionMesh('install_lifeline');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 안전대 부착설비 설치 완료', 2500);
+      showActionNotif(_notif('done_lifeline'), 2500);
       break;
 
     case 'check_panel_secure':
       if (ENV_STATE.panelSecured) return;
-      if (!ENV_STATE.lifelineInstalled) { showActionNotif('안전대 먼저', 2000); break; }
+      if (!ENV_STATE.lifelineInstalled) { showActionNotif(_notif('lifeline_first'), 2000); break; }
       ENV_STATE.panelSecured = true;
       _dimActionMesh('check_panel_secure');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 외장재 결속 점검 완료', 2500);
+      showActionNotif(_notif('done_panel'), 2500);
       break;
 
     case 'assign_signal_env':
       if (ENV_STATE.signalAssigned) return;
-      if (!ENV_STATE.panelSecured) { showActionNotif('결속 먼저', 2000); break; }
+      if (!ENV_STATE.panelSecured) { showActionNotif(_notif('panel_secure_first'), 2000); break; }
       ENV_STATE.signalAssigned = true;
       _dimActionMesh('assign_signal_env');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 신호수 배치 완료 — 인양 트리거로', 3000);
+      showActionNotif(_notif('done_signal_env'), 3000);
       break;
 
     // ── MEP & Finishing (설비·마감) actions ────────────────
     case 'write_mep_plan':
-      if (MEP_STATE.planWritten) { showActionNotif('작업계획서 이미 작성됨', 2000); break; }
+      if (MEP_STATE.planWritten) { showActionNotif(_notif('plan_already'), 2000); break; }
       openMepPlanPanel();
       break;
 
     case 'apply_loto':
       if (MEP_STATE.lotoApplied) return;
-      if (!MEP_STATE.planWritten) { showActionNotif('계획서 먼저', 2000); break; }
+      if (!MEP_STATE.planWritten) { showActionNotif(_notif('plan_first'), 2000); break; }
       MEP_STATE.lotoApplied = true;
       _dimActionMesh('apply_loto');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ LOTO 잠금·표지 부착 완료', 2500);
+      showActionNotif(_notif('done_loto'), 2500);
       break;
 
     case 'check_gas_leak':
       if (MEP_STATE.gasChecked) return;
-      if (!MEP_STATE.lotoApplied) { showActionNotif('LOTO 먼저', 2000); break; }
+      if (!MEP_STATE.lotoApplied) { showActionNotif(_notif('loto_first'), 2000); break; }
       MEP_STATE.gasChecked = true;
       _dimActionMesh('check_gas_leak');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 가스누설 점검 완료', 2500);
+      showActionNotif(_notif('done_gas'), 2500);
       break;
 
     case 'activate_ventilation':
       if (MEP_STATE.ventActivated) return;
-      if (!MEP_STATE.gasChecked) { showActionNotif('가스 점검 먼저', 2000); break; }
+      if (!MEP_STATE.gasChecked) { showActionNotif(_notif('gas_first'), 2000); break; }
       MEP_STATE.ventActivated = true;
       _dimActionMesh('activate_ventilation');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 환기·국소배기 가동 완료', 2500);
+      showActionNotif(_notif('done_vent'), 2500);
       break;
 
     case 'verify_extinguishers':
       if (MEP_STATE.extVerified) return;
-      if (!MEP_STATE.ventActivated) { showActionNotif('환기 먼저', 2000); break; }
+      if (!MEP_STATE.ventActivated) { showActionNotif(_notif('vent_first'), 2000); break; }
       MEP_STATE.extVerified = true;
       _dimActionMesh('verify_extinguishers');
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('✅ 소화기 배치 점검 완료 — 준공검사로', 3000);
+      showActionNotif(_notif('done_ext'), 3000);
       break;
   }
 }
@@ -1385,7 +1431,7 @@ function openExcavPlanPanel() {
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 작업계획서 서명 완료 — 탐지기 들고 부지 수색 시작', 3500);
+    showActionNotif(_notif('excav_plan_done'), 3500);
     _closePanel('excav-plan-panel');
 
     // Phase 2 자동 진입 → 탐지기 활성화
@@ -1395,12 +1441,34 @@ function openExcavPlanPanel() {
 }
 
 // ── 토공사 — 굴착기 운전석 ────────────────────────────────
+function _getExcavRefusal() {
+  if (typeof EXCAV_STATE === 'undefined') return [];
+  const missing = [];
+  if (!EXCAV_STATE.signalAssigned)    missing.push({ custom: true, textKo: '신호수 미배치', textEn: 'No signal person', textVi: 'Chưa bố trí người ra hiệu', textAr: 'لا يوجد عامل إشارة' });
+  if (!EXCAV_STATE.surveyDone)        missing.push({ custom: true, textKo: '매설물 사전조사 미실시', textEn: 'Underground utilities not surveyed', textVi: 'Chưa khảo sát ngầm', textAr: 'لم يتم مسح المرافق' });
+  if (!EXCAV_STATE.shoringInstalled && (EXCAV_STATE.planDepth || 0) >= 1.5) {
+    missing.push({ custom: true, textKo: `깊이 ${EXCAV_STATE.planDepth}m + 흙막이 미설치`, textEn: `Depth ${EXCAV_STATE.planDepth}m without shoring`, textVi: `Sâu ${EXCAV_STATE.planDepth}m không chống vách`, textAr: `عمق ${EXCAV_STATE.planDepth}م بلا دعم` });
+  }
+  if (!EXCAV_STATE.railingInstalled && (EXCAV_STATE.planDepth || 0) >= 2.0) {
+    missing.push({ custom: true, textKo: `깊이 ${EXCAV_STATE.planDepth}m + 안전난간 미설치`, textEn: `Depth ${EXCAV_STATE.planDepth}m without edge guardrail`, textVi: `Sâu ${EXCAV_STATE.planDepth}m không lan can`, textAr: `عمق ${EXCAV_STATE.planDepth}م بلا حاجز` });
+  }
+  // 계획 구배 위반
+  if (EXCAV_STATE.planSlope !== null && EXCAV_STATE.planSlope < 0.5 && (EXCAV_STATE.planDepth || 0) >= 2.0) {
+    missing.push({ custom: true, textKo: `계획 구배 1:${EXCAV_STATE.planSlope} — 과경사 (KOSHA C-39)`,
+      textEn: `Plan slope 1:${EXCAV_STATE.planSlope} too steep (KOSHA C-39)`,
+      textVi: `Độ dốc 1:${EXCAV_STATE.planSlope} quá đứng`,
+      textAr: `الميل 1:${EXCAV_STATE.planSlope} حاد جداً` });
+  }
+  return missing;
+}
+
 function boardExcavator() {
   if (GAME.state.craneBoarded || GAME.state.liftStarted) return;
   if (typeof EXCAV_STATE === 'undefined') return;
 
-  if (!EXCAV_STATE.signalAssigned) {
-    showActionNotif('신호수 배치 먼저', 2500);
+  const missing = _getExcavRefusal();
+  if (missing.length > 0) {
+    showOperatorRefusal(missing);
     return;
   }
   GAME.state.craneBoarded = true;
@@ -1476,7 +1544,7 @@ function openFoundPlanPanel() {
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 기초 작업계획서 서명 완료 — 철근 점검 시작', 3500);
+    showActionNotif(_notif('found_plan_done'), 3500);
     _closePanel('found-plan-panel');
     if (typeof startRebarInspection === 'function') startRebarInspection();
   };
@@ -1512,7 +1580,7 @@ function openEnvPlanPanel() {
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 외장 작업계획서 서명 완료 — 비계 점검 시작', 3500);
+    showActionNotif(_notif('env_plan_done'), 3500);
     _closePanel('env-plan-panel');
     if (typeof startScaffoldInspection === 'function') startScaffoldInspection();
   };
@@ -1520,11 +1588,34 @@ function openEnvPlanPanel() {
 }
 
 // ── 외장공사 — 인양 트리거 ─────────────────────────────────
+function _getEnvelopeRefusal() {
+  if (typeof ENV_STATE === 'undefined') return [];
+  const missing = [];
+  if (!ENV_STATE.signalAssigned)    missing.push({ custom: true, textKo: '신호수 미배치', textEn: 'No signal person', textVi: 'Chưa bố trí người ra hiệu', textAr: 'لا يوجد عامل إشارة' });
+  if (!ENV_STATE.scaffoldInspected) missing.push({ custom: true, textKo: '비계 조립검사 미실시', textEn: 'Scaffold not inspected', textVi: 'Chưa kiểm tra giàn giáo', textAr: 'لم يتم فحص السقالة' });
+  if (!ENV_STATE.lifelineInstalled) missing.push({ custom: true, textKo: '안전대 부착설비 미설치', textEn: 'No lifeline anchor', textVi: 'Chưa lắp dây neo', textAr: 'لا يوجد مرساة' });
+  // 계획서 위반
+  if ((ENV_STATE.planScaffoldHeight || 0) >= 15 && ENV_STATE.planScaffoldType !== 'system') {
+    missing.push({ custom: true, textKo: `계획 비계 ${ENV_STATE.planScaffoldHeight}m + 비시스템 비계 — 붕괴 위험`,
+      textEn: `Plan scaffold ${ENV_STATE.planScaffoldHeight}m non-system — collapse risk`,
+      textVi: `Giàn giáo ${ENV_STATE.planScaffoldHeight}m không phải hệ — rủi ro sập`,
+      textAr: `سقالة ${ENV_STATE.planScaffoldHeight}م غير نظامية — خطر الانهيار` });
+  }
+  if ((ENV_STATE.planGuardrailLevels || 0) < 2) {
+    missing.push({ custom: true, textKo: '계획 안전난간 단수 부족 (2단 이상)',
+      textEn: 'Plan guardrail levels insufficient (≥2 required)',
+      textVi: 'Số tầng lan can không đủ (≥2)',
+      textAr: 'مستويات الحاجز غير كافية (≥2)' });
+  }
+  return missing;
+}
+
 function openEnvelopeConsole() {
   if (GAME.state.liftStarted || GAME.state.gameOver) return;
   if (typeof ENV_STATE === 'undefined') return;
-  if (!ENV_STATE.signalAssigned) {
-    showActionNotif('신호수 배치 먼저', 2500);
+  const missing = _getEnvelopeRefusal();
+  if (missing.length > 0) {
+    showOperatorRefusal(missing);
     return;
   }
   evaluateEnvelope();
@@ -1559,7 +1650,7 @@ function openMepPlanPanel() {
 
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('✅ 설비·마감 작업계획서 서명 완료 — LOTO 단계 시작', 3500);
+    showActionNotif(_notif('mep_plan_done'), 3500);
     _closePanel('mep-plan-panel');
     if (typeof startLoto === 'function') startLoto();
   };
@@ -1567,22 +1658,70 @@ function openMepPlanPanel() {
 }
 
 // ── 설비·마감 — 준공검사 ──────────────────────────────────
+function _getMepRefusal() {
+  if (typeof MEP_STATE === 'undefined') return [];
+  const missing = [];
+  if (!MEP_STATE.extVerified)   missing.push({ custom: true, textKo: '소화기 점검 미실시',     textEn: 'Extinguisher not verified',  textVi: 'Chưa kiểm tra bình chữa cháy', textAr: 'لم يتم فحص الطفاية' });
+  if (!MEP_STATE.lotoApplied)   missing.push({ custom: true, textKo: 'LOTO 잠금·표지 미부착', textEn: 'LOTO not applied',           textVi: 'Chưa khóa LOTO',              textAr: 'لم يتم تطبيق LOTO' });
+  if (!MEP_STATE.gasChecked)    missing.push({ custom: true, textKo: '가스누설 점검 미실시',   textEn: 'Gas leak not checked',       textVi: 'Chưa kiểm tra rò gas',         textAr: 'لم يتم فحص الغاز' });
+  if (!MEP_STATE.ventActivated) missing.push({ custom: true, textKo: '환기·국소배기 미가동',   textEn: 'Ventilation not active',     textVi: 'Chưa bật thông gió',           textAr: 'التهوية غير مفعّلة' });
+  // 계획서 위반
+  if (MEP_STATE.planBreaker !== null && MEP_STATE.planBreaker < 30) {
+    missing.push({ custom: true, textKo: `계획 차단기 ${MEP_STATE.planBreaker}A — 정격 부족 (30A 이상)`,
+      textEn: `Plan breaker ${MEP_STATE.planBreaker}A undersized (≥30A)`,
+      textVi: `CB ${MEP_STATE.planBreaker}A không đủ (≥30A)`,
+      textAr: `قاطع ${MEP_STATE.planBreaker}A غير كافٍ (≥30A)` });
+  }
+  if (MEP_STATE.planPipeDiameter !== null && MEP_STATE.planPipeDiameter < 15) {
+    missing.push({ custom: true, textKo: `계획 배관 직경 ${MEP_STATE.planPipeDiameter}mm — 표준 미달`,
+      textEn: `Plan pipe Ø${MEP_STATE.planPipeDiameter}mm below standard`,
+      textVi: `Ống Ø${MEP_STATE.planPipeDiameter}mm dưới chuẩn`,
+      textAr: `أنبوب Ø${MEP_STATE.planPipeDiameter}مم دون المعيار` });
+  }
+  return missing;
+}
+
 function openFinalInspection() {
   if (GAME.state.liftStarted || GAME.state.gameOver) return;
   if (typeof MEP_STATE === 'undefined') return;
-  if (!MEP_STATE.extVerified) {
-    showActionNotif('소화기 점검 먼저', 2500);
+  const missing = _getMepRefusal();
+  if (missing.length > 0) {
+    showOperatorRefusal(missing);
     return;
   }
   evaluateMepFinish();
 }
 
 // ── 기초공사 — 타설 제어반 ────────────────────────────────
+function _getPumpRefusal() {
+  if (typeof FOUND_STATE === 'undefined') return [];
+  const missing = [];
+  if (!FOUND_STATE.pourOrderAgreed) missing.push({ custom: true, textKo: '타설 순서 합의 미완료', textEn: 'Pour order not agreed', textVi: 'Chưa thống nhất trình tự đổ', textAr: 'لم يتم الاتفاق على ترتيب الصب' });
+  if (!FOUND_STATE.pumpOk)          missing.push({ custom: true, textKo: '펌프카 점검 미실시',    textEn: 'Pump not inspected',     textVi: 'Chưa kiểm tra xe bơm',         textAr: 'لم يتم فحص المضخة' });
+  if (!FOUND_STATE.formworkOk)      missing.push({ custom: true, textKo: '거푸집·동바리 점검 미완료', textEn: 'Formwork not inspected', textVi: 'Chưa kiểm tra ván khuôn',  textAr: 'لم يتم فحص القوالب' });
+  if (!FOUND_STATE.rebarCapsOk)     missing.push({ custom: true, textKo: '철근 보호캡 미설치',     textEn: 'Rebar caps missing',     textVi: 'Thiếu nắp bảo vệ thép',      textAr: 'أغطية الحديد مفقودة' });
+  // 계획서 위반
+  if ((FOUND_STATE.planRebarSpacing || 0) > 0.30) {
+    missing.push({ custom: true, textKo: `계획 철근간격 ${FOUND_STATE.planRebarSpacing}m — 과대 (≤0.3m)`,
+      textEn: `Plan rebar spacing ${FOUND_STATE.planRebarSpacing}m too wide`,
+      textVi: `Khoảng cách thép ${FOUND_STATE.planRebarSpacing}m quá rộng`,
+      textAr: `تباعد الحديد ${FOUND_STATE.planRebarSpacing}م مفرط` });
+  }
+  if (FOUND_STATE.planConcStrength !== null && FOUND_STATE.planConcStrength < 24) {
+    missing.push({ custom: true, textKo: `계획 콘크리트 강도 ${FOUND_STATE.planConcStrength}MPa — 부족 (≥24)`,
+      textEn: `Plan concrete strength ${FOUND_STATE.planConcStrength}MPa insufficient`,
+      textVi: `Cường độ BT ${FOUND_STATE.planConcStrength}MPa không đủ`,
+      textAr: `قوة الخرسانة ${FOUND_STATE.planConcStrength}MPa غير كافية` });
+  }
+  return missing;
+}
+
 function openPumpConsole() {
   if (GAME.state.liftStarted || GAME.state.gameOver) return;
   if (typeof FOUND_STATE === 'undefined') return;
-  if (!FOUND_STATE.pourOrderAgreed) {
-    showActionNotif('타설 순서 합의 먼저', 2500);
+  const missing = _getPumpRefusal();
+  if (missing.length > 0) {
+    showOperatorRefusal(missing);
     return;
   }
   evaluateFoundation();

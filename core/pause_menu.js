@@ -133,7 +133,12 @@
     });
     panel.querySelector('.pause-tutorial-reset').addEventListener('click', () => {
       try { localStorage.removeItem('bulsa_tutorial_seen'); } catch (e) {}
-      if (typeof showActionNotif === 'function') showActionNotif('튜토리얼이 다음 게임에서 다시 표시됩니다', 2400);
+      if (typeof showActionNotif === 'function') showActionNotif({
+        ko: '튜토리얼이 다음 게임에서 다시 표시됩니다',
+        en: 'Tutorial will show again next game',
+        vi: 'Hướng dẫn sẽ hiện lại lần sau',
+        ar: 'سيظهر البرنامج التعليمي مرة أخرى',
+      }[currentLang] || '튜토리얼이 다음 게임에서 다시 표시됩니다', 2400);
     });
 
     // 설정 핸들러

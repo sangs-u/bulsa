@@ -36,7 +36,7 @@ function triggerAccident(accidentId) {
   }
 
   _doFlash();
-  _shakeCamera(0.7);
+  _shakeCameraAccident(0.7);
   setTimeout(() => showAccidentPanel(accidentId), 2400);
 }
 
@@ -131,7 +131,10 @@ function showAccidentPanel(accidentId) {
     data = GLOBAL_ACCIDENTS[accidentId];
   }
   if (!data) return;
-  const isKo = currentLang === 'ko';
+
+  // 언어별 키 (vi/ar 우선, 없으면 en 폴백, 마지막으로 ko)
+  const langSuffix = { ko: 'Ko', en: 'En', vi: 'Vi', ar: 'Ar' }[currentLang] || 'Ko';
+  const pick = (base) => data[base + langSuffix] || data[base + 'En'] || data[base + 'Ko'] || '';
 
   document.getElementById('acc-title').textContent     = t('accidentTitle');
   document.getElementById('acc-lbl-desc').textContent  = t('accidentSituation');
@@ -141,13 +144,14 @@ function showAccidentPanel(accidentId) {
   document.getElementById('acc-btn-retry').textContent = t('retry');
   document.getElementById('acc-btn-hub').textContent   = t('backToHub');
 
-  document.getElementById('acc-desc').textContent  = isKo ? data.descKo  : data.descEn;
-  document.getElementById('acc-cause').textContent = isKo ? data.causeKo : data.causeEn;
-  document.getElementById('acc-law').textContent   = isKo ? data.lawKo   : data.lawEn;
+  document.getElementById('acc-desc').textContent  = pick('desc');
+  document.getElementById('acc-cause').textContent = pick('cause');
+  document.getElementById('acc-law').textContent   = pick('law');
 
   const ol = document.getElementById('acc-procedure');
   ol.innerHTML = '';
-  (isKo ? data.procedureKo : data.procedureEn).forEach(step => {
+  const proc = data['procedure' + langSuffix] || data.procedureEn || data.procedureKo || [];
+  proc.forEach(step => {
     const li = document.createElement('li');
     li.textContent = step;
     ol.appendChild(li);
@@ -396,8 +400,8 @@ function _spawnDebris(origin) {
   })();
 }
 
-// ── Camera shake ──────────────────────────────────────────────
-function _shakeCamera(duration) {
+// ── Camera shake (사고 전용 — duration 만 받음) ─────────────
+function _shakeCameraAccident(duration) {
   const cam = GAME.camera;
   if (!cam) return;
   const origin = cam.position.clone();

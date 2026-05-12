@@ -21,6 +21,13 @@ const MEP_CHECKS = [
     accidentId: 'toxic_exposure', prob: 0.70 },
   { test: () => !MEP_STATE.extVerified,
     accidentId: 'fire_outbreak',  prob: 0.55 },
+  // 계획서 매개변수 양방향 검증
+  // 차단기 용량 < 부하 추정값 → 감전·과부하 화재
+  { test: () => MEP_STATE.planBreaker !== null && MEP_STATE.planBreaker < 30,
+    accidentId: 'electric_shock', prob: 0.55, planReason: 'breaker_undersized' },
+  // 배관 직경 < 표준 (15mm) → 가스 누설 확률↑
+  { test: () => MEP_STATE.planPipeDiameter !== null && MEP_STATE.planPipeDiameter < 15,
+    accidentId: 'gas_explosion',  prob: 0.50, planReason: 'pipe_undersized' },
 ];
 
 function getCurrentMepPhase() {
