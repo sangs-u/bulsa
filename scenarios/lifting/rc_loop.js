@@ -35,6 +35,10 @@ function _enqueueContinuousTasks() {
     const t = addTask({ type: 'signal', floor: rl.floor, loc: { x: 7, z: 7 } });
     if (t) rl._taskIds.signal = t.id;
   }
+  if (!rl._taskIds.inspect && (typeof hasActiveTask !== 'function' || !hasActiveTask('inspect'))) {
+    const t = addTask({ type: 'inspect', floor: rl.floor, loc: { x: -7, z: 7 } });
+    if (t) rl._taskIds.inspect = t.id;
+  }
 }
 
 // sub-step 명 → 큐에 들어갈 task type + 기본 loc
@@ -74,7 +78,7 @@ function _updateContinuousTaskFloor() {
   const rl = GAME.state.rcLoop;
   if (!rl || !rl._taskIds) return;
   const tasks = (typeof getActiveTasks === 'function') ? getActiveTasks() : [];
-  ['lift', 'signal'].forEach(key => {
+  ['lift', 'signal', 'inspect'].forEach(key => {
     const id = rl._taskIds[key];
     const tk = id && tasks.find(t => t.id === id);
     if (tk) tk.floor = rl.floor;
@@ -95,6 +99,10 @@ const _TASK_TYPE_TO_NPC_TRADE = {
   paint:    'painting',
   excavate: 'earthwork',
   signal:   'signal',
+  inspect:  'signal',     // 안전감시는 신호수가 겸임 (현장 상주 NPC)
+  glass:    'envelope',
+  vent:     'plumbing',   // 환기 = 설비공 겸임
+  shoring:  'earthwork',
 };
 
 function updateRcLoopTaskLocs(/* delta */) {
@@ -188,9 +196,10 @@ function advanceRcStep() {
     s.completed = true;
     // 사이클 종료 — 지속 작업도 모두 제거
     if (typeof removeTask === 'function' && s._taskIds) {
-      ['lift', 'signal'].forEach(k => s._taskIds[k] && removeTask(s._taskIds[k]));
+      ['lift', 'signal', 'inspect'].forEach(k => s._taskIds[k] && removeTask(s._taskIds[k]));
       s._taskIds.lift = null;
       s._taskIds.signal = null;
+      s._taskIds.inspect = null;
     }
     _renderRcHud();
     if (typeof showActionNotif === 'function') {

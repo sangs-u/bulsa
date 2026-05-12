@@ -209,6 +209,11 @@ window.persistFines = persistFines;
   const fallbackTitle = { ko: '안전 시뮬레이터', en: 'Safety Simulator', vi: 'Mô phỏng an toàn', ar: 'محاكي السلامة' }[currentLang] || '안전 시뮬레이터';
   if (nameSub) nameSub.textContent = (scenarioTitles[GAME.scenarioId] || fallbackTitle) + subSuffix;
 
+  // v2.0 통합 모드 — RC 지속 작업 즉시 활성 (lift/signal/inspect)
+  if (GAME.unifiedMode && typeof initRcLoop === 'function') {
+    try { initRcLoop(); } catch (e) { console.warn('[unified rc_loop]', e.message); }
+  }
+
   // v2.0 통합 모드 — 게임 시작 후 자유 모드 안내 토스트 (3초 후 등장 8초 노출)
   if (GAME.unifiedMode) {
     setTimeout(() => {

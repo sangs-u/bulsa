@@ -70,6 +70,8 @@ function initTimePressure() {
 function updateTimePressure(delta) {
   if (!TIMEPRESSURE._started || TIMEPRESSURE._expired) return;
   if (!GAME.state.gameStarted || GAME.state.gameOver || GAME.state.paused) return;
+  // v2.0 통합 모드 — 자유 게임이라 시간 압박 비활성
+  if (GAME.unifiedMode) return;
 
   TIMEPRESSURE._elapsed += delta;
   const span = TIMEPRESSURE.endGameH - TIMEPRESSURE.startGameH;
