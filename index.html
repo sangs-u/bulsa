@@ -618,6 +618,9 @@
         <div class="fp-dv-seg"><span>8,500</span></div>
       </div>
 
+      <!-- 환영 바 (저장된 프로필이 있을 때만 표시) -->
+      <div id="fp-welcome" class="fp-welcome" style="display:none"></div>
+
       <!-- Main floor plan grid -->
       <div class="fp-grid" id="fp-grid"></div>
     </div>
@@ -685,6 +688,75 @@
     return field[currentLang] || field.en || field.ko || '';
   }
 
+  // 저장된 시나리오 통계 로드 (game.html 의 bulsa_stats 형식 그대로)
+  function _readScenarioStats() {
+    try {
+      const raw = localStorage.getItem('bulsa_stats');
+      if (!raw) return {};
+      const obj = JSON.parse(raw);
+      return (obj && typeof obj === 'object') ? obj : {};
+    } catch (e) { return {}; }
+  }
+  // s01..s05 → 시나리오 id 매핑
+  const _SCENARIO_KEYS = {
+    s01: 'excavation', s02: 'foundation', s03: 'lifting',
+    s04: 'envelope',   s05: 'mep_finish', s06: 'unified',
+  };
+  function _statsBlockHtml(scenId) {
+    const stats = _readScenarioStats();
+    const st = (stats[scenId] || {});
+    if (!st.bestGrade && !st.completions && !st.deathCount) return '';
+    const parts = [];
+    if (st.bestGrade) {
+      const g = String(st.bestGrade).toLowerCase();
+      parts.push(`<span class="fp-room-stat fp-stat-grade-${g}">★ ${st.bestGrade}</span>`);
+    }
+    if (st.completions) {
+      parts.push(`<span class="fp-room-stat fp-stat-runs">완주 ${st.completions}</span>`);
+    }
+    if (st.deathCount) {
+      parts.push(`<span class="fp-room-stat fp-stat-deaths">☠ ${st.deathCount}</span>`);
+    }
+    return `<div class="fp-room-stats">${parts.join('')}</div>`;
+  }
+
+  function _renderWelcome() {
+    let el = document.getElementById('fp-welcome');
+    if (!el) return;
+    let profile = null;
+    try {
+      const raw = localStorage.getItem('bulsa_profile');
+      if (raw) profile = JSON.parse(raw);
+    } catch (e) {}
+    if (!profile || (!profile.name && !profile.totalPlaySec)) {
+      el.style.display = 'none';
+      return;
+    }
+    const playSec = Math.max(0, Math.floor(profile.totalPlaySec || 0));
+    const h = Math.floor(playSec / 3600);
+    const m = Math.floor((playSec % 3600) / 60);
+    const ptText = h > 0 ? `${h}시간 ${m}분` : `${m}분`;
+    const nameText = profile.name ? `<b>${profile.name}</b>` : '<b>(이름 미지정)</b>';
+    const stats = _readScenarioStats();
+    let totalRuns = 0, totalDeaths = 0;
+    Object.keys(_SCENARIO_KEYS).forEach(sid => {
+      const sk = _SCENARIO_KEYS[sid];
+      const st = stats[sk] || {};
+      totalRuns   += (st.completions || 0);
+      totalDeaths += (st.deathCount  || 0);
+    });
+    el.style.display = 'flex';
+    el.innerHTML = `
+      <span>👤 ${nameText}</span>
+      <span class="fp-welcome-sep">·</span>
+      <span>⏱ ${ptText}</span>
+      <span class="fp-welcome-sep">·</span>
+      <span>📋 완주 <b>${totalRuns}</b></span>
+      <span class="fp-welcome-sep">·</span>
+      <span>☠ <b>${totalDeaths}</b></span>
+    `;
+  }
+
   function makeRoom(s) {
     const div = document.createElement('div');
     div.className = `fp-room ${s.id} ${s.ready ? 'fp-ready' : 'fp-soon'}`;
@@ -696,6 +768,7 @@
       ? `<button class="fp-room-btn" onclick="event.stopPropagation();window.location.href='${s.url}'">${t('scenarioReady')} →</button>`
       : '';
 
+    const statsHtml = s.ready ? _statsBlockHtml(_SCENARIO_KEYS[s.id]) : '';
     div.innerHTML = `
       ${s.ready ? '' : '<div class="fp-hatch"></div>'}
       <div class="fp-room-tag">${s.room} · ${s.num}</div>
@@ -711,6 +784,7 @@
         <div class="fp-room-title">${_l(s.title) || t(s.titleKey)}</div>
         <div class="fp-room-desc">${_l(s.desc) || t(s.descKey)}</div>
         <div class="fp-room-kosha">${s.kosha || t(s.koshaKey)}</div>
+        ${statsHtml}
         ${btnHtml}
       </div>
       <span class="fp-dim-ann">${s.dim} m</span>
@@ -721,6 +795,7 @@
   function renderPlan() {
     document.getElementById('tagline').textContent  = t('tagline');
     document.getElementById('v1-label').textContent = t('v1Progress');
+    _renderWelcome();
 
     const grid = document.getElementById('fp-grid');
     grid.innerHTML = '';

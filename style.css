@@ -267,6 +267,66 @@ html, body {
 .fp-room.s04 { grid-column: 2; grid-row: 2; }
 .fp-room.s05 { grid-column: 3; grid-row: 2; }
 .fp-room.s06 { grid-column: 1 / 4; grid-row: 4; }
+.fp-room.s06.fp-ready {
+  background: linear-gradient(135deg, rgba(0, 90, 80, 0.42), rgba(20, 60, 100, 0.42));
+  border: 2px solid rgba(255, 215, 100, 0.55);
+  box-shadow: 0 0 18px rgba(255, 215, 100, 0.18), inset 0 0 24px rgba(255, 215, 100, 0.08);
+  animation: fp-s06-glow 4s ease-in-out infinite;
+}
+@keyframes fp-s06-glow {
+  0%, 100% { box-shadow: 0 0 18px rgba(255, 215, 100, 0.18), inset 0 0 24px rgba(255, 215, 100, 0.08); }
+  50%      { box-shadow: 0 0 26px rgba(255, 215, 100, 0.36), inset 0 0 32px rgba(255, 215, 100, 0.14); }
+}
+.fp-room.s06 .fp-room-tag {
+  background: rgba(255, 215, 100, 0.20);
+  color: #FFE070;
+  border-color: rgba(255, 215, 100, 0.45);
+}
+
+/* Per-card stats: best grade · deaths · play count */
+.fp-room-stats {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  font-family: monospace;
+  font-size: 11px;
+  opacity: 0.85;
+  flex-wrap: wrap;
+}
+.fp-room-stat {
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: #E8E2D5;
+  letter-spacing: 0.3px;
+}
+.fp-room-stat.fp-stat-grade-s { background: rgba(255, 200, 70, 0.22); color: #FFD970; border-color: rgba(255, 200, 70, 0.40); }
+.fp-room-stat.fp-stat-grade-a { background: rgba(120, 200, 130, 0.22); color: #8AE89A; border-color: rgba(120, 200, 130, 0.40); }
+.fp-room-stat.fp-stat-grade-b { background: rgba(120, 170, 220, 0.22); color: #9BC6E5; border-color: rgba(120, 170, 220, 0.40); }
+.fp-room-stat.fp-stat-grade-c { background: rgba(200, 170, 120, 0.22); color: #D5BA8A; border-color: rgba(200, 170, 120, 0.40); }
+.fp-room-stat.fp-stat-grade-d { background: rgba(220, 130, 130, 0.22); color: #E69B9B; border-color: rgba(220, 130, 130, 0.40); }
+.fp-room-stat.fp-stat-deaths   { color: #FCA5A5; }
+.fp-room-stat.fp-stat-runs     { color: #B0E0D0; }
+
+/* Welcome bar (profile + total play time) */
+.fp-welcome {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 16px;
+  margin: 0 auto 12px;
+  max-width: 760px;
+  background: rgba(0, 30, 28, 0.40);
+  border: 1px solid rgba(80, 200, 180, 0.30);
+  border-radius: 6px;
+  color: #C8E8E0;
+  font-family: monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.4px;
+}
+.fp-welcome b { color: #8AE0C8; font-weight: 600; }
+.fp-welcome .fp-welcome-sep { opacity: 0.35; }
 
 .fp-room.s01 .room-title { font-size: 1.28rem; }
 
