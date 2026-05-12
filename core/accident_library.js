@@ -8,6 +8,7 @@
   let _btn   = null;
   let _open  = false;
   let _selected = null;
+  let _filter   = '';
 
   function _allAccidents() {
     const out = {};
@@ -71,7 +72,12 @@
   function _renderPanel() {
     const panel = _ensurePanel();
     const all   = _allAccidents();
-    const ids   = Object.keys(all).sort();
+    const f     = (_filter || '').trim().toLowerCase();
+    const ids   = Object.keys(all).sort().filter(id => {
+      if (!f) return true;
+      const lbl = _label(id).toLowerCase();
+      return id.toLowerCase().indexOf(f) >= 0 || lbl.indexOf(f) >= 0;
+    });
     const titles = {
       ko: '사고 라이브러리 — 학습용 전체 목록',
       en: 'Accident Library — full learning set',
@@ -79,8 +85,13 @@
       ar: 'مكتبة الحوادث — قائمة تعلّم كاملة',
     };
     const clickHint = { ko: '항목 클릭 → 상세', en: 'Click for detail', vi: 'Bấm để xem', ar: 'انقر للتفاصيل' }[currentLang] || '';
+    const phPlaceholder = { ko: '검색…', en: 'Search…', vi: 'Tìm…', ar: 'بحث…' }[currentLang] || '검색…';
     let html = `<div style="opacity:0.85;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:6px;margin-bottom:6px">${titles[currentLang] || titles.ko} <span style="opacity:0.55">· ${clickHint}</span></div>`;
+    html += `<input id="acc-lib-search" type="text" placeholder="${phPlaceholder}" value="${(_filter || '').replace(/"/g,'&quot;')}" style="width:100%;box-sizing:border-box;padding:4px 8px;margin-bottom:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);border-radius:4px;color:#fff;font-family:monospace;font-size:12px">`;
     html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">';
+    if (ids.length === 0) {
+      html += `<span style="opacity:0.55">${{ko:'(검색 결과 없음)',en:'(no results)',vi:'(không có)',ar:'(لا نتائج)'}[currentLang] || '(없음)'}</span>`;
+    }
     ids.forEach(id => {
       const active = (id === _selected);
       html += `<span data-acc-id="${id}" style="cursor:pointer;padding:2px 7px;border-radius:9px;font-size:11px;background:${active ? '#7a2020' : 'rgba(255,255,255,0.08)'};border:1px solid ${active ? '#ff6060' : 'rgba(255,255,255,0.15)'}">${_label(id)}</span>`;
@@ -112,6 +123,16 @@
         _renderPanel();
       });
     });
+    const search = panel.querySelector('#acc-lib-search');
+    if (search) {
+      search.addEventListener('input', (e) => {
+        _filter = e.target.value || '';
+        // 포커스 잃지 않도록 일부만 재렌더 → 전체 재렌더이지만 focus 복원
+        _renderPanel();
+        const fresh = panel.querySelector('#acc-lib-search');
+        if (fresh) { fresh.focus(); fresh.setSelectionRange(_filter.length, _filter.length); }
+      });
+    }
   }
 
   function toggle() {

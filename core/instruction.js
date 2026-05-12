@@ -350,6 +350,18 @@ function openInstructionPopup(item) {
     list.appendChild(btn);
   });
 
+  // hint footer — 풀 의미 설명 (학습 도구)
+  const hint = document.createElement('div');
+  const hintTxt = {
+    ko: '⚠ 위험 명령은 적색 · ✗ NPC 직종 미스매치는 회색',
+    en: '⚠ Danger items are red · ✗ Wrong trade is grayed out',
+    vi: '⚠ Lệnh nguy hiểm màu đỏ · ✗ Sai nghề màu xám',
+    ar: '⚠ الأوامر الخطرة حمراء · ✗ المهنة الخاطئة رمادية',
+  };
+  hint.textContent = hintTxt[currentLang] || hintTxt.ko;
+  hint.style.cssText = 'opacity:0.55;font-size:11px;font-family:monospace;margin-top:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1);text-align:center';
+  list.appendChild(hint);
+
   popup.classList.remove('hidden');
 }
 
