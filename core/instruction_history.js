@@ -168,11 +168,12 @@
       const empty = { ko: '(기록 없음)', en: '(no records)', vi: '(không có)', ar: '(لا توجد سجلات)' }[currentLang] || '(없음)';
       html += `<div style="opacity:0.55;padding:8px 0">${empty}</div>`;
     } else {
-      HIST.forEach(e => {
-        const meta = RESULT_META[e.result] || { bg: '#555' };
-        const ago  = _ago(e.t);
+      HIST.forEach((e, i) => {
+        const meta     = RESULT_META[e.result] || { bg: '#555' };
+        const ago      = _ago(e.t);
+        const clickable = (e.result === 'accident' || e.result === 'danger_accident');
         html +=
-          `<div style="display:flex;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.08)">` +
+          `<div data-hist-i="${i}" style="display:flex;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.08);${clickable ? 'cursor:pointer' : ''}" title="${clickable ? '클릭 → 사고 라이브러리' : ''}">` +
             `<span style="background:${meta.bg};padding:1px 6px;border-radius:4px;font-size:11px;min-width:62px;text-align:center">${_resultLabel(e.result)}</span>` +
             `<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.npc} · ${e.label}</span>` +
             `<span style="opacity:0.55;font-size:10px">${ago}</span>` +
@@ -180,6 +181,25 @@
       });
     }
     panel.innerHTML = html;
+    panel.querySelectorAll('[data-hist-i]').forEach(el => {
+      const i = +el.getAttribute('data-hist-i');
+      const e = HIST[i];
+      if (!e) return;
+      if (e.result === 'accident' || e.result === 'danger_accident') {
+        el.addEventListener('click', () => {
+          // 사고 라이브러리 열고 사고 ID 선택 시도
+          if (typeof toggleAccLib === 'function') {
+            const panelEl = document.getElementById('acc-lib-panel');
+            if (!panelEl || panelEl.style.display !== 'block') toggleAccLib();
+            // 한 번 더 호출되면 닫히니, 상태 확인 후 진입만
+            setTimeout(() => {
+              const chip = document.querySelector(`#acc-lib-panel [data-acc-id="${e.inst}"]`);
+              if (chip) chip.click();
+            }, 50);
+          }
+        });
+      }
+    });
   }
 
   function _ago(t) {

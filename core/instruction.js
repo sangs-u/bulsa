@@ -363,22 +363,22 @@ function closeInstructionPopup() {
 // 4언어 거부 멘트 사전 (NPC 직종/phase 미스매치)
 const _REJECT_LINES = {
   trade: {
-    ko: ['저는 그 작업 못합니다.', '제 일이 아닙니다.', '다른 사람한테 시키세요.'],
-    en: ['Not my job.', 'I am not trained for that.', "That's someone else's task."],
-    vi: ['Đó không phải việc của tôi.', 'Tôi không được đào tạo việc đó.', 'Hỏi người khác đi.'],
-    ar: ['ليس عملي.', 'لست مدرّباً على ذلك.', 'اطلب شخصاً آخر.'],
+    ko: ['저는 그 작업 못합니다.', '제 일이 아닙니다.', '다른 사람한테 시키세요.', '저는 자격증이 없어요.', '제 직종 아닙니다.', '저 말고 전문가 부르세요.'],
+    en: ['Not my job.', 'I am not trained for that.', "That's someone else's task.", 'I have no license for that.', 'Wrong trade for me.', 'Call a specialist.'],
+    vi: ['Đó không phải việc của tôi.', 'Tôi không được đào tạo việc đó.', 'Hỏi người khác đi.', 'Tôi không có chứng chỉ.', 'Sai nghề rồi.', 'Gọi chuyên gia đi.'],
+    ar: ['ليس عملي.', 'لست مدرّباً على ذلك.', 'اطلب شخصاً آخر.', 'ليس لدي ترخيص.', 'مهنة خاطئة.', 'استدع متخصصاً.'],
   },
   phase: {
-    ko: ['지금 할 일이 아닙니다.', '아직 그 단계 아니에요.', '순서가 안 맞습니다.'],
-    en: ['Not the right time.', 'Not at this stage.', 'Out of sequence.'],
-    vi: ['Chưa đến lúc.', 'Không phải bước này.', 'Sai thứ tự.'],
-    ar: ['ليس الوقت المناسب.', 'ليست هذه المرحلة.', 'خارج التسلسل.'],
+    ko: ['지금 할 일이 아닙니다.', '아직 그 단계 아니에요.', '순서가 안 맞습니다.', '지금 그 작업 활성 아닙니다.', '이 작업은 아직 큐에 없어요.'],
+    en: ['Not the right time.', 'Not at this stage.', 'Out of sequence.', 'That task is not active now.', 'Not in the queue yet.'],
+    vi: ['Chưa đến lúc.', 'Không phải bước này.', 'Sai thứ tự.', 'Việc đó chưa kích hoạt.', 'Chưa có trong hàng đợi.'],
+    ar: ['ليس الوقت المناسب.', 'ليست هذه المرحلة.', 'خارج التسلسل.', 'تلك المهمة غير نشطة.', 'ليست في الطابور بعد.'],
   },
   danger: {
-    ko: ['그건 위험합니다. 안전절차 지킬게요.', '안 됩니다. 사고 납니다.', '저 죽으라는 거죠?'],
-    en: ['Too dangerous. I will follow safety.', 'No. That causes accidents.', 'You want me dead?'],
-    vi: ['Quá nguy hiểm.', 'Không. Sẽ gây tai nạn.', 'Anh muốn tôi chết à?'],
-    ar: ['خطير جداً.', 'لا. سيسبب حادثاً.', 'أتريدني أن أُقتل؟'],
+    ko: ['그건 위험합니다. 안전절차 지킬게요.', '안 됩니다. 사고 납니다.', '저 죽으라는 거죠?', '법규 위반입니다.', '안전책임자 부르세요.', '저는 못 합니다. 양심 있어요.'],
+    en: ['Too dangerous. I will follow safety.', 'No. That causes accidents.', 'You want me dead?', "That's a regulation violation.", 'Call the safety officer.', 'I refuse. I have a conscience.'],
+    vi: ['Quá nguy hiểm.', 'Không. Sẽ gây tai nạn.', 'Anh muốn tôi chết à?', 'Vi phạm quy định.', 'Gọi người phụ trách an toàn.', 'Tôi từ chối. Tôi có lương tâm.'],
+    ar: ['خطير جداً.', 'لا. سيسبب حادثاً.', 'أتريدني أن أُقتل؟', 'انتهاك للأنظمة.', 'اتصل بمسؤول السلامة.', 'أرفض. لدي ضمير.'],
   },
 };
 function _rejectLine(kind) {
