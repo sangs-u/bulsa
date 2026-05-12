@@ -88,7 +88,8 @@ function openInstructionPopup(item) {
     ? TRADES[npc.trade].ko : '';
   const expSuffix = npc.experience ? ` · 경력 ${npc.experience}년` : '';
   const tradeSuffix = tradeName ? ` · ${tradeName}` : '';
-  document.getElementById('inst-role').textContent = `· ${npc.role}${tradeSuffix}${expSuffix}`;
+  const roleStr = (typeof npc.roleText === 'function') ? npc.roleText() : (typeof npc.role === 'string' ? npc.role : (npc.role && (npc.role[currentLang] || npc.role.ko)) || '');
+  document.getElementById('inst-role').textContent = `· ${roleStr}${tradeSuffix}${expSuffix}`;
 
   // Language badge
   const langBadge = document.getElementById('inst-lang-badge');

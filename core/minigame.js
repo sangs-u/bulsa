@@ -243,11 +243,12 @@ function tryDelegateCurrent() {
   const best = eligible[0];
   const ok = DELEGATION_CHOICE.current.game.delegateToNPC(best.id);
   if (ok && typeof showActionNotif === 'function') {
+    const bestRole = (typeof best.roleText === 'function') ? best.roleText() : (typeof best.role === 'string' ? best.role : (best.role && (best.role[currentLang] || best.role.ko)) || '');
     const tpl = {
-      ko: `👷 ${best.name} (${best.role}·경력 ${best.experience}년) 에게 ${config.label} 지시`,
-      en: `👷 Assigned ${config.label} to ${best.name} (${best.role}·${best.experience}y exp.)`,
-      vi: `👷 Giao ${config.label} cho ${best.name} (${best.role}·${best.experience}năm)`,
-      ar: `👷 تعيين ${config.label} لـ ${best.name} (${best.role}·خبرة ${best.experience}س)`,
+      ko: `👷 ${best.name} (${bestRole}·경력 ${best.experience}년) 에게 ${config.label} 지시`,
+      en: `👷 Assigned ${config.label} to ${best.name} (${bestRole}·${best.experience}y exp.)`,
+      vi: `👷 Giao ${config.label} cho ${best.name} (${bestRole}·${best.experience}năm)`,
+      ar: `👷 تعيين ${config.label} لـ ${best.name} (${bestRole}·خبرة ${best.experience}س)`,
     }[currentLang] || `👷 ${best.name} → ${config.label}`;
     showActionNotif(tpl, 3500);
   }

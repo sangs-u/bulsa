@@ -31,7 +31,7 @@ class NPC {
   constructor({ id, name, role, trade, language, skill, position, vestColor, experience }) {
     this.id         = id;
     this.name       = name;
-    this.role       = role;
+    this.role       = role;        // string 또는 {ko,en,vi,ar} 객체
     this.trade      = trade || 'misc';   // 공종 (signal/lifting/...)
     this.language   = language;
     this.skill      = skill;
@@ -91,6 +91,13 @@ class NPC {
     } else if (this._char) {
       this._playAnim(name, fadeIn || 0.3);
     }
+  }
+
+  // 현재 언어 기준 역할 텍스트 (role 이 string/객체 양쪽 지원)
+  roleText() {
+    if (this.role == null) return '';
+    if (typeof this.role === 'string') return this.role;
+    return this.role[currentLang] || this.role.ko || this.role.en || '';
   }
 
   // _targetPos 지원: tick에서 목표 위치로 이동
@@ -476,31 +483,31 @@ class NPC {
 // 시나리오별 — lifting 은 기존 5명. 그 외 시나리오는 분위기용 작업자 2~3명.
 const NPC_DEFS_BY_SCENARIO = {
   lifting: [
-    { id: 'gimc',   role: '신호수',     trade: 'signal',   language: 'ko', skill: 0.90, vestColor: 0xCC5018, position: [ 7,  0,  -6] },
-    { id: 'park',   role: '슬링작업자', trade: 'lifting',  language: 'ko', skill: 0.75, vestColor: 0xD4A217, position: [-4,  0,  -8] },
-    { id: 'lee',    role: '고소작업자', trade: 'scaffold', language: 'ko', skill: 0.80, vestColor: 0xCC5018, position: [ 0,  0, -14] },
-    { id: 'ahmad',  role: '보조작업자', trade: 'rebar',    language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 5,  0, -12] },
-    { id: 'nguyen', role: '보조작업자', trade: 'formwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0,  -4] },
+    { id: 'gimc',   role: { ko:'신호수',     en:'Signaller',     vi:'Người ra hiệu', ar:'الإشاري' },     trade: 'signal',   language: 'ko', skill: 0.90, vestColor: 0xCC5018, position: [ 7,  0,  -6] },
+    { id: 'park',   role: { ko:'슬링작업자', en:'Rigger',        vi:'Thợ móc cẩu',    ar:'عامل التطويق' }, trade: 'lifting',  language: 'ko', skill: 0.75, vestColor: 0xD4A217, position: [-4,  0,  -8] },
+    { id: 'lee',    role: { ko:'고소작업자', en:'High-rise Worker', vi:'Thợ cao tầng', ar:'عامل المرتفعات' }, trade: 'scaffold', language: 'ko', skill: 0.80, vestColor: 0xCC5018, position: [ 0,  0, -14] },
+    { id: 'ahmad',  role: { ko:'보조작업자', en:'Helper',        vi:'Phụ',            ar:'مساعد' },        trade: 'rebar',    language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [ 5,  0, -12] },
+    { id: 'nguyen', role: { ko:'보조작업자', en:'Helper',        vi:'Phụ',            ar:'مساعد' },        trade: 'formwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [-3,  0,  -4] },
   ],
   excavation: [
-    { id: 'kim_op',  role: '굴착기운전원', trade: 'excavator', language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-14, 0, -8] },
-    { id: 'lee_sg',  role: '신호수',       trade: 'signal',    language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [  9, 0,  2] },
-    { id: 'nguyen2', role: '굴착작업자',   trade: 'earthwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [ -3, 0,-18] },
+    { id: 'kim_op',  role: { ko:'굴착기운전원', en:'Excavator Operator', vi:'Vận hành máy xúc', ar:'مشغل الحفّار' }, trade: 'excavator', language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-14, 0, -8] },
+    { id: 'lee_sg',  role: { ko:'신호수',       en:'Signaller',          vi:'Người ra hiệu',    ar:'الإشاري' },       trade: 'signal',    language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [  9, 0,  2] },
+    { id: 'nguyen2', role: { ko:'굴착작업자',   en:'Earthworker',        vi:'Thợ đào',           ar:'عامل الحفر' },    trade: 'earthwork', language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [ -3, 0,-18] },
   ],
   foundation: [
-    { id: 'park_fw', role: '형틀목공',    trade: 'formwork',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-12, 0, -6] },
-    { id: 'cho_rb',  role: '철근공',      trade: 'rebar',     language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [  8, 0,  3] },
-    { id: 'ahmad2',  role: '타설공',      trade: 'pour',      language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [  2, 0,-16] },
+    { id: 'park_fw', role: { ko:'형틀목공',    en:'Formwork Carpenter', vi:'Thợ ván khuôn',  ar:'نجار قوالب' }, trade: 'formwork',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-12, 0, -6] },
+    { id: 'cho_rb',  role: { ko:'철근공',      en:'Rebar Worker',       vi:'Thợ thép',        ar:'عامل الحديد' }, trade: 'rebar',     language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [  8, 0,  3] },
+    { id: 'ahmad2',  role: { ko:'타설공',      en:'Concrete Pourer',    vi:'Thợ đổ bê tông',  ar:'عامل الصب' },   trade: 'pour',      language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [  2, 0,-16] },
   ],
   envelope: [
-    { id: 'kim_sc',  role: '비계공',      trade: 'scaffold',  language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-10, 0,-15] },
-    { id: 'lee_en',  role: '외장공',      trade: 'envelope',  language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [ 11, 0,-12] },
-    { id: 'nguyen3', role: '보조작업자',  trade: 'helper',    language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [ -2, 0,  3] },
+    { id: 'kim_sc',  role: { ko:'비계공',      en:'Scaffolder',         vi:'Thợ giàn giáo',    ar:'فنّي السقالات' }, trade: 'scaffold',  language: 'ko', skill: 0.85, vestColor: 0xCC5018, position: [-10, 0,-15] },
+    { id: 'lee_en',  role: { ko:'외장공',      en:'Envelope Worker',    vi:'Thợ vỏ ngoài',      ar:'عامل الواجهة' },  trade: 'envelope',  language: 'ko', skill: 0.78, vestColor: 0xD4A217, position: [ 11, 0,-12] },
+    { id: 'nguyen3', role: { ko:'보조작업자',  en:'Helper',             vi:'Phụ',                ar:'مساعد' },         trade: 'helper',    language: 'vi', skill: 0.65, vestColor: 0xCC5018, position: [ -2, 0,  3] },
   ],
   mep_finish: [
-    { id: 'kim_el',  role: '전기공',      trade: 'electric',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-9, 0, -3] },
-    { id: 'park_mp', role: '설비공',      trade: 'plumbing',  language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [ 7, 0,-13] },
-    { id: 'ahmad3',  role: '도장공',      trade: 'painting',  language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [-3, 0,  4] },
+    { id: 'kim_el',  role: { ko:'전기공',      en:'Electrician',        vi:'Thợ điện',           ar:'كهربائي' },      trade: 'electric',  language: 'ko', skill: 0.82, vestColor: 0xD4A217, position: [-9, 0, -3] },
+    { id: 'park_mp', role: { ko:'설비공',      en:'Plumber',            vi:'Thợ ống nước',       ar:'سبّاك' },        trade: 'plumbing',  language: 'ko', skill: 0.78, vestColor: 0xCC5018, position: [ 7, 0,-13] },
+    { id: 'ahmad3',  role: { ko:'도장공',      en:'Painter',            vi:'Thợ sơn',            ar:'دهّان' },        trade: 'painting',  language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [-3, 0,  4] },
   ],
 };
 // 후방호환: lifting 의 기존 NPC_DEFS 참조하는 코드를 위해 별칭 유지
@@ -702,7 +709,7 @@ function updateNPCLabels() {
     if (d > 12) { el.style.opacity = '0'; return; }
     const danger = npc.state === NPC_STATES.UNSAFE || npc.state === NPC_STATES.DANGER;
     el.className   = danger ? 'npc-danger-badge' : 'npc-label';
-    el.textContent = danger ? `⚠ ${npc.name}` : `${npc.name} · ${npc.role}`;
+    el.textContent = danger ? `⚠ ${npc.name}` : `${npc.name} · ${npc.roleText()}`;
     el.style.left  = sp.x + 'px';
     el.style.top   = sp.y + 'px';
     el.style.opacity = Math.min(1, (12-d)/4).toString();
