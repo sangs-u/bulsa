@@ -21,7 +21,11 @@ function _instLangSwitchLabel() {
 //   risk              : 'safe' | 'danger' — danger 는 안전절차 생략 변종, 강행 시 사고
 //   accidentIfDanger  : danger 명령 강행 시 발생할 사고 ID
 //   minSkill          : 0~1 — 정답이라도 NPC 숙련도 미달 시 실패 (사고/미완료)
-// 기존 targetRole/npcId 는 "정답 가이드용" 이며, 선택 가능 풀에서 제외하지 않음.
+//   taskType          : v2.0 — 이 명령이 어느 작업 종류에 속하는지 (활성 작업 큐 기반 합성용)
+// 분기 로직 (giveInstruction) 은 시나리오·작업 무관 공통.
+//
+// v2.0: 활성 작업 큐가 비어있으면 이 INSTRUCTIONS[phase] 풀 사용 (백워드 호환).
+// 활성 작업 있으면 buildInstructionPoolFromActiveTasks(npc) 가 INSTRUCTION_POOLS_BY_TASK 합성.
 const INSTRUCTIONS = {
   1: [
     { id:'wear_ppe',      icon:'⛑',  labelKo:'안전모·안전대 착용해',  labelEn:'Wear helmet & harness', labelVi:'Đeo mũ bảo hộ và dây an toàn', labelAr:'البس الخوذة وحزام السلامة', applicableTrades:null, applicablePhases:null, risk:'safe' },
@@ -74,6 +78,88 @@ const MISMATCH_RESPONSES = {
   vi: ['????', 'Tôi không hiểu', '??????'],
   ko: ['???'],
 };
+
+// ── v2.0 작업 종류별 명령 풀 ───────────────────────────────
+// 각 풀은 해당 작업이 활성일 때 명령 풀에 합성됨. core/tasks.js 의 buildInstructionPoolFromActiveTasks 가 사용.
+// 모든 명령은 분기 로직(giveInstruction) 을 그대로 통과 — 함정/거부/숙련 처리 공통.
+const INSTRUCTION_POOLS_BY_TASK = {
+  // 가설공사
+  scaffold: [
+    { id:'scaffold_inspect', icon:'🔍', labelKo:'비계 조립검사',     labelEn:'Scaffold inspect',    labelVi:'Kiểm tra giàn giáo', labelAr:'فحص السقالة',         taskType:'scaffold', applicableTrades:['scaffold'], risk:'safe', minSkill:0.6 },
+    { id:'scaffold_anchor',  icon:'🔗', labelKo:'벽이음 결속',       labelEn:'Wall ties',           labelVi:'Buộc neo tường',     labelAr:'ربط الجدار',           taskType:'scaffold', applicableTrades:['scaffold'], risk:'safe' },
+    { id:'scaffold_use_old', icon:'⚠', labelKo:'녹슨 강관 재사용',  labelEn:'Reuse rusty tube',    labelVi:'Dùng ống gỉ',        labelAr:'استخدم أنبوب صدئ',     taskType:'scaffold', applicableTrades:['scaffold'], risk:'danger', accidentIfDanger:'scaffold_collapse' },
+  ],
+  lifeline: [
+    { id:'anchor_install',   icon:'🪢', labelKo:'안전대 부착설비 설치', labelEn:'Install lifeline',  labelVi:'Lắp dây neo',        labelAr:'تركيب المرساة',         taskType:'lifeline', applicableTrades:['scaffold','envelope'], risk:'safe' },
+    { id:'skip_anchor',      icon:'⚠', labelKo:'안전대 없이 작업',    labelEn:'Work without harness',labelVi:'Làm không dây',     labelAr:'العمل بلا حزام',         taskType:'lifeline', applicableTrades:null,            risk:'danger', accidentIfDanger:'worker_fall' },
+  ],
+  shoring: [
+    { id:'shoring_install',  icon:'🛡', labelKo:'흙막이 점검',         labelEn:'Inspect shoring',    labelVi:'Kiểm tra chống vách',labelAr:'افحص الدعم',           taskType:'shoring', applicableTrades:['earthwork','excavator'], risk:'safe' },
+    { id:'shoring_skip',     icon:'⚠', labelKo:'흙막이 없이 굴착',    labelEn:'Excavate without shoring',labelVi:'Đào không chống', labelAr:'احفر بلا دعم',           taskType:'shoring', applicableTrades:['excavator'], risk:'danger', accidentIfDanger:'soil_collapse' },
+  ],
+  // 본공사 사이클
+  formwork: [
+    { id:'formwork_inspect', icon:'📐', labelKo:'거푸집·동바리 점검', labelEn:'Inspect formwork',   labelVi:'Kiểm tra ván khuôn',labelAr:'افحص القوالب',         taskType:'formwork', applicableTrades:['formwork'], risk:'safe', minSkill:0.55 },
+    { id:'formwork_assemble',icon:'🔨', labelKo:'거푸집 조립',         labelEn:'Assemble formwork',   labelVi:'Lắp ván khuôn',      labelAr:'تجميع القوالب',         taskType:'formwork', applicableTrades:['formwork'], risk:'safe' },
+    { id:'formwork_dismantle_early', icon:'⚠', labelKo:'양생 전 해체', labelEn:'Strip before cure done', labelVi:'Tháo sớm', labelAr:'فك مبكر',               taskType:'formwork', applicableTrades:['formwork'], risk:'danger', accidentIfDanger:'form_collapse' },
+  ],
+  rebar: [
+    { id:'rebar_caps',       icon:'🔧', labelKo:'철근 보호캡 설치',   labelEn:'Install rebar caps', labelVi:'Lắp nắp thép',       labelAr:'تركيب أغطية الحديد',    taskType:'rebar', applicableTrades:['rebar'], risk:'safe', minSkill:0.5 },
+    { id:'rebar_spacing',    icon:'📏', labelKo:'배근 간격 확인',      labelEn:'Check spacing',       labelVi:'Kiểm tra khoảng cách', labelAr:'تحقق التباعد',         taskType:'rebar', applicableTrades:['rebar'], risk:'safe' },
+    { id:'rebar_no_caps',    icon:'⚠', labelKo:'보호캡 없이 작업',    labelEn:'Work without caps',   labelVi:'Làm không nắp',      labelAr:'العمل بلا أغطية',       taskType:'rebar', applicableTrades:['rebar'], risk:'danger', accidentIfDanger:'rebar_stab' },
+  ],
+  pour: [
+    { id:'pour_order',       icon:'🚚', labelKo:'타설 순서 확인',     labelEn:'Confirm pour order', labelVi:'Xác nhận trình tự',  labelAr:'تأكيد ترتيب الصب',       taskType:'pour', applicableTrades:['pour','concrete'], risk:'safe' },
+    { id:'pour_pump_check',  icon:'🔩', labelKo:'펌프카 점검',         labelEn:'Pump truck check',    labelVi:'Kiểm tra xe bơm',    labelAr:'فحص المضخة',            taskType:'pour', applicableTrades:['pour','concrete'], risk:'safe' },
+    { id:'pour_overload',    icon:'⚠', labelKo:'일일 한계 초과 타설', labelEn:'Pour past daily limit', labelVi:'Đổ quá giới hạn',  labelAr:'صب فوق الحد',           taskType:'pour', applicableTrades:['pour'], risk:'danger', accidentIfDanger:'form_collapse' },
+  ],
+  cure: [
+    { id:'cure_cover',       icon:'🟦', labelKo:'양생 시트 덮기',     labelEn:'Cover with cure sheet', labelVi:'Phủ tấm dưỡng hộ', labelAr:'تغطية للمعالجة',         taskType:'cure', applicableTrades:['pour','concrete'], risk:'safe' },
+    { id:'cure_early_load',  icon:'⚠', labelKo:'양생 안 끝났는데 적재', labelEn:'Load before cure done', labelVi:'Chất tải sớm',     labelAr:'تحميل مبكر',             taskType:'cure', applicableTrades:null, risk:'danger', accidentIfDanger:'premature_load' },
+  ],
+  // 양중
+  lift: [
+    { id:'lift_inspect_sling', icon:'🔍', labelKo:'슬링 점검',         labelEn:'Check sling',         labelVi:'Kiểm tra dây cẩu',   labelAr:'افحص الحبل',           taskType:'lift', applicableTrades:['lifting'], risk:'safe', minSkill:0.6 },
+    { id:'lift_secure_pin',  icon:'🔐', labelKo:'안전핀 체결',         labelEn:'Secure pin',          labelVi:'Khóa chốt',          labelAr:'إحكام المسمار',         taskType:'lift', applicableTrades:['lifting'], risk:'safe', minSkill:0.55 },
+    { id:'lift_measure_angle', icon:'📐', labelKo:'슬링 각도 측정',    labelEn:'Measure angle',       labelVi:'Đo góc',              labelAr:'قياس الزاوية',         taskType:'lift', applicableTrades:['lifting'], risk:'safe', minSkill:0.65 },
+    { id:'lift_use_kinked',  icon:'⚠', labelKo:'킹크 슬링 사용',      labelEn:'Use kinked sling',    labelVi:'Dùng dây xoắn',      labelAr:'استخدم حبل معطوب',      taskType:'lift', applicableTrades:['lifting'], risk:'danger', accidentIfDanger:'sling_snap' },
+    { id:'lift_no_signal',   icon:'⚠', labelKo:'신호수 없이 인양',    labelEn:'Lift without signal', labelVi:'Cẩu không hiệu',     labelAr:'ارفع بلا إشاري',         taskType:'lift', applicableTrades:['lifting','signal'], risk:'danger', accidentIfDanger:'no_signal' },
+  ],
+  signal: [
+    { id:'signal_pos',       icon:'📍', labelKo:'신호수 위치',         labelEn:'Take position',       labelVi:'Vào vị trí',         labelAr:'اتخذ الموقع',           taskType:'signal', applicableTrades:['signal'], risk:'safe', minSkill:0.5 },
+    { id:'signal_in_zone',   icon:'⚠', labelKo:'반경 안에서 신호',    labelEn:'Signal inside zone',  labelVi:'Hiệu trong vùng',    labelAr:'إشارة داخل النطاق',     taskType:'signal', applicableTrades:['signal'], risk:'danger', accidentIfDanger:'worker_crush' },
+  ],
+  // 마감/설비
+  electric: [
+    { id:'electric_loto',    icon:'🔒', labelKo:'LOTO 절차',           labelEn:'Apply LOTO',          labelVi:'Khóa LOTO',          labelAr:'تطبيق LOTO',           taskType:'electric', applicableTrades:['electric'], risk:'safe', minSkill:0.7 },
+    { id:'electric_live',    icon:'⚠', labelKo:'활선 상태 작업',      labelEn:'Work hot (no LOTO)',  labelVi:'Làm khi có điện',    labelAr:'العمل على خط حي',       taskType:'electric', applicableTrades:['electric'], risk:'danger', accidentIfDanger:'electric_shock' },
+  ],
+  paint: [
+    { id:'paint_vent',       icon:'💨', labelKo:'국소배기 가동 후 도장', labelEn:'Vent before paint', labelVi:'Thông gió trước sơn', labelAr:'تهوية قبل الدهان',     taskType:'paint', applicableTrades:['painting'], risk:'safe' },
+    { id:'paint_no_vent',    icon:'⚠', labelKo:'환기 없이 유성 도장', labelEn:'Solvent paint no vent', labelVi:'Sơn dầu không thông',labelAr:'دهن عضوي بلا تهوية',taskType:'paint', applicableTrades:['painting'], risk:'danger', accidentIfDanger:'toxic_exposure' },
+  ],
+  plumb: [
+    { id:'plumb_pressure',   icon:'🧪', labelKo:'배관 수압시험',       labelEn:'Pressure test',       labelVi:'Thử áp suất',        labelAr:'اختبار الضغط',         taskType:'plumb', applicableTrades:['plumbing'], risk:'safe' },
+  ],
+  vent: [
+    { id:'vent_activate',    icon:'💨', labelKo:'국소배기 가동',       labelEn:'Activate ventilation',labelVi:'Bật thông gió',      labelAr:'تشغيل التهوية',         taskType:'vent', applicableTrades:['plumbing','electric'], risk:'safe' },
+  ],
+  // 굴착·기초
+  excavate: [
+    { id:'excav_signal',     icon:'📍', labelKo:'신호수 배치',         labelEn:'Assign signal',       labelVi:'Bố trí người ra hiệu',labelAr:'تعيين الإشاري',         taskType:'excavate', applicableTrades:['signal','excavator'], risk:'safe' },
+    { id:'excav_underground',icon:'🗺', labelKo:'매설물 사전조사',    labelEn:'Survey underground',  labelVi:'Khảo sát ngầm',      labelAr:'مسح المرافق',           taskType:'excavate', applicableTrades:['earthwork','excavator'], risk:'safe' },
+    { id:'excav_no_survey',  icon:'⚠', labelKo:'조사 없이 굴착',      labelEn:'Excavate w/o survey', labelVi:'Đào không khảo sát', labelAr:'احفر بلا مسح',           taskType:'excavate', applicableTrades:['excavator'], risk:'danger', accidentIfDanger:'underground_strike' },
+  ],
+};
+
+// ── 글로벌 함정 풀 — 항상 명령 풀에 포함 ────────────────────
+// 어느 작업이 활성이든 무관하게 표시되는 함정 (PPE 미착용 강제, 풍속 무시 등)
+const TRAPS_GLOBAL = [
+  { id:'global_wear_ppe',    icon:'⛑',  labelKo:'안전모·안전대 착용', labelEn:'Wear helmet & harness', labelVi:'Đeo mũ và dây an toàn', labelAr:'البس الخوذة والحزام', applicableTrades:null, risk:'safe' },
+  { id:'global_no_ppe',      icon:'⚠', labelKo:'PPE 없이 작업해',     labelEn:'Work without PPE',      labelVi:'Làm không PPE',      labelAr:'العمل بلا معدات وقاية', applicableTrades:null, risk:'danger', accidentIfDanger:'worker_fall' },
+  { id:'global_ignore_wind', icon:'⚠', labelKo:'풍속 무시하고 강행',  labelEn:'Ignore wind, proceed',  labelVi:'Bỏ qua gió',         labelAr:'تجاهل الرياح',           applicableTrades:null, risk:'danger', accidentIfDanger:'swing_drop' },
+  { id:'global_stop_all',    icon:'✋', labelKo:'작업 중단',           labelEn:'Stop all work',         labelVi:'Dừng tất cả',        labelAr:'أوقف كل العمل',         applicableTrades:null, risk:'safe' },
+];
 
 // Track which instructions have been given (per NPC per phase)
 const _givenInstructions = new Set();
@@ -142,8 +228,15 @@ function openInstructionPopup(item) {
   // Instruction list
   const list = document.getElementById('inst-list');
   list.innerHTML = '';
-  const phase = GAME.state.phase;
-  const items = INSTRUCTIONS[phase] || INSTRUCTIONS[1];
+  // v2.0: 활성 작업 큐 우선. 비어있으면 phase 풀로 폴백.
+  let items;
+  if (typeof buildInstructionPoolFromActiveTasks === 'function' &&
+      typeof GAME.activeTasks !== 'undefined' && GAME.activeTasks.length > 0) {
+    items = buildInstructionPoolFromActiveTasks(npc);
+  } else {
+    const phase = GAME.state.phase;
+    items = INSTRUCTIONS[phase] || INSTRUCTIONS[1];
+  }
 
   // 모든 명령을 풀에 표시 — 직종/phase 미스매치는 NPC 거부로 처리 (학습)
   // 위험변종(risk='danger')는 시각적 경고 (⚠ 아이콘이 이미 있음) — 플레이어가 인식 가능
@@ -431,8 +524,14 @@ function toggleInstructionLang() {
       // Re-render instruction list with new language
       const list = document.getElementById('inst-list');
       list.innerHTML = '';
-      const phase = GAME.state.phase;
-      const items = INSTRUCTIONS[phase] || INSTRUCTIONS[1];
+      let items;
+      if (typeof buildInstructionPoolFromActiveTasks === 'function' &&
+          typeof GAME.activeTasks !== 'undefined' && GAME.activeTasks.length > 0) {
+        items = buildInstructionPoolFromActiveTasks(npc);
+      } else {
+        const phase = GAME.state.phase;
+        items = INSTRUCTIONS[phase] || INSTRUCTIONS[1];
+      }
       items.forEach(inst => {
         const isDanger = inst.risk === 'danger';
         const btn2 = document.createElement('div');

@@ -74,15 +74,44 @@ tmux has-session -t bulsa 2>/dev/null || {
 
 **영속성 핵심:** `claude --continue` 가 디스크 저장 대화를 자동 재개. tmux 죽어도, PC 재부팅돼도 이전 컨텍스트 복귀. 토큰 추가 소모 없음 (Max 정액 한도 동일).
 
+## v2 설계 모델 — 다음 세션 필독
+
+**v1.x 시나리오 모델 폐기됨. v2 = 작업 큐 + 간섭 매트릭스.**
+
+### 핵심 변경 (SPEC.md v2 참조)
+- ❌ 시나리오 (`excavation`/`foundation`/`lifting`/`envelope`/`mep_finish` URL 분리) → **레거시**
+- ✅ **작업(task) 큐** — 한 부지에서 여러 작업 동시 활성 (가설+본공사+마감+지속)
+- ✅ **간섭 매트릭스** — 두 작업 공간·시간 충돌 시 사고 (lift+작업자, pour+아래층, paint+electric 등)
+- ✅ **명령 풀 동적 합성** — `pool = ∪ INSTRUCTION_POOLS_BY_TASK[t.type] + TRAPS_GLOBAL`
+
+### 작업 종류 (TASK_TYPES)
+- **가설**: shoring · scaffold · formwork_support · guardrail · lifeline
+- **본공사 사이클** (5층 반복): formwork · rebar · pour · cure
+- **본공사 1회**: excavate · found_pour
+- **마감/설비** (병행 가능): panel · glass · electric · plumb · vent · paint · ext_install
+- **지속**: lift · signal · survey · inspect
+
+### 코드 잔재 처리
+- `GAME.scenarioId` — 레거시 변수. 새 코드는 `GAME.activeTasks[]` 사용
+- `scenarios/` 디렉토리 — 백워드 호환 유지, 신규 시나리오 분기 추가 금지
+- `INSTRUCTIONS_BY_SCENARIO` / `INSTRUCTIONS_LIFTING` 등 시도 폐기. 풀은 **작업 종류 기준** (`INSTRUCTION_POOLS_BY_TASK[type]`)
+
+### 즉시 적용 작업 (이 세션)
+1. `core/tasks.js` 신규 — TASK_TYPES + INTERFERENCE_MATRIX + 평가 함수
+2. `instruction.js` 활성작업 기반 풀 합성
+3. PROGRESS.md 정리
+
+### v2 마이그레이션 우선순위 (다음 세션)
+1. 간섭 평가 + 시각화 (적색 경고선)
+2. 5층 사이클 컨트롤러가 작업 큐 enqueue
+3. HUD 활성 작업 리스트 위젯
+4. 명령 히스토리 UI (학습 도구)
+5. 5 시나리오 URL → 한 부지 통합으로 흡수
+
 ## 현재 구현 상태
 ```
-✅ Three.js 씬 + 게임루프 + 1인칭 이동
-✅ NPC 5명 (역할별 + Yuka AI) + 다국어 ko/en/ar/vi
-✅ Phase 4 rigging_setup (줄걸이 지시)
-✅ Phase 5 site_setup (작업반경/TBM)
-✅ Phase 6 execution (인양 실행)
-✅ 사고 패널 + 수료증
-🔗 Phase 1·2 — 무사이 담당 (BULSA 미구현, 기본값으로 통과)
-⏳ Phase 3 equipment_setup — 다음 목표
-⏳ 크레인 운전원 NPC 거부권, 불안전 행동 감지
+✅ v1.x: Three.js 씬, 5 시나리오 분리 동작, NPC 5+ 명 4언어, 사고 패널, 수료증
+✅ v1.2: NPC 명령 4분기 (거부/숙련/위험변종), 88개 사고 vi/ar, 21 inspector 위반 vi/ar
+✅ v2.0 설계: SPEC v2 + CLAUDE.md 가이드 (시나리오→작업 큐 모델 전환)
+⏳ v2.0 구현: core/tasks.js 작성 + 간섭 매트릭스 데이터 + 명령풀 합성 통합
 ```
