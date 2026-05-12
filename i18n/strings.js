@@ -815,5 +815,17 @@ function setLang(lang) {
       try { RC_LOOP._renderRcHud(); } catch (e) {}
     }
     if (typeof refreshRcLoopI18n === 'function') { try { refreshRcLoopI18n(); } catch (e) {} }
+    // data-lang-* 속성을 가진 요소 자동 갱신
+    applyDataLangI18n();
   }
+}
+
+// HTML 요소에 data-lang-ko/en/vi/ar 속성이 있으면 현재 언어 텍스트로 textContent 갱신
+// 사용: <span data-lang-ko="안녕" data-lang-en="Hi" data-lang-vi="Xin chào" data-lang-ar="مرحبا">안녕</span>
+function applyDataLangI18n() {
+  const attr = 'data-lang-' + currentLang;
+  document.querySelectorAll('[data-lang-ko]').forEach(el => {
+    const text = el.getAttribute(attr) || el.getAttribute('data-lang-ko');
+    if (text != null) el.textContent = text;
+  });
 }

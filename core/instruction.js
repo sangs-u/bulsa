@@ -1,6 +1,19 @@
 // Instruction system — player gives work orders to NPCs as supervisor
 // Monkey-patches openPopup() from interaction.js to intercept NPC type
 
+// 지시 언어 토글 버튼 라벨 — UI 언어 기준 4언어
+function _instLangSwitchLabel() {
+  const target = (typeof instructionLang !== 'undefined' && instructionLang === 'ko') ? 'EN' : 'KO';
+  const ui = (typeof currentLang !== 'undefined') ? currentLang : 'ko';
+  const map = {
+    ko: `${target}으로 지시`,
+    en: `Instruct in ${target}`,
+    vi: `Hướng dẫn bằng ${target}`,
+    ar: `أصدر التعليمات بـ ${target}`,
+  };
+  return map[ui] || map.ko;
+}
+
 // ── Instruction database ─────────────────────────────────────
 const INSTRUCTIONS = {
   1: [  // Phase 1 — 작업계획서
@@ -97,7 +110,7 @@ function openInstructionPopup(item) {
   // Lang switch and close button
   const langSwitch = document.getElementById('inst-lang-switch');
   if (langSwitch) {
-    langSwitch.textContent = instructionLang === 'ko' ? 'EN으로 지시' : 'KO로 지시';
+    langSwitch.textContent = _instLangSwitchLabel();
   }
   const closeBtn = document.getElementById('inst-close-btn');
   if (closeBtn) closeBtn.textContent = t('close');
@@ -283,7 +296,7 @@ function toggleInstructionLang() {
 
       // Update lang switch button text
       const btn = document.getElementById('inst-lang-switch');
-      if (btn) btn.textContent = instructionLang === 'ko' ? 'EN으로 지시' : 'KO로 지시';
+      if (btn) btn.textContent = _instLangSwitchLabel();
 
       // Re-render instruction list with new language
       const list = document.getElementById('inst-list');

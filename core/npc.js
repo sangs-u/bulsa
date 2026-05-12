@@ -202,11 +202,11 @@ class NPC {
     // 신호수(gimc): Phase 5 직접 행동 + Phase 6 대화 팝업
     if (this.id === 'gimc') {
       GAME.interactables.push({
-        mesh: this.mesh, type: 'action', actionId: 'assign_signal', label: '신호수 위치 지정',
+        mesh: this.mesh, type: 'action', actionId: 'assign_signal', label: { ko:'신호수 위치 지정', en:'Assign signaller position', vi:'Chỉ định vị trí người ra hiệu', ar:'تحديد موقع الإشاري' },
         phase: 5,
       });
       GAME.interactables.push({
-        mesh: this.mesh, type: 'npc', npcId: 'gimc', label: '신호수와 대화',
+        mesh: this.mesh, type: 'npc', npcId: 'gimc', label: { ko:'신호수와 대화', en:'Talk to signaller', vi:'Trò chuyện với người ra hiệu', ar:'تحدث إلى الإشاري' },
         phase: 6,
       });
     } else {
