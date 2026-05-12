@@ -176,16 +176,26 @@
     <button class="panel-close-btn" id="excav-plan-cancel" title="닫기">✕</button>
   </div>
   <div class="panel-body">
-    <p class="panel-guide" id="excav-plan-guide">굴착 매개변수를 직접 결정하세요. 잘못된 지시는 사고로 이어집니다.</p>
+    <p class="panel-guide" id="excav-plan-guide"
+       data-lang-ko="굴착 매개변수를 직접 결정하세요. 잘못된 지시는 사고로 이어집니다."
+       data-lang-en="Set excavation parameters yourself. Wrong orders lead to accidents."
+       data-lang-vi="Tự xác định thông số đào. Lệnh sai sẽ gây tai nạn."
+       data-lang-ar="حدد معاملات الحفر بنفسك. الأوامر الخاطئة تؤدي إلى حوادث.">굴착 매개변수를 직접 결정하세요. 잘못된 지시는 사고로 이어집니다.</p>
     <div class="wi-form">
       <label class="wi-row">
-        <span class="wi-label" id="excav-lbl-depth">굴착 깊이 (m)</span>
+        <span class="wi-label" id="excav-lbl-depth"
+              data-lang-ko="굴착 깊이 (m)" data-lang-en="Excavation Depth (m)" data-lang-vi="Độ sâu đào (m)" data-lang-ar="عمق الحفر (م)">굴착 깊이 (m)</span>
         <input type="number" id="excav-depth" min="1" max="6" step="0.1" value="2.0">
       </label>
-      <p class="wi-hint" id="excav-hint-depth">기초 매트 매설 위해 1.8~2.5m 권장 · 5m 초과 시 흙막이 의무</p>
+      <p class="wi-hint" id="excav-hint-depth"
+         data-lang-ko="기초 매트 매설 위해 1.8~2.5m 권장 · 5m 초과 시 흙막이 의무"
+         data-lang-en="1.8–2.5m recommended for mat foundation · shoring required above 5m"
+         data-lang-vi="Khuyến nghị 1.8–2.5m cho móng bè · bắt buộc chống vách trên 5m"
+         data-lang-ar="يوصى بـ 1.8–2.5م للأساس · الدعم إلزامي فوق 5م">기초 매트 매설 위해 1.8~2.5m 권장 · 5m 초과 시 흙막이 의무</p>
 
       <label class="wi-row">
-        <span class="wi-label" id="excav-lbl-slope">굴착 구배 (1:N)</span>
+        <span class="wi-label" id="excav-lbl-slope"
+              data-lang-ko="굴착 구배 (1:N)" data-lang-en="Excavation Slope (1:N)" data-lang-vi="Độ dốc đào (1:N)" data-lang-ar="ميل الحفر (1:N)">굴착 구배 (1:N)</span>
         <select id="excav-slope">
           <option value="0.5">1:0.5 (경암)</option>
           <option value="1.0">1:1.0 (풍화암)</option>
@@ -196,7 +206,8 @@
       </label>
 
       <label class="wi-row">
-        <span class="wi-label" id="excav-lbl-shoring">흙막이 가시설</span>
+        <span class="wi-label" id="excav-lbl-shoring"
+              data-lang-ko="흙막이 가시설" data-lang-en="Shoring Type" data-lang-vi="Loại chống vách" data-lang-ar="نوع الدعم">흙막이 가시설</span>
         <select id="excav-shoring">
           <option value="none">미설치</option>
           <option value="h_pile" selected>H-pile + 토류판</option>
@@ -207,13 +218,22 @@
 
       <label class="wi-row wi-check">
         <input type="checkbox" id="excav-underground">
-        <span id="excav-lbl-underground">매설물 도면 확인 완료 (가스·전기·통신·수도)</span>
+        <span id="excav-lbl-underground"
+              data-lang-ko="매설물 도면 확인 완료 (가스·전기·통신·수도)"
+              data-lang-en="Underground utility map verified (gas·electric·telecom·water)"
+              data-lang-vi="Đã xác nhận bản đồ ngầm (gas·điện·viễn thông·nước)"
+              data-lang-ar="تم التحقق من خريطة المرافق (غاز·كهرباء·اتصالات·ماء)">매설물 도면 확인 완료 (가스·전기·통신·수도)</span>
       </label>
-      <p class="wi-hint" id="excav-hint-underground">미확인 시 산안법 §38 위반 — 과태료 5백만원</p>
+      <p class="wi-hint" id="excav-hint-underground"
+         data-lang-ko="미확인 시 산안법 §38 위반 — 과태료 5백만원"
+         data-lang-en="OSH §38 violation if unchecked — KRW 5M fine"
+         data-lang-vi="Vi phạm OSH §38 nếu chưa kiểm tra — phạt 5 triệu KRW"
+         data-lang-ar="مخالفة §38 إن لم يفحص — غرامة 5 ملايين وون">미확인 시 산안법 §38 위반 — 과태료 5백만원</p>
     </div>
   </div>
   <div class="panel-footer">
-    <button class="btn-primary" id="excav-plan-sign">서명·제출</button>
+    <button class="btn-primary" id="excav-plan-sign"
+            data-lang-ko="서명·제출" data-lang-en="Sign &amp; Submit" data-lang-vi="Ký &amp; Gửi" data-lang-ar="توقيع وإرسال">서명·제출</button>
   </div>
 </div>
 
