@@ -60,6 +60,9 @@
     _completedAt: [],         // 각 페이즈 완료 시각 (game elapsed)
     _onChange: [],            // 페이즈 변경 콜백 (HUD/scene transition 등 구독)
     _lastTickT: 0,
+    _sceneGroups: {},         // { phaseId: THREE.Group } — teardown 추적용
+    _interactSnapshot: 0,     // 페이즈 시작 직전 GAME.interactables.length (그 이후 추가분 = 이 페이즈 소유)
+    _hazardSnapshot:   0,     // 같은 컨셉 (GAME.hazards)
   };
   window.PHASE_CONTROLLER = PHASE_CONTROLLER;
 
@@ -68,6 +71,7 @@
     PHASE_CONTROLLER._enabled = true;
     PHASE_CONTROLLER._currentIdx = 0;
     PHASE_CONTROLLER._completedAt = [];
+    _buildCurrentPhaseScene();
     _seedCurrentPhaseTasks();
   };
 
@@ -116,7 +120,10 @@
       _notifyChange(fromIdx, fromIdx, true);
       return true;
     }
+    // 이전 페이즈 시각 정리 (선택: 이전 mesh 유지하려면 _teardownPhaseScene 주석 처리)
+    _teardownPhaseScene(PHASES[fromIdx]);
     PHASE_CONTROLLER._currentIdx++;
+    _buildCurrentPhaseScene();
     _seedCurrentPhaseTasks();
     _notifyChange(fromIdx, PHASE_CONTROLLER._currentIdx, false);
     return true;
@@ -162,6 +169,107 @@
     // 골조 페이즈 = RC_LOOP 동적 enqueue
     if (ph.key === 'lifting' && typeof window.initRcLoop === 'function') {
       try { window.initRcLoop(); } catch (e) {}
+    }
+  }
+
+  // ── Scene build / teardown ────────────────────────────────────
+  const _BUILD_FN_BY_KEY = {
+    excavation: 'buildExcavationScene',
+    foundation: 'buildFoundationScene',
+    lifting:    'buildLiftingScene',
+    envelope:   'buildEnvelopeScene',
+    mep_finish: 'buildMepFinishScene',
+  };
+  const _HAZARD_FN_BY_KEY = {
+    excavation: 'registerExcavationHazards',
+    foundation: 'registerFoundationHazards',
+    lifting:    'registerLiftingHazards',
+    envelope:   'registerEnvelopeHazards',
+    mep_finish: 'registerMepFinishHazards',
+  };
+
+  function _buildCurrentPhaseScene() {
+    if (typeof GAME === 'undefined' || !GAME.scene) return;
+    const ph = PHASES[PHASE_CONTROLLER._currentIdx];
+    if (!ph) return;
+
+    // scene 자식 변화 추적 → 새로 추가된 mesh 만 phase group 으로 묶기
+    const sceneChildSnapshot = GAME.scene.children.length;
+    PHASE_CONTROLLER._interactSnapshot = (GAME.interactables && GAME.interactables.length) || 0;
+    PHASE_CONTROLLER._hazardSnapshot   = (GAME.hazards && GAME.hazards.length) || 0;
+
+    // 1) build scene
+    const buildFn = window[_BUILD_FN_BY_KEY[ph.key]];
+    if (typeof buildFn === 'function') {
+      try { buildFn(); }
+      catch (e) { console.warn('[phase build]', ph.key, e.message); }
+    } else {
+      console.warn('[phase build] no fn for', ph.key);
+    }
+
+    // 2) register hazards
+    const hazFn = window[_HAZARD_FN_BY_KEY[ph.key]];
+    if (typeof hazFn === 'function') {
+      try { hazFn(); } catch (e) { console.warn('[phase hazards]', ph.key, e.message); }
+    }
+
+    // 3) 새로 추가된 mesh 들을 group 에 묶기 (teardown 추적용)
+    const newChildren = GAME.scene.children.slice(sceneChildSnapshot);
+    if (newChildren.length > 0 && typeof THREE !== 'undefined') {
+      const grp = new THREE.Group();
+      grp.name = `phase_${ph.id}_${ph.key}`;
+      newChildren.forEach(c => grp.add(c)); // scene 에서 자동 제거됨
+      GAME.scene.add(grp);
+      PHASE_CONTROLLER._sceneGroups[ph.id] = grp;
+    }
+  }
+
+  function _teardownPhaseScene(ph) {
+    if (!ph) return;
+    if (typeof GAME === 'undefined' || !GAME.scene) return;
+
+    // scene group 제거 + dispose
+    const grp = PHASE_CONTROLLER._sceneGroups[ph.id];
+    if (grp) {
+      GAME.scene.remove(grp);
+      grp.traverse(o => {
+        if (o.geometry) { try { o.geometry.dispose(); } catch (e) {} }
+        if (o.material) {
+          const mats = Array.isArray(o.material) ? o.material : [o.material];
+          mats.forEach(m => {
+            if (m && m.map)         { try { m.map.dispose(); }         catch (e) {} }
+            if (m && m.normalMap)   { try { m.normalMap.dispose(); }   catch (e) {} }
+            if (m && m.dispose)     { try { m.dispose(); }             catch (e) {} }
+          });
+        }
+      });
+      delete PHASE_CONTROLLER._sceneGroups[ph.id];
+    }
+
+    // 페이즈 시작 후 추가된 interactables / hazards 정리 (snapshot 시점 길이로 잘라냄)
+    if (GAME.interactables) {
+      // 뒤에서 추가된 항목 중 mesh 가 사라진 것은 자동으로 useless 해짐.
+      // 안전하게 mesh 가 scene tree 에 없는 것만 필터링.
+      GAME.interactables = GAME.interactables.filter(item => {
+        if (!item.mesh) return true;
+        let cur = item.mesh;
+        while (cur) {
+          if (cur === GAME.scene) return true;
+          cur = cur.parent;
+        }
+        return false;
+      });
+    }
+    if (GAME.hazards) {
+      GAME.hazards = GAME.hazards.filter(h => {
+        if (!h || !h.mesh) return true;
+        let cur = h.mesh;
+        while (cur) {
+          if (cur === GAME.scene) return true;
+          cur = cur.parent;
+        }
+        return false;
+      });
     }
   }
 

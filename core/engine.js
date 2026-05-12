@@ -106,56 +106,23 @@ window.persistFines = persistFines;
       : null;
   })();
 
+  // v3 — unifiedMode 일 때는 PHASE_CONTROLLER 가 페이즈별 scene build 담당.
+  // 단일 시나리오 모드에서만 이 시점에 baseline scene 빌드.
   const _buildFn    = window[_active.build];
   const _registerFn = window[_active.register];
-  if (typeof _buildFn === 'function') {
-    _buildFn();
-  } else {
-    console.error(`${_active.build} 없음 — scene.js 로딩 순서 확인`);
+  if (!GAME.unifiedMode) {
+    if (typeof _buildFn === 'function') {
+      _buildFn();
+    } else {
+      console.error(`${_active.build} 없음 — scene.js 로딩 순서 확인`);
+    }
+    if (typeof _registerFn === 'function') {
+      _registerFn();
+    } else {
+      console.error(`${_active.register} 없음 — hazards.js 로딩 순서 확인`);
+    }
   }
-  if (typeof _registerFn === 'function') {
-    _registerFn();
-  } else {
-    console.error(`${_active.register} 없음 — hazards.js 로딩 순서 확인`);
-  }
-
-  // v2.0 통합 모드 — 4 시나리오 scene build + hazard register 모두 호출.
-  // 각 시나리오가 추가한 mesh 를 그 시나리오 영역(unifiedZones) 으로 group offset 분산.
-  if (GAME.unifiedMode) {
-    GAME.unifiedZones = {
-      excavation: { ox: -22, oz: -10 },   // 좌상
-      foundation: { ox: -18, oz:  10 },   // 좌하
-      envelope:   { ox:  22, oz: -10 },   // 우상
-      mep_finish: { ox:  22, oz:  10 },   // 우하
-    };
-    const _buildEntries = [
-      ['buildExcavationScene', 'excavation', 'registerExcavationHazards'],
-      ['buildFoundationScene', 'foundation', 'registerFoundationHazards'],
-      ['buildEnvelopeScene',   'envelope',   'registerEnvelopeHazards'],
-      ['buildMepFinishScene',  'mep_finish', 'registerMepFinishHazards'],
-    ];
-    _buildEntries.forEach(([buildFn, sid, regFn]) => {
-      const fn = window[buildFn];
-      if (typeof fn !== 'function') return;
-      const zone = GAME.unifiedZones[sid];
-      const startIdx = GAME.scene.children.length;
-      try { fn(); } catch (e) { console.warn('[unified build]', buildFn, e.message); }
-      if (typeof window[regFn] === 'function') {
-        try { window[regFn](); } catch (e) { console.warn('[unified hazard]', regFn, e.message); }
-      }
-      // 새로 추가된 GAME.scene 의 자식들을 group 으로 묶어 영역 offset 적용
-      if (zone) {
-        const newChildren = GAME.scene.children.slice(startIdx);
-        if (newChildren.length > 0) {
-          const grp = new THREE.Group();
-          grp.name = `unified_zone_${sid}`;
-          newChildren.forEach(c => grp.add(c));  // scene 에서 자동 제거 + group 으로 이동
-          grp.position.set(zone.ox, 0, zone.oz);
-          GAME.scene.add(grp);
-        }
-      }
-    });
-  }
+  // v2 4-zone group offset 빌드는 폐기됨 (PHASE_CONTROLLER 가 단일 좌표 페이즈 진행)
 
   // v2.0 — 시나리오별 초기 작업 큐 시드 (lifting 은 RC_LOOP 가 동적 enqueue)
   // v3 — unified 모드는 PHASE_CONTROLLER 가 페이즈 1 만 시드. 아래 통합 시드 분기는 폐기.
