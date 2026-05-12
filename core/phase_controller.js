@@ -332,6 +332,34 @@
     }
   }
 
+  // 각 페이즈별 *_STATE 플래그로 진척도 계산
+  const _STATE_PROGRESS = {
+    excavation: function () {
+      var s = window.EXCAV_STATE;
+      if (!s) return 0;
+      var flags = [s.planWritten, s.surveyDone, s.shoringInstalled, s.railingInstalled, s.signalAssigned];
+      return flags.filter(Boolean).length / flags.length;
+    },
+    foundation: function () {
+      var s = window.FOUND_STATE;
+      if (!s) return 0;
+      var flags = [s.planWritten, s.rebarCapsOk, s.formworkOk, s.pumpOk, s.pourOrderAgreed];
+      return flags.filter(Boolean).length / flags.length;
+    },
+    envelope: function () {
+      var s = window.ENV_STATE;
+      if (!s) return 0;
+      var flags = [s.planWritten, s.scaffoldInspected, s.lifelineInstalled, s.panelSecured, s.signalAssigned];
+      return flags.filter(Boolean).length / flags.length;
+    },
+    mep_finish: function () {
+      var s = window.MEP_STATE;
+      if (!s) return 0;
+      var flags = [s.planWritten, s.lotoApplied, s.gasChecked, s.ventActivated, s.extVerified];
+      return flags.filter(Boolean).length / flags.length;
+    },
+  };
+
   function _evaluateProgress(ph) {
     if (!ph || !ph.completion) return 0;
 
@@ -342,27 +370,13 @@
       return Math.min(1, done / target);
     }
 
-    // 일반 페이즈: 활성 task 중 required 타입 진척도 평균
-    let tasks = [];
-    try {
-      if (typeof window.getActiveTasks === 'function') {
-        const out = window.getActiveTasks();
-        if (Array.isArray(out)) tasks = out;
-      }
-    } catch (e) {}
-    if (!tasks.length) return 0;
+    // *_STATE 플래그 기반 (페이즈 1·2·4·5)
+    const stateEval = _STATE_PROGRESS[ph.key];
+    if (stateEval) {
+      try { return stateEval(); } catch (e) { return 0; }
+    }
 
-    const reqTypes = ph.completion.requiredTaskTypes || [];
-    const relevant = reqTypes.length
-      ? tasks.filter(t => reqTypes.indexOf(t.type) >= 0)
-      : tasks;
-    if (!relevant.length) return 0;
-
-    const totalProgress = relevant.reduce((s, t) => s + (t.progress || 0), 0);
-    const avgProgress   = totalProgress / relevant.length;
-    const ratio = ph.completion.minProgressRatio || 0.8;
-    // 평균 진척도 / 임계비율 → 1.0 도달 시 완료
-    return Math.min(1, avgProgress / ratio);
+    return 0;
   }
 
   // 인스펙터 적발 대상 flag (task.flags) 가 하나라도 활성이면 차단
@@ -376,6 +390,10 @@
   }
 
   function _notifyChange(fromIdx, toIdx, isFinal) {
+    // 새 페이즈 시작 시 GAME.state.phase 를 1 로 리셋 — 명령 풀·인터랙션이 새 시나리오 기준으로 시작
+    if (!isFinal && typeof GAME !== 'undefined' && GAME.state) {
+      GAME.state.phase = 1;
+    }
     PHASE_CONTROLLER._onChange.forEach(cb => {
       try { cb({ fromIdx, toIdx, isFinal, fromPhase: PHASES[fromIdx], toPhase: PHASES[toIdx] }); }
       catch (e) { console.warn('[PHASE_CONTROLLER onChange]', e.message); }
