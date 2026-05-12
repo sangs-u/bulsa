@@ -55,8 +55,15 @@ window.persistFines = persistFines;
   GAME.scene = new THREE.Scene();
 
   GAME.camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 250);
-  GAME.camera.position.set(0, 1.7, 12);
-  GAME.camera.lookAt(0, 1.7, -8);
+  // 통합 모드는 부지가 넓어 시작 위치를 뒤로 빼서 4 영역 전체 보이게
+  const _unifiedStart = (new URLSearchParams(location.search).get('s') === 'unified');
+  if (_unifiedStart) {
+    GAME.camera.position.set(0, 1.7, 22);
+    GAME.camera.lookAt(0, 1.7, -10);
+  } else {
+    GAME.camera.position.set(0, 1.7, 12);
+    GAME.camera.lookAt(0, 1.7, -8);
+  }
 
   const canvas = document.getElementById('gameCanvas');
   GAME.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
