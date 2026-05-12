@@ -86,7 +86,7 @@ const INSTRUCTION_POOLS_BY_TASK = {
   // 가설공사
   scaffold: [
     { id:'scaffold_inspect', icon:'🔍', labelKo:'비계 조립검사',     labelEn:'Scaffold inspect',    labelVi:'Kiểm tra giàn giáo', labelAr:'فحص السقالة',         taskType:'scaffold', applicableTrades:['scaffold'], risk:'safe', minSkill:0.6 },
-    { id:'scaffold_anchor',  icon:'🔗', labelKo:'벽이음 결속',       labelEn:'Wall ties',           labelVi:'Buộc neo tường',     labelAr:'ربط الجدار',           taskType:'scaffold', applicableTrades:['scaffold'], risk:'safe' },
+    { id:'scaffold_anchor',  icon:'🔗', labelKo:'벽이음 결속',       labelEn:'Wall ties',           labelVi:'Buộc neo tường',     labelAr:'ربط الجدار',           taskType:'scaffold', applicableTrades:['scaffold'], risk:'safe', clearFlagOnTask:{ type:'scaffold', flag:'dismantling' } },
     { id:'scaffold_use_old', icon:'⚠', labelKo:'녹슨 강관 재사용',  labelEn:'Reuse rusty tube',    labelVi:'Dùng ống gỉ',        labelAr:'استخدم أنبوب صدئ',     taskType:'scaffold', applicableTrades:['scaffold'], risk:'danger', accidentIfDanger:'scaffold_collapse' },
   ],
   lifeline: [
@@ -114,7 +114,7 @@ const INSTRUCTION_POOLS_BY_TASK = {
     { id:'pour_overload',    icon:'⚠', labelKo:'일일 한계 초과 타설', labelEn:'Pour past daily limit', labelVi:'Đổ quá giới hạn',  labelAr:'صب فوق الحد',           taskType:'pour', applicableTrades:['pour'], risk:'danger', accidentIfDanger:'form_collapse' },
   ],
   cure: [
-    { id:'cure_cover',       icon:'🟦', labelKo:'양생 시트 덮기',     labelEn:'Cover with cure sheet', labelVi:'Phủ tấm dưỡng hộ', labelAr:'تغطية للمعالجة',         taskType:'cure', applicableTrades:['pour','concrete'], risk:'safe' },
+    { id:'cure_cover',       icon:'🟦', labelKo:'양생 시트 덮기',     labelEn:'Cover with cure sheet', labelVi:'Phủ tấm dưỡng hộ', labelAr:'تغطية للمعالجة',         taskType:'cure', applicableTrades:['pour','concrete'], risk:'safe', clearFlagOnTask:{ type:'cure', flag:'premature' } },
     { id:'cure_early_load',  icon:'⚠', labelKo:'양생 안 끝났는데 적재', labelEn:'Load before cure done', labelVi:'Chất tải sớm',     labelAr:'تحميل مبكر',             taskType:'cure', applicableTrades:null, risk:'danger', accidentIfDanger:'premature_load' },
   ],
   // 양중
@@ -135,7 +135,7 @@ const INSTRUCTION_POOLS_BY_TASK = {
     { id:'electric_live',    icon:'⚠', labelKo:'활선 상태 작업',      labelEn:'Work hot (no LOTO)',  labelVi:'Làm khi có điện',    labelAr:'العمل على خط حي',       taskType:'electric', applicableTrades:['electric'], risk:'danger', accidentIfDanger:'electric_shock' },
   ],
   paint: [
-    { id:'paint_vent',       icon:'💨', labelKo:'국소배기 가동 후 도장', labelEn:'Vent before paint', labelVi:'Thông gió trước sơn', labelAr:'تهوية قبل الدهان',     taskType:'paint', applicableTrades:['painting'], risk:'safe' },
+    { id:'paint_vent',       icon:'💨', labelKo:'국소배기 가동 후 도장', labelEn:'Vent before paint', labelVi:'Thông gió trước sơn', labelAr:'تهوية قبل الدهان',     taskType:'paint', applicableTrades:['painting'], risk:'safe', clearFlagOnTask:{ type:'paint', flag:'organic' } },
     { id:'paint_no_vent',    icon:'⚠', labelKo:'환기 없이 유성 도장', labelEn:'Solvent paint no vent', labelVi:'Sơn dầu không thông',labelAr:'دهن عضوي بلا تهوية',taskType:'paint', applicableTrades:['painting'], risk:'danger', accidentIfDanger:'toxic_exposure' },
   ],
   plumb: [
@@ -156,7 +156,7 @@ const INSTRUCTION_POOLS_BY_TASK = {
   ],
   // 가설공사 추가
   formwork_support: [
-    { id:'fwsupp_check',     icon:'🔧', labelKo:'동바리 수직도 점검',   labelEn:'Inspect shoring plumb', labelVi:'Kiểm tra chống thẳng', labelAr:'فحص استقامة الدعم',    taskType:'formwork_support', applicableTrades:['formwork'], risk:'safe' },
+    { id:'fwsupp_check',     icon:'🔧', labelKo:'동바리 수직도 점검',   labelEn:'Inspect shoring plumb', labelVi:'Kiểm tra chống thẳng', labelAr:'فحص استقامة الدعم',    taskType:'formwork_support', applicableTrades:['formwork'], risk:'safe', clearFlagOnTask:{ type:'formwork_support', flag:'unchecked' } },
     { id:'fwsupp_no_check',  icon:'⚠', labelKo:'점검 없이 타설',       labelEn:'Pour without shoring check', labelVi:'Đổ không kiểm chống', labelAr:'صب بلا فحص الدعم',     taskType:'formwork_support', applicableTrades:['formwork','pour'], risk:'danger', accidentIfDanger:'form_collapse' },
   ],
   guardrail: [
@@ -418,6 +418,13 @@ function _applyInstructionFlag(spec) {
   });
 }
 
+function _clearInstructionFlag(spec) {
+  if (!spec || !GAME.activeTasks) return;
+  GAME.activeTasks.filter(t => t.type === spec.type).forEach(t => {
+    if (t.flags) t.flags[spec.flag] = false;
+  });
+}
+
 function giveInstruction(npc, inst) {
   _givenInstructions.add(`${npc.id}_${inst.id}`);
   const _record = (r) => {
@@ -545,7 +552,8 @@ function giveInstruction(npc, inst) {
 
   applySafetyReward(3);
   updateHUD();
-  if (inst.setFlagOnTask) _applyInstructionFlag(inst.setFlagOnTask);
+  if (inst.setFlagOnTask)   _applyInstructionFlag(inst.setFlagOnTask);
+  if (inst.clearFlagOnTask) _clearInstructionFlag(inst.clearFlagOnTask);
   _record('success');
 }
 

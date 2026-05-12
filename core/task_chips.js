@@ -54,22 +54,30 @@
     const conflicting = _conflictIds();
 
     // 시그니처로 변경 감지 — 불필요한 DOM 재생성 회피
-    const sig = tasks.map(t => t.id + ':' + t.type + ':' + (conflicting.has(t.id) ? '!' : '') + ':' + currentLang).join('|');
+    const sig = tasks.map(t => {
+      const flagStr = t.flags ? Object.keys(t.flags).filter(k => t.flags[k]).join(',') : '';
+      return t.id + ':' + t.type + ':' + (conflicting.has(t.id) ? '!' : '') + ':' + flagStr + ':' + currentLang;
+    }).join('|');
     if (sig === _lastSig) return;
     _lastSig = sig;
 
     wrap.innerHTML = '';
     tasks.forEach(t => {
       const chip = document.createElement('span');
-      const inConflict = conflicting.has(t.id);
+      const inConflict  = conflicting.has(t.id);
+      const flagsActive = !!(t.flags && Object.keys(t.flags).some(k => t.flags[k]));
       const bg = _GROUP_BG[_group(t.type)] || _GROUP_BG.continuous;
+      // 우선순위: 충돌 > flag > 평상시
+      const borderColor = inConflict ? '#ff5050' : (flagsActive ? '#ffb340' : 'rgba(255,255,255,0.18)');
+      const glow = inConflict ? '0 0 6px rgba(255,80,80,0.6)' : (flagsActive ? '0 0 4px rgba(255,180,60,0.45)' : 'none');
       chip.style.cssText =
         'padding:2px 8px;border-radius:10px;font-family:monospace;font-size:12px;letter-spacing:0.3px;cursor:default;' +
         'color:#fff;background:' + bg + ';' +
-        'border:1.5px solid ' + (inConflict ? '#ff5050' : 'rgba(255,255,255,0.18)') + ';' +
-        (inConflict ? 'box-shadow:0 0 6px rgba(255,80,80,0.6);' : '');
+        'border:1.5px solid ' + borderColor + ';' +
+        'box-shadow:' + glow + ';';
       const floorTag = (t.floor != null) ? (' ' + t.floor + 'F') : '';
-      chip.textContent = (inConflict ? '⚠ ' : '') + _label(t.type) + floorTag;
+      const prefix = inConflict ? '⚠ ' : (flagsActive ? '🔶 ' : '');
+      chip.textContent = prefix + _label(t.type) + floorTag;
       // 풍부한 tooltip — type · floor · loc · flags
       const flags = (t.flags && Object.keys(t.flags).filter(k => t.flags[k])) || [];
       const tip = [
