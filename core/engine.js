@@ -220,10 +220,10 @@ window.persistFines = persistFines;
     setTimeout(() => {
       if (typeof showActionNotif !== 'function') return;
       const msg = {
-        ko: '🏗 자유 모드 — 영역별로 NPC 14명과 작업 18+개가 활성. H=히스토리 · L=사고도서관',
-        en: '🏗 Free Mode — 14 NPCs + 18+ tasks active across zones. H=history · L=lib',
-        vi: '🏗 Tự do — 14 NPC + 18+ task hoạt động khắp khu. H=lịch sử · L=thư viện',
-        ar: '🏗 وضع حر — 14 عامل + 18+ مهمة في المناطق. H=السجل · L=المكتبة',
+        ko: '🏗 자유 모드 — NPC 14·작업 18+ 활성. H=히스토리 · L=사고도서관 · N=가까운 NPC 호출',
+        en: '🏗 Free Mode — 14 NPCs + 18+ tasks. H=history · L=lib · N=call nearest NPC',
+        vi: '🏗 Tự do — 14 NPC + 18+ task. H=lịch sử · L=thư viện · N=gọi NPC gần',
+        ar: '🏗 وضع حر — 14 عامل + 18+ مهمة. H=السجل · L=المكتبة · N=استدعاء أقرب عامل',
       };
       showActionNotif(msg[currentLang] || msg.ko, 8000);
     }, 3000);
