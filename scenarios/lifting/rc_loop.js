@@ -81,6 +81,42 @@ function _updateContinuousTaskFloor() {
   });
 }
 
+// ── task.loc ← NPC 위치 실시간 동기화 (매 프레임) ───────────
+// 활성 task 의 type 에 매칭되는 NPC trade 가 있으면 그 NPC.group.position 으로 loc 갱신.
+// lift / cure 는 고정 위치 유지 (각각 크레인 / 슬래브).
+const _TASK_TYPE_TO_NPC_TRADE = {
+  formwork: 'formwork',
+  rebar:    'rebar',
+  pour:     'pour',
+  scaffold: 'scaffold',
+  panel:    'envelope',
+  electric: 'electric',
+  plumb:    'plumbing',
+  paint:    'painting',
+  excavate: 'earthwork',
+  signal:   'signal',
+};
+
+function updateRcLoopTaskLocs(/* delta */) {
+  if (!GAME.npcs || !GAME.activeTasks || GAME.activeTasks.length === 0) return;
+  // trade → 가장 첫 NPC (가용 한정 — 다수일 경우 향후 NPC 별 할당 추가)
+  const tradeToNpc = {};
+  for (const npc of GAME.npcs) {
+    if (!npc.trade || !npc.group) continue;
+    if (!tradeToNpc[npc.trade]) tradeToNpc[npc.trade] = npc;
+  }
+  for (const task of GAME.activeTasks) {
+    const trade = _TASK_TYPE_TO_NPC_TRADE[task.type];
+    if (!trade) continue;
+    const npc = tradeToNpc[trade];
+    if (!npc) continue;
+    if (!task.loc) task.loc = { x: 0, z: 0 };
+    task.loc.x = npc.group.position.x;
+    task.loc.z = npc.group.position.z;
+  }
+}
+window.updateRcLoopTaskLocs = updateRcLoopTaskLocs;
+
 function _ensureRcHud() {
   if (RC_LOOP._hudEl) return RC_LOOP._hudEl;
   const tl = document.getElementById('hud-tl');

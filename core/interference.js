@@ -65,10 +65,12 @@
   }
 
   function _toastConflict(rule, a, b) {
-    if (typeof showHUDAlert !== 'function' && typeof showAlert !== 'function') return;
-    const fn  = (typeof showHUDAlert === 'function') ? showHUDAlert : showAlert;
-    const msg = '⚠ ' + _label(a.type) + ' × ' + _label(b.type) + ' — ' + rule.cond;
-    try { fn(msg); } catch (e) {}
+    const prefix = { ko: '⚠ 간섭', en: '⚠ Interference', vi: '⚠ Xung đột', ar: '⚠ تداخل' }[currentLang] || '⚠ 간섭';
+    const msg    = prefix + ': ' + _label(a.type) + ' × ' + _label(b.type) + ' — ' + rule.cond;
+    if (typeof showActionNotif === 'function') { try { showActionNotif(msg, 3500); return; } catch (e) {} }
+    if (typeof showHUDAlert    === 'function') { try { showHUDAlert(msg);          return; } catch (e) {} }
+    if (typeof showAlert       === 'function') { try { showAlert(msg);             return; } catch (e) {} }
+    console.warn('[interference]', msg);
   }
 
   function updateInterference(delta) {

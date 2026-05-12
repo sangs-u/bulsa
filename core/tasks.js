@@ -102,42 +102,49 @@ function evaluateInterference() {
   return conflicts;
 }
 
+// AND 평가 — cond 는 "tokenA + tokenB + ..." 형태. 모든 토큰 만족해야 충돌.
+// task.flags 에 dismantling/unchecked/organic/premature 등 boolean 을 셋팅하면
+// 해당 위험 조건이 활성화. 미설정 시 default false (안전 상태).
 function _satisfiesCondition(cond, a, b) {
   if (!cond) return true;
-  // 위치 정보 없으면 보수적으로 충돌로 간주하지 않음
-  if (cond.indexOf('within_radius_6m') >= 0) {
-    if (!a.loc || !b.loc) return false;
-    const dx = a.loc.x - b.loc.x, dz = a.loc.z - b.loc.z;
-    return Math.hypot(dx, dz) <= 6;
+  const tokens = cond.split('+').map(s => s.trim()).filter(Boolean);
+  return tokens.every(tok => _evalCondToken(tok, a, b));
+}
+
+function _dist(a, b) {
+  if (!a.loc || !b.loc) return Infinity;
+  const dx = a.loc.x - b.loc.x, dz = a.loc.z - b.loc.z;
+  return Math.hypot(dx, dz);
+}
+
+function _hasFlag(a, b, key) {
+  return !!((a.flags && a.flags[key]) || (b.flags && b.flags[key]));
+}
+
+function _evalCondToken(tok, a, b) {
+  switch (tok) {
+    case 'within_radius_6m': return _dist(a, b) <= 6;
+    case 'within_5m':        return _dist(a, b) <= 5;
+    case 'within_1m':        return _dist(a, b) <= 1;
+    case 'below_floor':
+      if (a.floor == null || b.floor == null) return false;
+      return Math.abs(a.floor - b.floor) === 1;
+    case 'same_floor':
+      return a.floor != null && a.floor === b.floor;
+    case 'same_slab':
+      return a.floor != null && a.floor === b.floor;
+    case 'wind_gt_10mps':
+      return ((GAME.state && GAME.state.windSpeed) || 0) > 10;
+    case 'no_signal':
+      return !hasActiveTask('signal');
+    case 'dismantle':  return _hasFlag(a, b, 'dismantling');
+    case 'unchecked':  return _hasFlag(a, b, 'unchecked');
+    case 'organic':    return _hasFlag(a, b, 'organic');
+    case 'premature':  return _hasFlag(a, b, 'premature');
+    default:
+      // 알 수 없는 토큰은 보수적으로 false (충돌 없음)
+      return false;
   }
-  if (cond.indexOf('within_1m') >= 0) {
-    if (!a.loc || !b.loc) return false;
-    const dx = a.loc.x - b.loc.x, dz = a.loc.z - b.loc.z;
-    return Math.hypot(dx, dz) <= 1;
-  }
-  if (cond.indexOf('within_5m') >= 0) {
-    if (!a.loc || !b.loc) return false;
-    const dx = a.loc.x - b.loc.x, dz = a.loc.z - b.loc.z;
-    return Math.hypot(dx, dz) <= 5;
-  }
-  if (cond.indexOf('below_floor') >= 0) {
-    if (a.floor == null || b.floor == null) return false;
-    return Math.abs(a.floor - b.floor) === 1;
-  }
-  if (cond.indexOf('same_floor') >= 0) {
-    return a.floor === b.floor;
-  }
-  if (cond.indexOf('same_slab') >= 0) {
-    return a.floor === b.floor;
-  }
-  if (cond.indexOf('wind_gt_10mps') >= 0) {
-    return (GAME.state && GAME.state.windSpeed || 0) > 10;
-  }
-  if (cond.indexOf('no_signal') >= 0) {
-    return !hasActiveTask('signal');
-  }
-  // 그 외 조건은 추후 구체화
-  return false;
 }
 
 // ── 명령 풀 합성 헬퍼 (instruction.js 에서 사용) ───────────
