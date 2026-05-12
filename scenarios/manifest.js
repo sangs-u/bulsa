@@ -162,6 +162,108 @@ const GLOBAL_ACCIDENTS = {
       'Use double-hook harness — keep one hook connected at all times',
     ],
   },
+
+  // ── v2.0 간섭 매트릭스용 사고 데이터 ─────────────────────
+  falling_debris: {
+    descKo: '상부 타설/해체 작업 중 낙하한 자재가 아래층 작업자를 가격하였습니다.',
+    descEn: 'Falling concrete/formwork debris from upper level struck a worker below.',
+    causeKo: '수직 동시작업 미통제 / 낙하물방지망 부재 / 출입통제 미실시',
+    causeEn: 'Uncontrolled vertical concurrent work / no debris net / no access control',
+    lawKo: '산업안전보건기준 제14조 (낙하물에 의한 위험의 방지)\n제20조 (출입의 금지)\nKOSHA GUIDE C-50-2017',
+    lawEn: 'OSH Rule §14 (Falling object protection)\n§20 (Access prohibition)',
+    procedureKo: [
+      '수직 하방 작업자 전원 대피·출입통제',
+      '낙하물방지망(수평) 1.8m 돌출 설치',
+      '상부 작업장 외주연부 안전난간·발끝막이 설치',
+      '신호수·감시자 배치 후 작업 재개',
+    ],
+    procedureEn: [
+      'Evacuate workers directly below; restrict access',
+      'Install horizontal debris net (1.8 m projection)',
+      'Install toeboards and guardrails at upper edge',
+      'Resume only after signaler/watcher is posted',
+    ],
+  },
+  fire_explosion: {
+    descKo: '유기용제 도장 작업 인근에서 전기 스파크/용접 화염이 가연성 증기에 발화하여 화재·폭발이 발생했습니다.',
+    descEn: 'Solvent vapors near paint work ignited from electric spark/welding flame.',
+    causeKo: '유기용제 + 점화원 5m 내 동시작업 / 환기 미실시 / 가연성 가스농도 측정 누락',
+    causeEn: 'Solvent + ignition source within 5 m / no ventilation / no LEL monitoring',
+    lawKo: '산업안전보건기준 제232조 (화재·폭발 방지)\n제236조 (화재위험작업의 통제)',
+    lawEn: 'OSH Rule §232 (Fire/explosion prevention)\n§236 (Hot-work permit control)',
+    procedureKo: [
+      '도장 작업 종료 후 충분한 환기 (LEL 10% 미만)',
+      '점화원(용접·스파크) 작업과 5m 이상 이격 + 시간 분리',
+      '화기작업 허가서 발급 + 소화기 1m 내 비치',
+      '가스농도 측정기 상시 모니터링',
+    ],
+    procedureEn: [
+      'Ventilate after painting until LEL < 10%',
+      'Separate ignition work by ≥ 5 m and time-shift',
+      'Issue hot-work permit; extinguisher within 1 m',
+      'Continuous LEL monitoring',
+    ],
+  },
+  panel_drop: {
+    descKo: '비계 해체와 외장 패널 설치가 같은 층에서 동시에 진행되며 낙하한 패널이 하부 작업자를 가격했습니다.',
+    descEn: 'Panel fell during concurrent scaffold dismantling and panel installation on the same level.',
+    causeKo: '동일 층 비계해체 + 패널설치 동시작업 / 결속 미점검 / 출입통제 부재',
+    causeEn: 'Concurrent scaffold dismantle + panel install on same floor / no securing check',
+    lawKo: '산업안전보건기준 제57조 (비계 해체 시 안전조치)\n제335조 (외장재 낙하 방지)',
+    lawEn: 'OSH Rule §57 (Scaffold dismantling safety)\n§335 (Cladding fall prevention)',
+    procedureKo: [
+      '비계 해체구역과 패널 설치구역 분리 (다른 층/구획)',
+      '패널 결속(앵커·연결재) 점검 후 비계 해체',
+      '하부 출입통제선 설치',
+      '신호수가 양 작업 조율',
+    ],
+    procedureEn: [
+      'Separate dismantling and panel install by floor/zone',
+      'Verify panel anchors before scaffold removal',
+      'Set access exclusion zone below',
+      'Signaler coordinates both tasks',
+    ],
+  },
+  swing_drop: {
+    descKo: '강풍(10m/s 초과) 상태에서 양중작업을 강행하다 인양물이 흔들려 추락했습니다.',
+    descEn: 'Lifted load swung and fell during high winds (>10 m/s).',
+    causeKo: '풍속 한계 초과 / 작업중지 미실시 / 태그라인 미사용',
+    causeEn: 'Wind limit exceeded / no work stop / no tag line',
+    lawKo: '산업안전보건기준 제37조 (악천후 작업금지)\n타워크레인 안전인증기준 — 풍속 10m/s 초과 시 작업중지',
+    lawEn: 'OSH Rule §37 (Bad-weather work prohibition)\nCrane standard: stop at wind > 10 m/s',
+    procedureKo: [
+      '풍속계 상시 모니터링 (10m/s 초과 시 즉시 중지)',
+      '태그라인 2개소 부착, 인양물 회전 통제',
+      '작업 재개 전 풍속·기상 재확인',
+      '신호수·운전자 통신 점검',
+    ],
+    procedureEn: [
+      'Continuous anemometer monitoring; stop if > 10 m/s',
+      'Use two tag lines to control rotation',
+      'Re-verify weather before resuming',
+      'Check signaler/operator radio',
+    ],
+  },
+  premature_load: {
+    descKo: '양생기간이 부족한 슬래브 위에 상부층 타설을 시작하여 하부 슬래브가 처짐·붕괴했습니다.',
+    descEn: 'Upper-floor pour started before lower slab cured — slab deflected and collapsed.',
+    causeKo: '양생기간 단축 / 압축강도 미측정 / 동바리 유지기간 미준수',
+    causeEn: 'Inadequate cure time / no compressive strength test / shoring removed early',
+    lawKo: '산업안전보건기준 제334조 (콘크리트 타설작업 안전조치)\nKCS 14 20 11 (콘크리트 양생기준)',
+    lawEn: 'OSH Rule §334 (Concrete pour safety)\nKCS 14 20 11 (curing standard)',
+    procedureKo: [
+      '하부 슬래브 압축강도 ≥ 5 MPa 확인 후 상부 작업',
+      '동바리 존치기간 준수 (보통 14일)',
+      '공시체 시험성적서 확보',
+      '재진동·과적 금지',
+    ],
+    procedureEn: [
+      'Verify lower slab strength ≥ 5 MPa before upper work',
+      'Maintain shoring for required curing days (typically 14)',
+      'Obtain cylinder test report',
+      'No re-vibration or overload',
+    ],
+  },
 };
 
 // 산안법 과태료 기준 (시행령 별표 35) — penalty 시스템에서 참조

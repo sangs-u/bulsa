@@ -198,6 +198,7 @@ function _loop() {
     if (typeof updateTimePressure === 'function') updateTimePressure(delta);
     if (typeof updateInteractGlow === 'function') updateInteractGlow(delta);
     if (typeof updateObjectiveMarker === 'function') updateObjectiveMarker(delta);
+    if (typeof updateInterference === 'function') updateInterference(delta);
     if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();
