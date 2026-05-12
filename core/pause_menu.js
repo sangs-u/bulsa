@@ -43,6 +43,7 @@
           <button data-tab="main"     class="pause-tab-btn active">메뉴</button>
           <button data-tab="settings" class="pause-tab-btn">설정</button>
           <button data-tab="stats"    class="pause-tab-btn">통계</button>
+          <button data-tab="save"     class="pause-tab-btn">💾 저장</button>
         </div>
 
         <div id="pause-tab-main" class="pause-tab-content">
@@ -89,6 +90,24 @@
 
         <div id="pause-tab-stats" class="pause-tab-content" style="display:none">
           <div id="pause-stats-body" style="font-size:13px;line-height:1.95"></div>
+        </div>
+
+        <div id="pause-tab-save" class="pause-tab-content" style="display:none">
+          <div id="pause-save-body" style="font-size:13px;line-height:1.7"></div>
+          <label class="pause-set-row" style="margin-top:14px">
+            <span>👤 프로필</span>
+            <input type="text" id="pause-profile-name" maxlength="40" placeholder="이름 입력"
+                   style="flex:1;margin-left:12px;padding:4px 8px;background:#1F2937;color:#F0F0F0;
+                          border:1px solid #2A3344;border-radius:4px;font-family:inherit">
+          </label>
+          <button class="pause-btn" id="pause-save-export">📥 저장 파일 내보내기 (.json)</button>
+          <button class="pause-btn" id="pause-save-import">📤 저장 파일 불러오기</button>
+          <input type="file" id="pause-save-import-input" accept=".json,application/json" style="display:none">
+          <button class="pause-btn" id="pause-save-reset" style="background:#742A2A;color:#FED7D7">🗑 모든 저장 데이터 삭제</button>
+          <div style="font-size:11px;opacity:0.55;margin-top:10px;line-height:1.5">
+            로컬 저장 — 브라우저에만 보관됩니다.<br>
+            기기 변경 시 내보내기 → 새 기기에서 불러오기로 이전하세요.
+          </div>
         </div>
       </div>
     `;
@@ -177,6 +196,58 @@
       try { localStorage.setItem('bulsa_difficulty', diff.value); } catch (e) {}
       if (typeof applyDifficulty === 'function') applyDifficulty(diff.value);
     });
+
+    // ── 저장 탭 핸들러 ─────────────────────────────────────
+    const nameInput = panel.querySelector('#pause-profile-name');
+    if (nameInput) {
+      try { nameInput.value = (typeof saveGetProfile === 'function' && saveGetProfile().name) || ''; } catch (e) {}
+      nameInput.addEventListener('change', () => {
+        if (typeof saveSetProfileName === 'function') saveSetProfileName(nameInput.value);
+        _renderSave();
+      });
+    }
+    const exportBtn = panel.querySelector('#pause-save-export');
+    if (exportBtn) exportBtn.addEventListener('click', () => {
+      if (typeof saveDownload === 'function') saveDownload();
+    });
+    const importBtn = panel.querySelector('#pause-save-import');
+    const importInput = panel.querySelector('#pause-save-import-input');
+    if (importBtn && importInput) {
+      importBtn.addEventListener('click', () => importInput.click());
+      importInput.addEventListener('change', () => {
+        const f = importInput.files && importInput.files[0];
+        if (!f) return;
+        if (typeof saveImportFile !== 'function') return;
+        saveImportFile(f, (res) => {
+          importInput.value = '';
+          if (res && res.ok) {
+            if (typeof showActionNotif === 'function') {
+              const msg = (typeof _SAVE_LABELS !== 'undefined' && _SAVE_LABELS.imported)
+                ? (_SAVE_LABELS.imported[currentLang] || _SAVE_LABELS.imported.ko)
+                : '✅ 불러오기 완료 · 새로고침합니다';
+              showActionNotif(msg, 2000);
+            }
+            setTimeout(() => window.location.reload(), 1500);
+          } else {
+            if (typeof showActionNotif === 'function') {
+              const msg = (typeof _SAVE_LABELS !== 'undefined' && _SAVE_LABELS.import_fail)
+                ? (_SAVE_LABELS.import_fail[currentLang] || _SAVE_LABELS.import_fail.ko)
+                : '⚠ 불러오기 실패 — 파일 손상';
+              showActionNotif(msg, 2400);
+            }
+          }
+        });
+      });
+    }
+    const resetBtn = panel.querySelector('#pause-save-reset');
+    if (resetBtn) resetBtn.addEventListener('click', () => {
+      const confirmMsg = (typeof _SAVE_LABELS !== 'undefined' && _SAVE_LABELS.reset_confirm)
+        ? (_SAVE_LABELS.reset_confirm[currentLang] || _SAVE_LABELS.reset_confirm.ko)
+        : '저장된 모든 데이터를 삭제할까요? 되돌릴 수 없습니다.';
+      if (!confirm(confirmMsg)) return;
+      if (typeof saveResetAll === 'function') saveResetAll();
+      setTimeout(() => window.location.reload(), 1200);
+    });
   }
 
   function _switchTab(tab) {
@@ -188,6 +259,30 @@
       el.style.display = el.id === 'pause-tab-' + tab ? 'block' : 'none';
     });
     if (tab === 'stats') _renderStats();
+    if (tab === 'save')  _renderSave();
+  }
+
+  function _renderSave() {
+    const body = document.getElementById('pause-save-body');
+    if (!body) return;
+    let profile = { name: '', firstPlay: Date.now(), totalPlaySec: 0, lastPlay: Date.now() };
+    let stats   = { keys: 0, bytes: 0 };
+    try {
+      if (typeof saveGetProfile === 'function')  profile = saveGetProfile();
+      if (typeof saveStorageStats === 'function') stats   = saveStorageStats();
+    } catch (e) {}
+    const playTime = (typeof saveFormatPlayTime === 'function')
+      ? saveFormatPlayTime(profile.totalPlaySec)
+      : Math.floor((profile.totalPlaySec || 0) / 60) + '분';
+    const sinceDate = new Date(profile.firstPlay || Date.now()).toISOString().slice(0, 10);
+    const sizeKB = (stats.bytes / 1024).toFixed(1);
+    const nameDisplay = profile.name || '<span style="opacity:0.5">(미지정)</span>';
+    body.innerHTML = `
+      <div>👤 이름: <b>${nameDisplay}</b></div>
+      <div>🗓 시작: ${sinceDate}</div>
+      <div>⏱ 총 플레이: ${playTime}</div>
+      <div style="opacity:0.7;margin-top:6px;font-size:11px">💾 저장 ${stats.keys}개 · ${sizeKB} KB</div>
+    `;
   }
 
   function _renderStats() {
