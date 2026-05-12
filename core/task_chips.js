@@ -70,11 +70,23 @@
       // 우선순위: 충돌 > flag > 평상시
       const borderColor = inConflict ? '#ff5050' : (flagsActive ? '#ffb340' : 'rgba(255,255,255,0.18)');
       const glow = inConflict ? '0 0 6px rgba(255,80,80,0.6)' : (flagsActive ? '0 0 4px rgba(255,180,60,0.45)' : 'none');
+      const canTeleport = !!(t.loc && typeof PLAYER !== 'undefined' && PLAYER.position);
       chip.style.cssText =
-        'padding:2px 8px;border-radius:10px;font-family:monospace;font-size:12px;letter-spacing:0.3px;cursor:default;' +
+        'padding:2px 8px;border-radius:10px;font-family:monospace;font-size:12px;letter-spacing:0.3px;' +
+        (canTeleport ? 'cursor:pointer;' : 'cursor:default;') +
         'color:#fff;background:' + bg + ';' +
         'border:1.5px solid ' + borderColor + ';' +
         'box-shadow:' + glow + ';';
+      if (canTeleport) {
+        chip.addEventListener('click', () => {
+          // task.loc 으로 텔레포트 + 약간 뒤로 빠져 작업 보이게
+          PLAYER.position.set(t.loc.x, PLAYER.position.y, t.loc.z + 5);
+          if (typeof showActionNotif === 'function') {
+            const m = { ko: `🚶 ${_label(t.type)} 위치로 이동`, en: `🚶 Moved to ${_label(t.type)}`, vi: `🚶 Đến ${_label(t.type)}`, ar: `🚶 الانتقال إلى ${_label(t.type)}` };
+            showActionNotif(m[currentLang] || m.ko, 1800);
+          }
+        });
+      }
       const floorTag = (t.floor != null) ? (' ' + t.floor + 'F') : '';
       const prefix = inConflict ? '⚠ ' : (flagsActive ? '🔶 ' : '');
       chip.textContent = prefix + _label(t.type) + floorTag;

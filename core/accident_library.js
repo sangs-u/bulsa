@@ -9,6 +9,7 @@
   let _open  = false;
   let _selected = null;
   let _filter   = '';
+  let _category = 'all';  // all / matrix / global / scenario
 
   function _allAccidents() {
     const out = {};
@@ -19,6 +20,30 @@
       if (d && d.accidents) merge(d.accidents);
     });
     return out;
+  }
+
+  // 매트릭스 사고 ID 집합 — INTERFERENCE_MATRIX 의 accident 값
+  function _matrixAccidentIds() {
+    const s = new Set();
+    if (typeof INTERFERENCE_MATRIX !== 'undefined') {
+      INTERFERENCE_MATRIX.forEach(r => r.accident && s.add(r.accident));
+    }
+    return s;
+  }
+  function _globalAccidentIds() {
+    const s = new Set();
+    if (typeof GLOBAL_ACCIDENTS !== 'undefined') {
+      Object.keys(GLOBAL_ACCIDENTS).forEach(k => s.add(k));
+    }
+    return s;
+  }
+  function _scenarioAccidentIds() {
+    const s = new Set();
+    ['LIFTING_DATA','EXCAVATION_DATA','FOUNDATION_DATA','ENVELOPE_DATA','MEP_DATA'].forEach(k => {
+      const d = window[k];
+      if (d && d.accidents) Object.keys(d.accidents).forEach(id => s.add(id));
+    });
+    return s;
   }
 
   function _label(id) {
@@ -73,7 +98,13 @@
     const panel = _ensurePanel();
     const all   = _allAccidents();
     const f     = (_filter || '').trim().toLowerCase();
+    const mIds  = _matrixAccidentIds();
+    const gIds  = _globalAccidentIds();
+    const sIds  = _scenarioAccidentIds();
     const ids   = Object.keys(all).sort().filter(id => {
+      if (_category === 'matrix'   && !mIds.has(id)) return false;
+      if (_category === 'global'   && !gIds.has(id)) return false;
+      if (_category === 'scenario' && !sIds.has(id)) return false;
       if (!f) return true;
       const lbl = _label(id).toLowerCase();
       return id.toLowerCase().indexOf(f) >= 0 || lbl.indexOf(f) >= 0;
@@ -88,6 +119,19 @@
     const phPlaceholder = { ko: '검색…', en: 'Search…', vi: 'Tìm…', ar: 'بحث…' }[currentLang] || '검색…';
     let html = `<div style="opacity:0.85;border-bottom:1px solid rgba(255,255,255,0.2);padding-bottom:6px;margin-bottom:6px">${titles[currentLang] || titles.ko} <span style="opacity:0.55">· ${clickHint}</span></div>`;
     html += `<input id="acc-lib-search" type="text" placeholder="${phPlaceholder}" value="${(_filter || '').replace(/"/g,'&quot;')}" style="width:100%;box-sizing:border-box;padding:4px 8px;margin-bottom:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);border-radius:4px;color:#fff;font-family:monospace;font-size:12px">`;
+    // 카테고리 탭
+    const tabs = [
+      { id: 'all',      ko: '전체',  en: 'All',      vi: 'Tất cả', ar: 'الكل' },
+      { id: 'matrix',   ko: '매트릭스 ⚠', en: 'Matrix ⚠', vi: 'Ma trận ⚠', ar: 'مصفوفة ⚠' },
+      { id: 'global',   ko: '전역',  en: 'Global',   vi: 'Toàn cầu', ar: 'عام' },
+      { id: 'scenario', ko: '시나리오', en: 'Scenario', vi: 'Kịch bản', ar: 'سيناريو' },
+    ];
+    html += '<div style="display:flex;gap:4px;margin-bottom:6px">';
+    tabs.forEach(tab => {
+      const a = (_category === tab.id);
+      html += `<span data-cat="${tab.id}" style="cursor:pointer;padding:2px 8px;border-radius:4px;font-size:11px;background:${a ? '#4a5060' : 'rgba(255,255,255,0.06)'};border:1px solid ${a ? '#7888a0' : 'rgba(255,255,255,0.15)'}">${tab[currentLang] || tab.ko}</span>`;
+    });
+    html += '</div>';
     html += '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">';
     if (ids.length === 0) {
       html += `<span style="opacity:0.55">${{ko:'(검색 결과 없음)',en:'(no results)',vi:'(không có)',ar:'(لا نتائج)'}[currentLang] || '(없음)'}</span>`;
@@ -117,6 +161,12 @@
       html += '<div style="opacity:0.55">(왼쪽 칩 선택)</div>';
     }
     panel.innerHTML = html;
+    panel.querySelectorAll('[data-cat]').forEach(el => {
+      el.addEventListener('click', () => {
+        _category = el.getAttribute('data-cat');
+        _renderPanel();
+      });
+    });
     panel.querySelectorAll('[data-acc-id]').forEach(el => {
       el.addEventListener('click', () => {
         _selected = el.getAttribute('data-acc-id');
