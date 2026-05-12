@@ -41,34 +41,44 @@ function updateHUD() {
     vig.classList.toggle('critical', pct <= 15 && pct > 0);
   }
 
-  // Phase label (시나리오 인식)
-  const phase = Math.max(1, Math.min(6, s.phase || 1));
-  let namesTbl   = PHASE_NAMES;
-  let missionTbl = PHASE_MISSIONS;
-  if (GAME.scenarioId === 'excavation' && typeof EXCAV_PHASE_NAMES !== 'undefined') {
-    namesTbl   = EXCAV_PHASE_NAMES;
-    missionTbl = EXCAV_PHASE_MISSIONS;
-  } else if (GAME.scenarioId === 'foundation' && typeof FOUND_PHASE_NAMES !== 'undefined') {
-    namesTbl   = FOUND_PHASE_NAMES;
-    missionTbl = FOUND_PHASE_MISSIONS;
-  } else if (GAME.scenarioId === 'envelope' && typeof ENV_PHASE_NAMES !== 'undefined') {
-    namesTbl   = ENV_PHASE_NAMES;
-    missionTbl = ENV_PHASE_MISSIONS;
-  } else if (GAME.scenarioId === 'mep_finish' && typeof MEP_PHASE_NAMES !== 'undefined') {
-    namesTbl   = MEP_PHASE_NAMES;
-    missionTbl = MEP_PHASE_MISSIONS;
-  }
-  const phaseName = (namesTbl[phase] && namesTbl[phase][currentLang]) ||
-                    (namesTbl[phase] && namesTbl[phase].ko) || '';
-  const phaseEl = document.getElementById('hud-phase-text');
-  if (phaseEl) phaseEl.textContent = `PHASE ${phase}/6 · ${phaseName}`;
+  // v2.0 통합 모드 — phase 자체를 무시하고 "오픈 부지" 라벨만 표시
+  if (GAME.unifiedMode) {
+    const openLbl = { ko: '🏗 오픈 부지 (자유 모드)', en: '🏗 Open Site (Free Mode)', vi: '🏗 Công trường mở (Tự do)', ar: '🏗 موقع مفتوح (حر)' };
+    const tipLbl  = { ko: '활성 작업을 자유롭게 선택해 NPC에게 명령하세요.', en: 'Pick any active task and assign NPCs freely.', vi: 'Chọn tự do task hoạt động để giao cho NPC.', ar: 'اختر مهمة نشطة وكلّف العمال بحرية.' };
+    const phaseEl = document.getElementById('hud-phase-text');
+    if (phaseEl) phaseEl.textContent = openLbl[currentLang] || openLbl.ko;
+    const mEl = document.getElementById('hud-mission');
+    if (mEl) mEl.textContent = tipLbl[currentLang] || tipLbl.ko;
+  } else {
+    // Phase label (시나리오 인식)
+    const phase = Math.max(1, Math.min(6, s.phase || 1));
+    let namesTbl   = PHASE_NAMES;
+    let missionTbl = PHASE_MISSIONS;
+    if (GAME.scenarioId === 'excavation' && typeof EXCAV_PHASE_NAMES !== 'undefined') {
+      namesTbl   = EXCAV_PHASE_NAMES;
+      missionTbl = EXCAV_PHASE_MISSIONS;
+    } else if (GAME.scenarioId === 'foundation' && typeof FOUND_PHASE_NAMES !== 'undefined') {
+      namesTbl   = FOUND_PHASE_NAMES;
+      missionTbl = FOUND_PHASE_MISSIONS;
+    } else if (GAME.scenarioId === 'envelope' && typeof ENV_PHASE_NAMES !== 'undefined') {
+      namesTbl   = ENV_PHASE_NAMES;
+      missionTbl = ENV_PHASE_MISSIONS;
+    } else if (GAME.scenarioId === 'mep_finish' && typeof MEP_PHASE_NAMES !== 'undefined') {
+      namesTbl   = MEP_PHASE_NAMES;
+      missionTbl = MEP_PHASE_MISSIONS;
+    }
+    const phaseName = (namesTbl[phase] && namesTbl[phase][currentLang]) ||
+                      (namesTbl[phase] && namesTbl[phase].ko) || '';
+    const phaseEl = document.getElementById('hud-phase-text');
+    if (phaseEl) phaseEl.textContent = `PHASE ${phase}/6 · ${phaseName}`;
 
-  const missionObj = missionTbl[phase];
-  const mText = missionObj
-    ? (missionObj[currentLang] || missionObj.ko)
-    : t('mission1');
-  const mEl = document.getElementById('hud-mission');
-  if (mEl) mEl.textContent = mText;
+    const missionObj = missionTbl[phase];
+    const mText = missionObj
+      ? (missionObj[currentLang] || missionObj.ko)
+      : t('mission1');
+    const mEl = document.getElementById('hud-mission');
+    if (mEl) mEl.textContent = mText;
+  }
 
   const siLbl = document.getElementById('hud-si-label');
   if (siLbl) siLbl.textContent = t('safetyIndex');

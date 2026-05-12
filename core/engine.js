@@ -112,6 +112,17 @@ window.persistFines = persistFines;
     console.error(`${_active.register} 없음 — hazards.js 로딩 순서 확인`);
   }
 
+  // v2.0 통합 모드 — 다른 4 시나리오의 hazards 도 안전 호출 (오픈월드 자유게임 토대)
+  // mesh 충돌 우려 항목은 향후 각 시나리오 hazards.js 에서 unifiedMode 분기로 정리.
+  if (GAME.unifiedMode) {
+    ['registerExcavationHazards', 'registerFoundationHazards', 'registerEnvelopeHazards', 'registerMepFinishHazards'].forEach(fnName => {
+      const fn = window[fnName];
+      if (typeof fn === 'function') {
+        try { fn(); } catch (e) { console.warn('[unified]', fnName, e.message); }
+      }
+    });
+  }
+
   // v2.0 — 시나리오별 초기 작업 큐 시드 (lifting 은 RC_LOOP 가 동적 enqueue)
   if (typeof enqueueScenarioTasks === 'function') {
     if (GAME.unifiedMode) {

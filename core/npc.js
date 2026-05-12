@@ -510,6 +510,21 @@ const NPC_DEFS_BY_SCENARIO = {
     { id: 'ahmad3',  role: { ko:'도장공',      en:'Painter',            vi:'Thợ sơn',            ar:'دهّان' },        trade: 'painting',  language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [-3, 0,  4] },
   ],
 };
+// v2.0 통합 모드 — 5 시나리오 NPC 14명 합침, 부지 영역별로 위치 분산
+// 좌상단: excavation, 중앙: lifting, 좌하단: foundation, 우상단: envelope, 우하단: mep_finish
+NPC_DEFS_BY_SCENARIO.unified = (function () {
+  const offset = (defs, ox, oz) => defs.map(d => Object.assign({}, d, {
+    position: [d.position[0] + ox, d.position[1], d.position[2] + oz],
+  }));
+  return [
+    ...NPC_DEFS_BY_SCENARIO.lifting,                                  // 중앙
+    ...offset(NPC_DEFS_BY_SCENARIO.excavation, -22, -10),             // 좌상단
+    ...offset(NPC_DEFS_BY_SCENARIO.foundation, -18,  10),             // 좌하단 (Z+ 방향)
+    ...offset(NPC_DEFS_BY_SCENARIO.envelope,    22, -10),             // 우상단
+    ...offset(NPC_DEFS_BY_SCENARIO.mep_finish,  22,  10),             // 우하단
+  ];
+})();
+
 // 후방호환: lifting 의 기존 NPC_DEFS 참조하는 코드를 위해 별칭 유지
 const NPC_DEFS = NPC_DEFS_BY_SCENARIO.lifting;
 
