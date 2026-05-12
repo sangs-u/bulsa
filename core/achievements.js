@@ -11,20 +11,20 @@
   };
   window.ACHIEVEMENTS_STATE = ACH;
 
-  // 업적 정의 — id, 한글/영문 이름, 설명, 조건
+  // 업적 정의 — id, 4언어 이름/설명, 조건
   const ACHIEVEMENTS = [
-    { id: 'first_start',     ko: '첫 출근',           en: 'First Day',         desc_ko: '게임 첫 실행',                  emoji: '🦺' },
-    { id: 'safe_excavation', ko: '안전 굴착',         en: 'Safe Dig',          desc_ko: '토공 무위반·무사고 완주',         emoji: '⛏' },
-    { id: 'safe_foundation', ko: '튼튼한 기초',       en: 'Solid Base',        desc_ko: '기초공사 무위반·무사고 완주',      emoji: '🧱' },
-    { id: 'safe_lifting',    ko: '완벽한 양중',       en: 'Perfect Lift',      desc_ko: '양중 5층 무사고 완주',             emoji: '🏗' },
-    { id: 'safe_envelope',   ko: '깔끔한 외장',       en: 'Clean Skin',        desc_ko: '외장공사 무위반·무사고 완주',      emoji: '🪟' },
-    { id: 'safe_mep',        ko: '안전한 설비',       en: 'Live Free',         desc_ko: '설비 무위반·무사고 완주',          emoji: '⚡' },
-    { id: 'no_fines_run',    ko: '깨끗한 작업장',     en: 'No Penalties',      desc_ko: '한 시나리오 과태료 0원 완주',      emoji: '✨' },
-    { id: 'grade_s',         ko: 'S 등급',           en: 'S Grade',            desc_ko: '종합 등급 S 달성',                emoji: '🥇' },
-    { id: 'full_circuit',    ko: '5층 건물 완공',     en: 'Whole Build',        desc_ko: '5개 시나리오 모두 완주',          emoji: '🏢' },
-    { id: 'survivor',        ko: '생존자',            en: 'Survivor',           desc_ko: '추락 경상 후 회복하여 완주',        emoji: '🩹' },
-    { id: 'inspector_pass',  ko: '점검 통과',         en: 'Pass Inspection',    desc_ko: '안전관리자 점검 위반 0건 통과',   emoji: '✅' },
-    { id: 'high_roller',     ko: '돈낭비',            en: 'High Roller',        desc_ko: '누적 과태료 ₩30,000,000 돌파',   emoji: '💸' },
+    { id: 'first_start',     ko:'첫 출근',         en:'First Day',        vi:'Ngày đầu',          ar:'اليوم الأول',       desc_ko:'게임 첫 실행',                 desc_en:'First game launch',                desc_vi:'Khởi chạy game lần đầu',          desc_ar:'أول تشغيل للعبة',                emoji:'🦺' },
+    { id: 'safe_excavation', ko:'안전 굴착',       en:'Safe Dig',         vi:'Đào An Toàn',       ar:'حفر آمن',          desc_ko:'토공 무위반·무사고 완주',         desc_en:'Earthworks zero-violation run',     desc_vi:'Hoàn tất san nền không vi phạm',  desc_ar:'إنهاء الحفر بدون مخالفات',         emoji:'⛏' },
+    { id: 'safe_foundation', ko:'튼튼한 기초',     en:'Solid Base',       vi:'Móng Vững',         ar:'أساس متين',        desc_ko:'기초공사 무위반·무사고 완주',      desc_en:'Foundation flawless run',           desc_vi:'Hoàn tất móng không tai nạn',     desc_ar:'إنهاء الأساس بدون حوادث',         emoji:'🧱' },
+    { id: 'safe_lifting',    ko:'완벽한 양중',     en:'Perfect Lift',     vi:'Cẩu Hoàn Hảo',      ar:'رفع مثالي',        desc_ko:'양중 5층 무사고 완주',            desc_en:'5F lifting accident-free',          desc_vi:'Cẩu 5 tầng không tai nạn',        desc_ar:'رفع 5 طوابق بدون حوادث',          emoji:'🏗' },
+    { id: 'safe_envelope',   ko:'깔끔한 외장',     en:'Clean Skin',       vi:'Vỏ Sạch',           ar:'واجهة نظيفة',      desc_ko:'외장공사 무위반·무사고 완주',      desc_en:'Envelope flawless run',             desc_vi:'Hoàn tất vỏ ngoài không vi phạm', desc_ar:'إنهاء الواجهة بلا مخالفات',        emoji:'🪟' },
+    { id: 'safe_mep',        ko:'안전한 설비',     en:'Live Free',        vi:'M&E An Toàn',       ar:'تركيب آمن',        desc_ko:'설비 무위반·무사고 완주',         desc_en:'MEP flawless run',                  desc_vi:'Hoàn tất M&E không vi phạm',     desc_ar:'إنهاء التركيب بلا مخالفات',        emoji:'⚡' },
+    { id: 'no_fines_run',    ko:'깨끗한 작업장',   en:'No Penalties',     vi:'Không Phạt',        ar:'بلا غرامات',       desc_ko:'한 시나리오 과태료 0원 완주',     desc_en:'Scenario completed with zero fines',desc_vi:'Hoàn thành không phạt',           desc_ar:'إنهاء بلا غرامة',                  emoji:'✨' },
+    { id: 'grade_s',         ko:'S 등급',         en:'S Grade',           vi:'Hạng S',            ar:'الدرجة S',         desc_ko:'종합 등급 S 달성',                desc_en:'Earn overall S grade',              desc_vi:'Đạt hạng S tổng',                 desc_ar:'الحصول على الدرجة S',              emoji:'🥇' },
+    { id: 'full_circuit',    ko:'5층 건물 완공',   en:'Whole Build',      vi:'Hoàn Công 5 Tầng',  ar:'إكمال المبنى',     desc_ko:'5개 시나리오 모두 완주',          desc_en:'Clear all 5 scenarios',             desc_vi:'Hoàn thành 5 kịch bản',           desc_ar:'إكمال 5 سيناريوهات',               emoji:'🏢' },
+    { id: 'survivor',        ko:'생존자',          en:'Survivor',         vi:'Người Sống Sót',    ar:'الناجي',           desc_ko:'추락 경상 후 회복하여 완주',       desc_en:'Recover from fall and finish',      desc_vi:'Hồi phục sau ngã và hoàn tất',    desc_ar:'التعافي وإنهاء العمل',             emoji:'🩹' },
+    { id: 'inspector_pass',  ko:'점검 통과',       en:'Pass Inspection',  vi:'Qua Kiểm Tra',      ar:'اجتياز التفتيش',   desc_ko:'안전관리자 점검 위반 0건 통과',  desc_en:'Pass safety inspector with 0 violations', desc_vi:'Qua kiểm tra không vi phạm',   desc_ar:'اجتياز التفتيش بلا مخالفات',      emoji:'✅' },
+    { id: 'high_roller',     ko:'돈낭비',          en:'High Roller',      vi:'Tiêu Pha',          ar:'مسرف',             desc_ko:'누적 과태료 ₩30,000,000 돌파',    desc_en:'Accumulate ₩30M in fines',          desc_vi:'Tổng phạt vượt 30 triệu',         desc_ar:'تجاوز الغرامات 30 مليون',          emoji:'💸' },
   ];
   window.ACHIEVEMENTS = ACHIEVEMENTS;
 
@@ -75,13 +75,17 @@
       box-shadow:0 8px 28px rgba(0,0,0,0.5);
       transform:translateX(380px); opacity:0; transition:transform .4s ease, opacity .4s ease;
     `;
+    const L = (typeof currentLang !== 'undefined') ? currentLang : 'ko';
+    const title = a[L] || a.ko;
+    const desc  = a['desc_' + L] || a.desc_ko;
+    const banner = { ko: '🏆 업적 달성', en: '🏆 Achievement Unlocked', vi: '🏆 Mở Khóa Thành Tích', ar: '🏆 إنجاز مفتوح' }[L] || '🏆 업적 달성';
     div.innerHTML = `
       <div style="display:flex;gap:12px;align-items:center">
         <div style="font-size:28px">${a.emoji}</div>
         <div>
-          <div style="font-size:11px;color:#48BB78;letter-spacing:1px">🏆 업적 달성</div>
-          <div style="font-size:15px;font-weight:bold;margin-top:2px">${a.ko}</div>
-          <div style="font-size:11px;color:#A0AEC0;margin-top:2px">${a.desc_ko}</div>
+          <div style="font-size:11px;color:#48BB78;letter-spacing:1px">${banner}</div>
+          <div style="font-size:15px;font-weight:bold;margin-top:2px">${title}</div>
+          <div style="font-size:11px;color:#A0AEC0;margin-top:2px">${desc}</div>
         </div>
       </div>
     `;
