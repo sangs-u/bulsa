@@ -1,16 +1,25 @@
 # BULSA 개발 현황
 > 작업 완료 시 이 파일만 업데이트. 내용은 항상 30줄 이내로 유지.
 
-## 최근 완료 (2026-05-12)
-- **v1.1 마라톤 막판 5건**
-  · `applyDataLangI18n()` — HTML `data-lang-{ko,en,vi,ar}` 속성 자동 갱신 (setLang 후크)
-  · 4 시나리오 plan-panel 타이틀 data-lang-* 적용
-  · GitHub Actions CI — `.github/workflows/check.yml` (push 시 syntax-check)
-  · `_instLangSwitchLabel()` — 지시 언어 토글 4언어
-  · core/tutorial.js TUT 사전 4언어, core/npc.js 신호수 interactable 4언어, 16개 scenarios 파일 한국어 하드코딩 → 4언어 inline 객체
-- **v1.1 마라톤 7건** (직전) — qa/syntax-check 자동화, CLAUDE.md 모바일 가이드, TTS, lifting 매개변수 UI, LIFT_STATE_LABELS 4언어, 5 core 파일 i18n
-- **v1.1 6건** (직전) — 중복 함수, plan 검증, 4 시나리오 거부권, 22 사고 vi/ar 88개, accident.js langSuffix
-- **v1.1 3건** (직전) — setLang 후크, procedural 그룹화, 양방향 검증
+## 최근 완료 (2026-05-12) — 자율 마라톤
+- **v1.1 합계 ~30건** (8 커밋 푸시, 단일 세션)
+  · GLB MANIFEST 로컬·HEAD 사전점검·4 시나리오 ASSETS.attach 후크
+  · 18시 타임아웃 패널·시계 i18n·5공정 8초 자동진행 카운트다운
+  · rc_frame sub-step 2종(formwork/pour) + rc_loop 5층 컨트롤러
+  · motion.js (Mixamo 클립 10 + 도구 5 + IK 어태치) + NPC 직종별 도구 자동
+  · 중복 함수 픽스 (bumpSkill 단일화 · _shakeCameraBuild/_shakeCameraAccident)
+  · plan 매개변수 양방향 검증 (excavation/foundation/envelope/mep_finish)
+  · 4 시나리오 운전석 거부권 일반화 (board* + open*Console)
+  · 22 사고 vi/ar 88개 키 · accident.js langSuffix 자동 선택
+  · core 5 파일 + scenarios 16 파일 한국어 하드코딩 i18n (백그라운드 에이전트 포함)
+  · `_speakRefusal()` Web Speech API 4언어 TTS
+  · lifting 작업계획서 SWL/각도/가닥수 사용자 입력 + 4언어 라벨
+  · `qa/syntax-check.js` + `npm run check` + GitHub Actions CI
+  · `applyDataLangI18n()` data-lang-* primitive + setLang 후크
+  · index.html 시나리오 카드 SCENARIOS title/desc 4언어 + _l() 헬퍼
+  · 4 plan-panel (excav/found/env/mep) 모든 입력 라벨 data-lang-*
+  · NPC role 16개 4언어 객체 + roleText() 메소드 (npc/instruction/minigame 3 사용처)
+  · CLAUDE.md 모바일 원격작업 가이드 (WSL+tmux+Tailscale+claude --continue)
 
 ## 검증 상태
 - `npm run check` PASS 84/84 · GitHub Actions 활성화 · 시각 플레이쓰루 미실시
@@ -18,9 +27,9 @@
 ## v1.1 다음 작업
 1. Mixamo 클립 7~10개 → assets/glb/anim_*.glb
 2. 무사이 작업계획서 UI 인게임 이식
-3. v1.0 시각 플레이쓰루 — 실 브라우저에서 5공정 통과 검증
-4. index.html 허브 페이지 시나리오 카드 데이터 i18n (현재 ko 하드코딩)
-5. excav-plan-panel + found/env/mep plan-panel 입력 라벨 data-lang-* 적용
+3. v1.0 시각 플레이쓰루 — 실 브라우저 5공정 통과
+4. 사고 패널 외 inspector/통계/수료증 4언어 검증 (잔여)
+5. NPC AI 거부권 음성 — 사전녹음 (TTS 한계 보완)
 
 ## 핵심 결정사항
 - 물리: cannon.js 0.6.2 UMD · BGM: Web Audio 합성 · PWA: network-first
