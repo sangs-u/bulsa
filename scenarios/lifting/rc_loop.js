@@ -120,7 +120,8 @@ function updateRcLoopTaskLocs(/* delta */) {
     task.loc.z = npc.group.position.z;
   }
 }
-window.updateRcLoopTaskLocs = updateRcLoopTaskLocs;
+window.updateRcLoopTaskLocs   = updateRcLoopTaskLocs;
+window.updateTaskLocsFromNpcs = updateRcLoopTaskLocs;  // 일반화 별칭 — 모든 시나리오에서 동작
 
 function _ensureRcHud() {
   if (RC_LOOP._hudEl) return RC_LOOP._hudEl;

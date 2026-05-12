@@ -328,15 +328,19 @@ function openInstructionPopup(item) {
     }
     const btn = document.createElement('div');
     const isDanger = inst.risk === 'danger';
+    // NPC 직종 fit — 미적합이면 옅게 + ✗ 표시 (학습)
+    const tradeFit = !inst.applicableTrades || inst.applicableTrades.indexOf(npc.trade) >= 0;
     btn.className = 'inst-item' +
                     (_givenInstructions.has(`${npc.id}_${inst.id}`) ? ' given' : '') +
                     (isDanger ? ' inst-danger' : '');
+    if (!tradeFit) btn.style.opacity = '0.5';
     const langSuffix = (instructionLang || 'ko').charAt(0).toUpperCase() + (instructionLang || 'ko').slice(1);
     const label = inst['label' + langSuffix] || inst.labelEn || inst.labelKo;
     const accSub = (isDanger && inst.accidentIfDanger && typeof accidentLabel === 'function')
       ? `<span style="margin-left:6px;font-size:11px;opacity:0.85;color:#F56565">⚠ ${accidentLabel(inst.accidentIfDanger)}</span>` : '';
+    const fitMark = !tradeFit ? `<span style="margin-left:4px;font-size:11px;color:#999" title="직종 미스매치">✗</span>` : '';
     btn.innerHTML = `<span class="inst-icon">${inst.icon}</span>
-      <span>${label}${accSub}</span>`;
+      <span>${label}${fitMark}${accSub}</span>`;
 
     btn.onclick = () => {
       if (_givenInstructions.has(`${npc.id}_${inst.id}`)) return;
@@ -651,16 +655,19 @@ function toggleInstructionLang() {
       });
       items.forEach(inst => {
         const isDanger = inst.risk === 'danger';
+        const tradeFit2 = !inst.applicableTrades || inst.applicableTrades.indexOf(npc.trade) >= 0;
         const btn2 = document.createElement('div');
         btn2.className = 'inst-item' +
                          (_givenInstructions.has(`${npc.id}_${inst.id}`) ? ' given' : '') +
                          (isDanger ? ' inst-danger' : '');
+        if (!tradeFit2) btn2.style.opacity = '0.5';
         const langSuffix2 = (instructionLang || 'ko').charAt(0).toUpperCase() + (instructionLang || 'ko').slice(1);
         const label2 = inst['label' + langSuffix2] || inst.labelEn || inst.labelKo;
         const accSub2 = (isDanger && inst.accidentIfDanger && typeof accidentLabel === 'function')
           ? `<span style="margin-left:6px;font-size:11px;opacity:0.85;color:#F56565">⚠ ${accidentLabel(inst.accidentIfDanger)}</span>` : '';
+        const fitMark2 = !tradeFit2 ? `<span style="margin-left:4px;font-size:11px;color:#999">✗</span>` : '';
         btn2.innerHTML = `<span class="inst-icon">${inst.icon}</span>
-          <span>${label2}${accSub2}</span>`;
+          <span>${label2}${fitMark2}${accSub2}</span>`;
         btn2.onclick = () => {
           if (_givenInstructions.has(`${npc.id}_${inst.id}`)) return;
           giveInstruction(npc, inst);
