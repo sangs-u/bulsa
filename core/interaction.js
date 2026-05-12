@@ -77,6 +77,8 @@ function initInteraction() {
   INTERACTION.raycaster = new THREE.Raycaster();
   INTERACTION.center    = new THREE.Vector2(0, 0);
 
+  _initMouseInput();
+
   document.addEventListener('keydown', e => {
     if (!GAME.state.gameStarted || GAME.state.gameOver) return;
 
@@ -127,6 +129,101 @@ function initInteraction() {
   }
 }
 
+// ── 마우스 입력 (LMB=상호작용 / RMB=위치 지시) ───────────────────
+let _commandMarkerGeo = null, _commandMarkerMat = null;
+
+function _initMouseInput() {
+  const canvas = GAME.renderer && GAME.renderer.domElement;
+  if (!canvas) return;
+  canvas.addEventListener('mousedown', _onMouseDown);
+  canvas.addEventListener('mouseup',   _onMouseUp);
+  canvas.addEventListener('contextmenu', e => {
+    if (document.pointerLockElement) e.preventDefault();
+  });
+}
+
+function _onMouseDown(e) {
+  if (!GAME.state.gameStarted || GAME.state.gameOver || GAME.state.paused) return;
+  if (!document.pointerLockElement) return;
+  if (INTERACTION.popupOpen || INTERACTION.specOpen) return;
+
+  if (e.button === 0) {            // LMB — E 키와 동일 (선택/상호작용)
+    e.preventDefault();
+    if (!INTERACTION._eDown) {
+      INTERACTION._eDown = true;
+      _dispatchHoldStart();        // 미니게임 위임 또는 _handleE
+    }
+  } else if (e.button === 2) {     // RMB — 작업반장 위치 지시
+    e.preventDefault();
+    _placeCommandMarker();
+  }
+}
+
+function _onMouseUp(e) {
+  if (e.button === 0 && INTERACTION._eDown) {
+    INTERACTION._eDown = false;
+    _dispatchHoldEnd();
+  }
+}
+
+// 화면 중앙 raycast → 지면(y=0) 교차점에 마커 + 가까운 NPC 찾기
+function _placeCommandMarker() {
+  if (!INTERACTION.raycaster) return;
+  INTERACTION.raycaster.setFromCamera(INTERACTION.center, GAME.camera);
+  const ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const hit = new THREE.Vector3();
+  if (!INTERACTION.raycaster.ray.intersectPlane(ground, hit)) return;
+  // 너무 멀면 무시 (50m 컷)
+  if (GAME.camera.position.distanceTo(hit) > 50) return;
+
+  if (!_commandMarkerGeo) {
+    _commandMarkerGeo = new THREE.RingGeometry(0.55, 0.95, 32);
+    _commandMarkerMat = new THREE.MeshBasicMaterial({
+      color: 0xffaa00, transparent: true, opacity: 0.85,
+      side: THREE.DoubleSide, depthWrite: false,
+    });
+  }
+  const marker = new THREE.Mesh(_commandMarkerGeo, _commandMarkerMat.clone());
+  marker.position.copy(hit);
+  marker.position.y = 0.06;
+  marker.rotation.x = -Math.PI / 2;
+  marker.renderOrder = 999;
+  GAME.scene.add(marker);
+
+  const npc = _findNearestNpcTo(hit);
+  const msgs = npc
+    ? { ko: `📍 ${npc.name || npc.id} 에게 위치 지시`, en: `📍 Position cmd → ${npc.name || npc.id}`, vi: `📍 Vị trí → ${npc.name || npc.id}`, ar: `📍 الموقع → ${npc.name || npc.id}` }
+    : { ko: '📍 위치 표시 (NPC 미감지)', en: '📍 Marker placed (no NPC nearby)', vi: '📍 Đã đánh dấu (không có NPC)', ar: '📍 تم التحديد (لا عامل قريب)' };
+  if (typeof showActionNotif === 'function') {
+    showActionNotif(msgs[currentLang] || msgs.ko, 1400);
+  }
+
+  // 페이드아웃 (2.4초)
+  const start = performance.now();
+  function _fadeMarker() {
+    const t = (performance.now() - start) / 2400;
+    if (t >= 1) { GAME.scene.remove(marker); return; }
+    marker.material.opacity = 0.85 * (1 - t);
+    const s = 1 + t * 0.5;
+    marker.scale.set(s, s, s);
+    requestAnimationFrame(_fadeMarker);
+  }
+  _fadeMarker();
+}
+
+function _findNearestNpcTo(point) {
+  if (!GAME.npcs || !GAME.npcs.length) return null;
+  let nearest = null, minD = 14;
+  GAME.npcs.forEach(npc => {
+    if (!npc || !npc.position) return;
+    const dx = point.x - npc.position[0];
+    const dz = point.z - npc.position[2];
+    const d = Math.sqrt(dx * dx + dz * dz);
+    if (d < minD) { minD = d; nearest = npc; }
+  });
+  return nearest;
+}
+
 // ── Frame update ───────────────────────────────────────────────
 function updateInteraction() {
   if (INTERACTION.popupOpen || INTERACTION.specOpen || GAME.state.gameOver) return;
@@ -174,10 +271,14 @@ function updateInteraction() {
 
   INTERACTION.currentTarget = closest;
 
+  // crosshair 시각 피드백 — 타겟 있으면 노란색 highlight
+  const ch = document.getElementById('hud-crosshair');
+  if (ch) ch.classList.toggle('targetable', !!closest);
+
   if (closest) {
     let label = closest.label || '';
     if (label && typeof label === 'object') label = label[currentLang] || label.ko || '';
-    showInteractPrompt(`[E]  ${label}`);
+    showInteractPrompt(`[E / 좌클릭]  ${label}`);
   } else {
     hideInteractPrompt();
   }

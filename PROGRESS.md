@@ -4,8 +4,9 @@
 ## 진행 중 — v3 마라톤 (페이즈 통합 모드 재설계)
 **비전 변경**: v2 unified mode (5 시나리오 공간 분할) 폐기 결정. 새 통합 모드 = 한 부지에서 **페이즈 1~5 순차 시공** (굴착 → 기초 → 골조 → 외장 → 마감), 플레이어 = 작업반장 1인. 향후 오픈월드 협동으로 확장. 전체 9 batch 마라톤 (#44~#51).
 
-## 최근 완료 (2026-05-13) — Phase 0 batch #44 · BLOCKING fix
-- **#44 script load order + E키 UX** — game.html 에서 `tasks.js`/`interference.js`/`task_chips.js` 를 `engine.js` 보다 앞으로 이동 (engine IIFE 가 즉시 사용 → 이전 버그: unified 모드 활성 작업 0개). interaction.js NPC 인터랙션 반경 2.8 → 3.5m 완화 + E 키 빈 입력에 "가까이 다가가세요" 토스트 (이전: 키 눌러도 무반응 인상).
+## 최근 완료 (2026-05-13) — Phase 0 batch #44~45 · 기본기 보강
+- **#44 script load order + E키 UX** — game.html 에서 `tasks.js`/`interference.js`/`task_chips.js` 를 `engine.js` 보다 앞으로 이동 (engine IIFE 가 즉시 사용 → 이전 버그: unified 모드 활성 작업 0개). interaction.js NPC 인터랙션 반경 2.8 → 3.5m 완화 + E 키 빈 입력에 "가까이 다가가세요" 토스트.
+- **#45 마우스 입력 표준화** — LMB=상호작용 (E와 동일, 미니게임 hold 포함), RMB=작업반장 위치 지시 (지면 raycast → 노랑 ring 마커 + 가장 가까운 NPC 4언어 토스트, 2.4초 페이드). crosshair `.targetable` 클래스 추가 (타겟 노출 시 노랑 글로우). 인터랙트 프롬프트 라벨 "[E / 좌클릭]" 으로 통일. 우클릭 contextmenu pointerlock 시 차단.
 
 ## 직전 완료 — v2.0 batch #41~43
 - #41 i18n pause 메뉴 4언어 / #42 디버그 콘솔 보강 / #43 인스펙터 다이얼로그 4언어

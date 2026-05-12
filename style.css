@@ -785,6 +785,7 @@ html, body {
   position: absolute;
   background: rgba(255,255,255,0.75);
   border-radius: 1px;
+  transition: background 0.12s ease, box-shadow 0.12s ease;
 }
 
 #hud-crosshair::before {
@@ -797,6 +798,13 @@ html, body {
   width: 2px; height: 18px;
   left: 50%; top: 0;
   transform: translateX(-50%);
+}
+
+/* 타겟 가능 시 노란색 + 글로우 — 작업반장 컨셉 시각 피드백 */
+#hud-crosshair.targetable::before,
+#hud-crosshair.targetable::after {
+  background: rgba(255, 196, 60, 0.95);
+  box-shadow: 0 0 6px rgba(255, 196, 60, 0.85);
 }
 
 #hud-interact {
