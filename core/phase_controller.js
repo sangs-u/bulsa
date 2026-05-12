@@ -222,11 +222,30 @@
       GAME.scene.add(grp);
       PHASE_CONTROLLER._sceneGroups[ph.id] = grp;
     }
+
+    // 4) NPC spawn — 페이즈에 맞는 직종만
+    if (typeof window.spawnNpcsForScenario === 'function') {
+      try {
+        const spawned = window.spawnNpcsForScenario(ph.taskSeedScenario);
+        if (spawned && spawned.length) {
+          // phase tagging — teardown 시 제거 대상 식별
+          spawned.forEach(npc => { npc._phaseId = ph.id; });
+        }
+      } catch (e) { console.warn('[phase npc spawn]', ph.key, e.message); }
+    }
   }
 
   function _teardownPhaseScene(ph) {
     if (!ph) return;
     if (typeof GAME === 'undefined' || !GAME.scene) return;
+
+    // 0) NPC despawn — 이 페이즈에 spawn 된 NPC 만 제거
+    if (typeof window.despawnNpcs === 'function' && GAME.npcs) {
+      const phaseNpcs = GAME.npcs.filter(n => n._phaseId === ph.id);
+      if (phaseNpcs.length) {
+        try { window.despawnNpcs(phaseNpcs); } catch (e) { console.warn('[phase npc despawn]', e.message); }
+      }
+    }
 
     // scene group 제거 + dispose
     const grp = PHASE_CONTROLLER._sceneGroups[ph.id];

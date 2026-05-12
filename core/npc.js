@@ -510,20 +510,9 @@ const NPC_DEFS_BY_SCENARIO = {
     { id: 'ahmad3',  role: { ko:'도장공',      en:'Painter',            vi:'Thợ sơn',            ar:'دهّان' },        trade: 'painting',  language: 'ar', skill: 0.70, vestColor: 0xD4A217, position: [-3, 0,  4] },
   ],
 };
-// v2.0 통합 모드 — 5 시나리오 NPC 14명 합침, 부지 영역별로 위치 분산
-// 좌상단: excavation, 중앙: lifting, 좌하단: foundation, 우상단: envelope, 우하단: mep_finish
-NPC_DEFS_BY_SCENARIO.unified = (function () {
-  const offset = (defs, ox, oz) => defs.map(d => Object.assign({}, d, {
-    position: [d.position[0] + ox, d.position[1], d.position[2] + oz],
-  }));
-  return [
-    ...NPC_DEFS_BY_SCENARIO.lifting,                                  // 중앙
-    ...offset(NPC_DEFS_BY_SCENARIO.excavation, -22, -10),             // 좌상단
-    ...offset(NPC_DEFS_BY_SCENARIO.foundation, -18,  10),             // 좌하단 (Z+ 방향)
-    ...offset(NPC_DEFS_BY_SCENARIO.envelope,    22, -10),             // 우상단
-    ...offset(NPC_DEFS_BY_SCENARIO.mep_finish,  22,  10),             // 우하단
-  ];
-})();
+// v3 통합 모드 — 페이즈별로 PHASE_CONTROLLER 가 동적 spawn. 초기 NPC 풀 비움.
+// initNPCs(unified) 시 NPC 0명, 그 후 PHASE_CONTROLLER.enable() 이 페이즈 1 NPC spawn.
+NPC_DEFS_BY_SCENARIO.unified = [];
 
 // 후방호환: lifting 의 기존 NPC_DEFS 참조하는 코드를 위해 별칭 유지
 const NPC_DEFS = NPC_DEFS_BY_SCENARIO.lifting;
@@ -557,14 +546,29 @@ const _yukaVehicles = new Map(); // npc.id → YUKA.Vehicle
 
 function _initYuka() {
   if (typeof YUKA === 'undefined') return;
+  // v3 — 멱등성: 이미 만들어진 manager 가 있으면 재사용 (phase_controller 사전 호출 케이스)
+  if (_yukaManager) return;
   _yukaManager = new YUKA.EntityManager();
 }
 
 function initNPCs() {
   _initYuka();
   const defs = NPC_DEFS_BY_SCENARIO[GAME.scenarioId] || NPC_DEFS_BY_SCENARIO.lifting;
+  _spawnNpcsFromDefs(defs);
+}
+
+// v3 — 페이즈 컨트롤러가 페이즈 전환 시 호출. _initYuka() 다시 안 함 (기존 NPC 보존).
+// 반환: 새로 spawn 된 NPC 객체 배열 (호출 측에서 phase tagging 용도)
+function spawnNpcsForScenario(scenarioId) {
+  if (!_yukaManager) _initYuka();   // 안전망 (initNPCs 안 거치고 처음 호출 케이스)
+  const defs = NPC_DEFS_BY_SCENARIO[scenarioId];
+  if (!defs || !defs.length) return [];
+  return _spawnNpcsFromDefs(defs);
+}
+
+function _spawnNpcsFromDefs(defs) {
+  const spawned = [];
   defs.forEach(def => {
-    // 매 세션 동적 인스턴스화 — 이름·경력·위치 미세 변동
     const runtimeDef = Object.assign({}, def);
     runtimeDef.name       = _randomName(def.language);
     runtimeDef.experience = _randomExperience();
@@ -574,15 +578,52 @@ function initNPCs() {
       def.position[1],
       def.position[2] + (Math.random() - 0.5) * 1.5,
     ];
-    // 스킬도 ±0.08 변동
     runtimeDef.skill = Math.max(0.45, Math.min(0.98, def.skill + (Math.random() - 0.5) * 0.16));
 
     const npc = new NPC(runtimeDef);
     npc.build();
     GAME.npcs.push(npc);
     _addYukaVehicle(npc);
+    spawned.push(npc);
   });
+  return spawned;
 }
+
+// v3 — 페이즈 컨트롤러가 호출. 지정된 NPC 들을 scene/yuka/interactables 에서 정리.
+function despawnNpcs(npcsToRemove) {
+  if (!npcsToRemove || !npcsToRemove.length) return;
+  const removeIds = new Set(npcsToRemove.map(n => n.id));
+
+  npcsToRemove.forEach(npc => {
+    // YUKA vehicle 제거
+    const v = _yukaVehicles.get(npc.id);
+    if (v && _yukaManager && !v.fixed) {
+      try { _yukaManager.remove(v); } catch (e) {}
+    }
+    _yukaVehicles.delete(npc.id);
+
+    // scene 에서 group + trigger mesh 제거 (dispose 는 GC 위임 — 짧은 라이프사이클이므로 안전)
+    if (npc.group && npc.group.parent) npc.group.parent.remove(npc.group);
+    if (npc.mesh  && npc.mesh.parent)  npc.mesh.parent.remove(npc.mesh);
+  });
+
+  // GAME.npcs 에서 제거
+  if (GAME.npcs) {
+    GAME.npcs = GAME.npcs.filter(n => !removeIds.has(n.id));
+  }
+
+  // GAME.interactables 에서 npc 타입 + 해당 id 제거
+  if (GAME.interactables) {
+    GAME.interactables = GAME.interactables.filter(item => {
+      if (item.type !== 'npc' && item.type !== 'action') return true;
+      if (!item.npcId) return true;
+      return !removeIds.has(item.npcId);
+    });
+  }
+}
+
+window.spawnNpcsForScenario = spawnNpcsForScenario;
+window.despawnNpcs           = despawnNpcs;
 
 function _addYukaVehicle(npc) {
   if (!_yukaManager) return;
