@@ -40,7 +40,7 @@ function evaluateFoundation() {
   if (GAME.state.liftStarted || GAME.state.gameOver) return;
   GAME.state.liftStarted = true;
   updateHUD();
-  showActionNotif('콘크리트 타설 시작...', 2000);
+  showActionNotif(({ ko:'콘크리트 타설 시작...', en:'Concrete pour starting...', vi:'Bắt đầu đổ bê tông...', ar:'بدء صب الخرسانة...' })[currentLang] || '콘크리트 타설 시작...', 2000);
 
   setTimeout(() => {
     if (GAME.state.gameOver) return;

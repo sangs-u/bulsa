@@ -43,7 +43,7 @@ function evaluateEnvelope() {
   if (GAME.state.liftStarted || GAME.state.gameOver) return;
   GAME.state.liftStarted = true;
   updateHUD();
-  showActionNotif('외장 인양·설치 시작...', 2000);
+  showActionNotif(({ ko:'외장 인양·설치 시작...', en:'Envelope lift & install starting...', vi:'Bắt đầu cẩu và lắp vỏ bao che...', ar:'بدء رفع وتركيب الواجهة...' })[currentLang] || '외장 인양·설치 시작...', 2000);
 
   setTimeout(() => {
     if (GAME.state.gameOver) return;

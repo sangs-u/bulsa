@@ -32,7 +32,7 @@ function startShoringInspection() {
           endShoringInspection();
           GAME.state.phase = getCurrentPhase();
           updateHUD();
-          showActionNotif('🎉 흙막이 점검 완료 (위임) — 안전난간 단계', 4000);
+          showActionNotif(({ ko:'🎉 흙막이 점검 완료 (위임) — 안전난간 단계', en:'🎉 Shoring inspection done (delegated) — guardrail next', vi:'🎉 Kiểm tra chống đỡ xong (ủy quyền) — lan can an toàn tiếp', ar:'🎉 اكتمل فحص الدعم (تفويض) — التالي تركيب حواجز السلامة' })[currentLang] || '🎉 흙막이 점검 완료 (위임) — 안전난간 단계', 4000);
           setTimeout(() => { if (typeof startRailingInstall === 'function') startRailingInstall(); }, 1500);
         }),
       },
@@ -81,7 +81,7 @@ function startShoringInspection() {
     spot.marker = { group: g, ring, arc, pole, flag };
   });
 
-  showActionNotif('🔍 흙막이 점검 — 4개 H-pile 코너에 가서 E 키 길게 누르기 (1.8초)', 5000);
+  showActionNotif(({ ko:'🔍 흙막이 점검 — 4개 H-pile 코너에 가서 E 키 길게 누르기 (1.8초)', en:'🔍 Shoring inspection — go to each of 4 H-pile corners and hold E (1.8s)', vi:'🔍 Kiểm tra chống đỡ — đến 4 góc H-pile và giữ E (1.8 giây)', ar:'🔍 فحص الدعم — انتقل إلى زوايا الكومات الأربع واضغط E مطولاً (1.8 ث)' })[currentLang] || '🔍 흙막이 점검 — 4개 H-pile 코너에 가서 E 키 길게 누르기 (1.8초)', 5000);
   _renderShoringHUD();
 }
 
@@ -155,7 +155,7 @@ function _completeSpot(spot) {
     endShoringInspection();
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('🎉 흙막이 점검 완료 — 안전난간 설치 단계', 4000);
+    showActionNotif(({ ko:'🎉 흙막이 점검 완료 — 안전난간 설치 단계', en:'🎉 Shoring inspection done — install guardrails next', vi:'🎉 Kiểm tra chống đỡ xong — lắp lan can an toàn tiếp', ar:'🎉 اكتمل فحص الدعم — التالي تركيب حواجز السلامة' })[currentLang] || '🎉 흙막이 점검 완료 — 안전난간 설치 단계', 4000);
     // Phase 4 자동 진입
     setTimeout(() => {
       if (typeof startRailingInstall === 'function') startRailingInstall();

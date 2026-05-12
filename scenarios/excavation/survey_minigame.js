@@ -27,7 +27,7 @@ function startSurvey() {
           endSurvey();
           GAME.state.phase = getCurrentPhase();
           updateHUD();
-          showActionNotif('🎉 매설물 사전조사 완료 (위임) — 흙막이 단계', 4000);
+          showActionNotif(({ ko:'🎉 매설물 사전조사 완료 (위임) — 흙막이 단계', en:'🎉 Underground survey done (delegated) — shoring next', vi:'🎉 Khảo sát ngầm xong (ủy quyền) — chống đỡ tiếp', ar:'🎉 اكتمل المسح تحت الأرض (تفويض) — التالي الدعم' })[currentLang] || '🎉 매설물 사전조사 완료 (위임) — 흙막이 단계', 4000);
           setTimeout(() => { if (typeof startShoringInspection === 'function') startShoringInspection(); }, 1500);
         }),
       },
@@ -52,7 +52,7 @@ function startSurvey() {
   }
   SURVEY.scanSweepMesh.visible = true;
 
-  showActionNotif('📡 탐지기 활성화 — 부지를 수색하세요. 신호 강할 때 SPACE 로 마크', 5000);
+  showActionNotif(({ ko:'📡 탐지기 활성화 — 부지를 수색하세요. 신호 강할 때 SPACE 로 마크', en:'📡 Detector active — sweep the site, press SPACE when signal is strong', vi:'📡 Đã bật máy dò — rà công trường, nhấn SPACE khi tín hiệu mạnh', ar:'📡 الجهاز نشط — امسح الموقع، اضغط SPACE عند قوة الإشارة' })[currentLang] || '📡 탐지기 활성화 — 부지를 수색하세요. 신호 강할 때 SPACE 로 마크', 5000);
 }
 
 function endSurvey() {
@@ -114,7 +114,7 @@ function tryMarkSurvey() {
   });
 
   if (minDist > 1.8 || nearestIdx < 0) {
-    showActionNotif('⚠ 신호 약함 — 더 가까이 이동', 1500);
+    showActionNotif(({ ko:'⚠ 신호 약함 — 더 가까이 이동', en:'⚠ Signal weak — move closer', vi:'⚠ Tín hiệu yếu — đến gần hơn', ar:'⚠ الإشارة ضعيفة — اقترب أكثر' })[currentLang] || '⚠ 신호 약함 — 더 가까이 이동', 1500);
     return false;
   }
 
@@ -131,7 +131,7 @@ function tryMarkSurvey() {
     endSurvey();
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('🎉 모든 매설물 발견 — 흙막이 점검 단계 시작', 4000);
+    showActionNotif(({ ko:'🎉 모든 매설물 발견 — 흙막이 점검 단계 시작', en:'🎉 All underground utilities found — start shoring inspection', vi:'🎉 Đã phát hiện hết công trình ngầm — bắt đầu kiểm tra chống đỡ', ar:'🎉 تم العثور على جميع المرافق تحت الأرض — ابدأ فحص الدعم' })[currentLang] || '🎉 모든 매설물 발견 — 흙막이 점검 단계 시작', 4000);
     // Phase 3 자동 진입 — 흙막이 점검 미니게임 시작
     setTimeout(() => {
       if (typeof startShoringInspection === 'function') startShoringInspection();

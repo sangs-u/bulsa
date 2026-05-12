@@ -30,7 +30,7 @@ function startRailingInstall() {
           endRailingInstall();
           GAME.state.phase = getCurrentPhase();
           updateHUD();
-          showActionNotif('🎉 안전난간 설치 완료 (위임) — 신호수 단계', 4000);
+          showActionNotif(({ ko:'🎉 안전난간 설치 완료 (위임) — 신호수 단계', en:'🎉 Guardrails installed (delegated) — signaller next', vi:'🎉 Đã lắp lan can (ủy quyền) — bố trí người ra hiệu tiếp', ar:'🎉 تم تركيب حواجز السلامة (تفويض) — التالي تعيين الإشاري' })[currentLang] || '🎉 안전난간 설치 완료 (위임) — 신호수 단계', 4000);
           setTimeout(() => { if (typeof startSignalPlacement === 'function') startSignalPlacement(); }, 1500);
         }),
       },
@@ -44,7 +44,7 @@ function startRailingInstall() {
       ? buildSlotMarker(slot.pos[0], slot.pos[2], slot.label)
       : null;
   });
-  showActionNotif('🛡 안전난간 4면 설치 — 각 슬롯에서 E 키 누르기', 4500);
+  showActionNotif(({ ko:'🛡 안전난간 4면 설치 — 각 슬롯에서 E 키 누르기', en:'🛡 Install guardrails on 4 sides — press E at each slot', vi:'🛡 Lắp lan can an toàn 4 mặt — nhấn E tại mỗi vị trí', ar:'🛡 ركّب حواجز السلامة على الجوانب الأربعة — اضغط E عند كل موضع' })[currentLang] || '🛡 안전난간 4면 설치 — 각 슬롯에서 E 키 누르기', 4500);
 }
 
 function endRailingInstall() {
@@ -94,7 +94,7 @@ function tryPlaceRailing() {
     endRailingInstall();
     GAME.state.phase = getCurrentPhase();
     updateHUD();
-    showActionNotif('🎉 안전난간 설치 완료 — 신호수 배치 단계', 4000);
+    showActionNotif(({ ko:'🎉 안전난간 설치 완료 — 신호수 배치 단계', en:'🎉 Guardrails installed — place signaller next', vi:'🎉 Đã lắp lan can — bố trí người ra hiệu tiếp', ar:'🎉 تم تركيب حواجز السلامة — التالي تعيين الإشاري' })[currentLang] || '🎉 안전난간 설치 완료 — 신호수 배치 단계', 4000);
     setTimeout(() => {
       if (typeof startSignalPlacement === 'function') startSignalPlacement();
     }, 1500);

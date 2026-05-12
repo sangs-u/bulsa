@@ -20,7 +20,7 @@ function startScaffoldInspection() {
       ENV_STATE.scaffoldInspected = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 비계 조립검사 완료 — 안전대 부착설비 설치', 4000);
+      showActionNotif(({ ko:'🎉 비계 조립검사 완료 — 안전대 부착설비 설치', en:'🎉 Scaffold assembly inspected — install lifeline anchors next', vi:'🎉 Kiểm tra giàn giáo xong — lắp neo dây cứu sinh tiếp', ar:'🎉 اكتمل فحص السقالة — التالي تركيب نقاط تثبيت حبل النجاة' })[currentLang] || '🎉 비계 조립검사 완료 — 안전대 부착설비 설치', 4000);
       setTimeout(() => { if (typeof startLifelineInstall === 'function') startLifelineInstall(); }, 1500);
     },
   });
@@ -45,7 +45,7 @@ function startLifelineInstall() {
       ENV_STATE.lifelineInstalled = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 안전대 부착설비 설치 완료 — 외장재 결속 점검', 4000);
+      showActionNotif(({ ko:'🎉 안전대 부착설비 설치 완료 — 외장재 결속 점검', en:'🎉 Lifeline anchors installed — check panel securing next', vi:'🎉 Đã lắp neo dây cứu sinh — kiểm tra buộc panel tiếp', ar:'🎉 تم تركيب نقاط تثبيت الحبل — التالي فحص ربط الألواح' })[currentLang] || '🎉 안전대 부착설비 설치 완료 — 외장재 결속 점검', 4000);
       setTimeout(() => { if (typeof startPanelSecure === 'function') startPanelSecure(); }, 1500);
     },
   });
@@ -71,7 +71,7 @@ function startPanelSecure() {
       ENV_STATE.panelSecured = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 외장재 결속 점검 완료 — 신호수 배치', 4000);
+      showActionNotif(({ ko:'🎉 외장재 결속 점검 완료 — 신호수 배치', en:'🎉 Panel securing checked — place signaller next', vi:'🎉 Kiểm tra buộc panel xong — bố trí người ra hiệu tiếp', ar:'🎉 اكتمل فحص ربط الألواح — التالي تعيين الإشاري' })[currentLang] || '🎉 외장재 결속 점검 완료 — 신호수 배치', 4000);
       setTimeout(() => { if (typeof startEnvSignal === 'function') startEnvSignal(); }, 1500);
     },
   });
@@ -95,7 +95,7 @@ function startEnvSignal() {
       ENV_STATE.signalAssigned = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 신호수 배치 완료 — 외장 인양 트리거로', 4000);
+      showActionNotif(({ ko:'🎉 신호수 배치 완료 — 외장 인양 트리거로', en:'🎉 Signaller placed — go to envelope lift trigger', vi:'🎉 Đã bố trí người ra hiệu — đến điểm kích hoạt cẩu vỏ bao che', ar:'🎉 تم تعيين الإشاري — توجه إلى نقطة بدء رفع الواجهة' })[currentLang] || '🎉 신호수 배치 완료 — 외장 인양 트리거로', 4000);
     },
   });
   ENV_SIGNAL_GAME.start();

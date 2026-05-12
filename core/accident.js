@@ -14,13 +14,18 @@ const ACCIDENT_REQUIRED = {
 };
 
 const LIFT_STATE_LABELS = {
-  slingInspected:  '슬링 점검',
-  pinSecured:      '안전핀 체결',
-  specChecked:     '사양서 확인',
-  angleMeasured:   '슬링 각도 측정',
-  signalAssigned:  '신호수 위치 지정',
-  workerEvacuated: '작업반경 대피 지시',
+  slingInspected:  { ko: '슬링 점검',          en: 'Sling inspection',     vi: 'Kiểm tra dây cẩu',    ar: 'فحص الحبل' },
+  pinSecured:      { ko: '안전핀 체결',        en: 'Safety pin secured',   vi: 'Chốt an toàn',         ar: 'مسمار الأمان' },
+  specChecked:     { ko: '사양서 확인',        en: 'Specs verified',       vi: 'Xác nhận thông số',    ar: 'تحقق المواصفات' },
+  angleMeasured:   { ko: '슬링 각도 측정',     en: 'Sling angle measured', vi: 'Đo góc dây cẩu',       ar: 'قياس زاوية الحبل' },
+  signalAssigned:  { ko: '신호수 위치 지정',   en: 'Signal person placed', vi: 'Bố trí người ra hiệu', ar: 'تعيين عامل الإشارة' },
+  workerEvacuated: { ko: '작업반경 대피 지시', en: 'Workers evacuated',    vi: 'Sơ tán công nhân',     ar: 'إخلاء العمال' },
 };
+function _liftLabel(key) {
+  const e = LIFT_STATE_LABELS[key];
+  if (!e) return key;
+  return e[currentLang] || e.ko || key;
+}
 
 function triggerAccident(accidentId) {
   if (GAME.state.gameOver) return;
@@ -166,7 +171,7 @@ function showAccidentPanel(accidentId) {
     if (required.length > 0 && typeof LIFT_STATE !== 'undefined') {
       required.forEach(key => {
         const done  = !!LIFT_STATE[key];
-        const label = LIFT_STATE_LABELS[key] || key;
+        const label = _liftLabel(key);
         const span  = document.createElement('span');
         span.className   = done ? 'done-item' : 'missed-item';
         span.textContent = done ? ('✓ ' + label) : ('⚠ ' + label);

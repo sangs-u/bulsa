@@ -176,12 +176,13 @@ function _showBuildToast(stage) {
   const label = stage['label' + lang.charAt(0).toUpperCase() + lang.slice(1)]
              || stage.labelKo
              || stage.id;
+  const _done = ({ ko:' 완료', en:' done', vi:' hoàn tất', ar:' مكتمل' })[lang] || ' 완료';
   if (typeof showStructureComplete === 'function') {
-    showStructureComplete(label + ' 완료');
+    showStructureComplete(label + _done);
   } else {
     const el = document.getElementById('structure-complete-msg');
     if (el) {
-      el.textContent = '🏗 ' + label + ' 완료';
+      el.textContent = '🏗 ' + label + _done;
       el.classList.remove('hidden');
       setTimeout(() => el.classList.add('hidden'), 3000);
     }

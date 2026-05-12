@@ -61,7 +61,7 @@ function evaluateLift() {
   updateHUD();
 
   exitCraneCab();
-  showActionNotif('인양 시작...', 2000);
+  showActionNotif(({ ko:'인양 시작...', en:'Lift starting...', vi:'Bắt đầu cẩu...', ar:'بدء عملية الرفع...' })[currentLang] || '인양 시작...', 2000);
 
   setTimeout(() => {
     if (GAME.state.gameOver) return;

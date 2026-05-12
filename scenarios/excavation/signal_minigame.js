@@ -25,7 +25,7 @@ function startSignalPlacement() {
           endSignalPlacement();
           GAME.state.phase = getCurrentPhase();
           updateHUD();
-          showActionNotif('🎉 신호수 배치 완료 (위임) — 굴착기 운전원 호출', 4000);
+          showActionNotif(({ ko:'🎉 신호수 배치 완료 (위임) — 굴착기 운전원 호출', en:'🎉 Signaller placed (delegated) — call excavator operator', vi:'🎉 Đã bố trí người ra hiệu (ủy quyền) — gọi tài xế máy đào', ar:'🎉 تم تعيين الإشاري (تفويض) — اتصل بمشغل الحفارة' })[currentLang] || '🎉 신호수 배치 완료 (위임) — 굴착기 운전원 호출', 4000);
         }),
       },
     };
@@ -48,7 +48,7 @@ function startSignalPlacement() {
   GAME.scene.add(g);
   SIGNAL.ghostMesh = g;
 
-  showActionNotif('🦺 신호수 배치 — 작업반경 밖 & 운전실 시야 확보되는 위치에서 E 키', 5000);
+  showActionNotif(({ ko:'🦺 신호수 배치 — 작업반경 밖 & 운전실 시야 확보되는 위치에서 E 키', en:'🦺 Place signaller — outside swing radius & visible to cab, press E', vi:'🦺 Bố trí người ra hiệu — ngoài bán kính làm việc & nhìn thấy cabin, nhấn E', ar:'🦺 ضع الإشاري — خارج نطاق العمل وضمن رؤية الكابينة، اضغط E' })[currentLang] || '🦺 신호수 배치 — 작업반경 밖 & 운전실 시야 확보되는 위치에서 E 키', 5000);
 }
 
 function endSignalPlacement() {
@@ -109,7 +109,7 @@ function tryPlaceSignal() {
   if (!SIGNAL.active) return false;
   const status = _evaluatePlacement();
   if (!status.ok) {
-    showActionNotif('⚠ 부적합한 위치 — ' + status.hint, 2500);
+    showActionNotif((({ ko:'⚠ 부적합한 위치 — ', en:'⚠ Invalid position — ', vi:'⚠ Vị trí không hợp lệ — ', ar:'⚠ موقع غير صالح — ' })[currentLang] || '⚠ 부적합한 위치 — ') + status.hint, 2500);
     return false;
   }
   // 고스트를 실체화 (불투명) — 이 위치에 고정
@@ -125,6 +125,6 @@ function tryPlaceSignal() {
   endSignalPlacement();
   GAME.state.phase = getCurrentPhase();
   updateHUD();
-  showActionNotif('🎉 신호수 배치 완료 — 굴착기 운전석 탑승 가능', 4000);
+  showActionNotif(({ ko:'🎉 신호수 배치 완료 — 굴착기 운전석 탑승 가능', en:'🎉 Signaller placed — you may board the excavator', vi:'🎉 Đã bố trí người ra hiệu — có thể lên cabin máy đào', ar:'🎉 تم تعيين الإشاري — يمكنك ركوب الحفارة' })[currentLang] || '🎉 신호수 배치 완료 — 굴착기 운전석 탑승 가능', 4000);
   return true;
 }

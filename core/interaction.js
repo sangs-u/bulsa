@@ -57,6 +57,21 @@ function _notif(key) {
   return e[currentLang] || e.ko;
 }
 
+// Web Speech API — 운전원 거부 멘트 출력 (브라우저 지원·사용자 음성 활성 시에만)
+function _speakRefusal(text) {
+  try {
+    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+    const u = new SpeechSynthesisUtterance(text.replace(/^"|"$/g, ''));
+    const langMap = { ko: 'ko-KR', en: 'en-US', vi: 'vi-VN', ar: 'ar-SA' };
+    u.lang   = langMap[currentLang] || 'ko-KR';
+    u.rate   = 0.95;
+    u.pitch  = 0.9;
+    u.volume = 0.85;
+    window.speechSynthesis.cancel(); // 중복 발화 방지
+    window.speechSynthesis.speak(u);
+  } catch (e) { /* TTS 미지원 — 조용히 무시 */ }
+}
+
 // ── Init ───────────────────────────────────────────────────────
 function initInteraction() {
   INTERACTION.raycaster = new THREE.Raycaster();
@@ -149,7 +164,8 @@ function updateInteraction() {
   INTERACTION.currentTarget = closest;
 
   if (closest) {
-    const label = closest.label || '';
+    let label = closest.label || '';
+    if (label && typeof label === 'object') label = label[currentLang] || label.ko || '';
     showInteractPrompt(`[E]  ${label}`);
   } else {
     hideInteractPrompt();
@@ -625,6 +641,10 @@ function _localizePanels() {
     'plan-lbl-name':       'planLblName',
     'plan-lbl-weight':     'planLblWeight',
     'plan-lbl-shape':      'planLblShape',
+    'plan-sec-sling':      'planSecSling',
+    'plan-lbl-swl':        'planLblSwl',
+    'plan-lbl-angle':      'planLblAngle',
+    'plan-lbl-lines':      'planLblLines',
     'plan-sec-crew':       'planSecCrew',
     'plan-crew-foreman':   'planCrewForeman',
     'plan-crew-crane':     'planCrewCrane',
@@ -705,14 +725,18 @@ function openPlanPanel() {
   document.getElementById('plan-btn-sign').onclick = () => {
     LIFT_STATE.planWritten = true;
 
-    // 작업계획서 매개변수 — 운전원 거부권 분기에서 사용
+    // 작업계획서 매개변수 — 사용자 입력값 사용 (운전원 거부권 분기에서 사용)
+    const loadEl   = document.getElementById('plan-weight');
+    const swlEl    = document.getElementById('plan-sling-swl');
+    const angleEl  = document.getElementById('plan-sling-angle');
+    const linesEl  = document.getElementById('plan-sling-lines');
     GAME.state.workPlans = GAME.state.workPlans || {};
     GAME.state.workPlans.lifting = {
       params: {
-        load_ton:      3.0,        // 인양 부재 무게
-        sling_swl_ton: 3.0,        // 슬링 정격하중
-        angle_deg:     58,         // 슬링 각도
-        lines:         2,          // 슬링 가닥수
+        load_ton:      loadEl  ? parseFloat(loadEl.value)  || 3.0 : 3.0,
+        sling_swl_ton: swlEl   ? parseFloat(swlEl.value)   || 3.0 : 3.0,
+        angle_deg:     angleEl ? parseFloat(angleEl.value) || 58  : 58,
+        lines:         linesEl ? parseInt(linesEl.value, 10) || 2 : 2,
       },
       signedAt: new Date().toLocaleTimeString('ko-KR'),
       signedBy: GAME.state.playerName || '작업반장',
@@ -1113,6 +1137,9 @@ function showOperatorRefusal(missing) {
   document.getElementById('op-refusal-quote').textContent = t('opRefusalQuote');
   document.getElementById('op-refusal-intro').textContent = t('opRefusalIntro');
   document.getElementById('op-refusal-close').textContent = t('opRefusalClose');
+
+  // 운전원 거부 멘트 TTS — 사용자에게 청각 피드백
+  _speakRefusal(t('opRefusalQuote'));
 
   const list = document.getElementById('op-refusal-list');
   list.innerHTML = '';

@@ -42,6 +42,37 @@ bulsa/
 3. 작업 완료 시 `PROGRESS.md` 업데이트 (마지막 완료 작업 + 다음 작업 목록 갱신). 30줄 이내 유지.
 4. 질문 금지. 모호한 부분은 스스로 판단하고 즉시 실행
 5. **응답은 3줄 이내**: 완료된 파일명 + 핵심 변경사항만. 설명·요약·칭찬 금지
+6. 커밋·푸시 전 `npm run check` 로 86 파일 구문 검증 (PASS 아니면 푸시 금지)
+
+## 모바일 원격 작업 환경 (집 PC + 휴대폰)
+어디서나 휴대폰으로 작업 지시·로그 확인하는 셋업. Railway 같은 별도 환경은 컨텍스트 재구성으로 토큰 폭발 — 집 PC 단일 세션 유지가 최적.
+
+**집 PC (WSL2 Ubuntu, 1회 셋업):**
+```bash
+sudo apt install -y tmux openssh-server
+sudo systemctl enable ssh && sudo systemctl start ssh
+curl -fsSL https://claude.ai/install.sh | bash && claude login   # Max OAuth
+# Tailscale (공인 IP 불필요, 무료)
+curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up
+# 부팅 자동 시작 — Windows Task Scheduler 에서:
+#   wsl.exe -d Ubuntu -e bash -c "~/start-bulsa.sh"
+```
+
+**`~/start-bulsa.sh`** (한 번 만들어 둠):
+```bash
+#!/bin/bash
+tmux has-session -t bulsa 2>/dev/null || {
+  tmux new-session -d -s bulsa -c ~/projects/bulsa
+  tmux send-keys -t bulsa 'claude --continue' C-m
+}
+```
+
+**휴대폰 (1회 셋업):**
+- Tailscale 앱 로그인 → 집 PC IP(`100.x.x.x`) 자동 인식
+- Termius/Blink SSH 앱에 호스트 저장
+- 일상: SSH 접속 → `tmux attach -t bulsa` → 명령 입력. 끝나면 `Ctrl+B D` (exit 금지)
+
+**영속성 핵심:** `claude --continue` 가 디스크 저장 대화를 자동 재개. tmux 죽어도, PC 재부팅돼도 이전 컨텍스트 복귀. 토큰 추가 소모 없음 (Max 정액 한도 동일).
 
 ## 현재 구현 상태
 ```

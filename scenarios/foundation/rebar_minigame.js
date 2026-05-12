@@ -18,7 +18,7 @@ function startRebarInspection() {
       FOUND_STATE.rebarCapsOk = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 철근 보호캡 점검 완료 — 거푸집 점검 단계', 4000);
+      showActionNotif(({ ko:'🎉 철근 보호캡 점검 완료 — 거푸집 점검 단계', en:'🎉 Rebar cap check done — formwork inspection next', vi:'🎉 Kiểm tra mũ thép xong — kiểm tra cốp pha tiếp', ar:'🎉 اكتمل فحص أغطية الحديد — التالي فحص القوالب' })[currentLang] || '🎉 철근 보호캡 점검 완료 — 거푸집 점검 단계', 4000);
       setTimeout(() => { if (typeof startFormworkInspection === 'function') startFormworkInspection(); }, 1500);
     },
   });
@@ -48,7 +48,7 @@ function startFormworkInspection() {
       FOUND_STATE.formworkOk = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 거푸집·동바리 점검 완료 — 펌프카 점검 단계', 4000);
+      showActionNotif(({ ko:'🎉 거푸집·동바리 점검 완료 — 펌프카 점검 단계', en:'🎉 Formwork & shoring done — pump truck next', vi:'🎉 Kiểm tra cốp pha xong — kiểm tra xe bơm tiếp', ar:'🎉 اكتمل فحص القوالب والدعامات — التالي فحص مضخة الخرسانة' })[currentLang] || '🎉 거푸집·동바리 점검 완료 — 펌프카 점검 단계', 4000);
       setTimeout(() => { if (typeof startPumpInspection === 'function') startPumpInspection(); }, 1500);
     },
   });
@@ -76,7 +76,7 @@ function startPumpInspection() {
       FOUND_STATE.pumpOk = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 펌프카 점검 완료 — 타설 순서 합의 단계', 4000);
+      showActionNotif(({ ko:'🎉 펌프카 점검 완료 — 타설 순서 합의 단계', en:'🎉 Pump truck done — agree pour sequence next', vi:'🎉 Kiểm tra xe bơm xong — thống nhất trình tự đổ tiếp', ar:'🎉 اكتمل فحص المضخة — التالي الاتفاق على تسلسل الصب' })[currentLang] || '🎉 펌프카 점검 완료 — 타설 순서 합의 단계', 4000);
       setTimeout(() => { if (typeof startPourOrder === 'function') startPourOrder(); }, 1500);
     },
   });
@@ -102,7 +102,7 @@ function startPourOrder() {
       FOUND_STATE.pourOrderAgreed = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 타설 순서 합의 완료 — 펌프카 제어반으로', 4000);
+      showActionNotif(({ ko:'🎉 타설 순서 합의 완료 — 펌프카 제어반으로', en:'🎉 Pour sequence agreed — go to pump control panel', vi:'🎉 Đã thống nhất trình tự — đến bảng điều khiển xe bơm', ar:'🎉 تم الاتفاق على التسلسل — توجه إلى لوحة تحكم المضخة' })[currentLang] || '🎉 타설 순서 합의 완료 — 펌프카 제어반으로', 4000);
     },
   });
   POUR_ORDER_GAME.start();

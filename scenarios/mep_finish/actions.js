@@ -43,7 +43,7 @@ function evaluateMepFinish() {
   if (GAME.state.liftStarted || GAME.state.gameOver) return;
   GAME.state.liftStarted = true;
   updateHUD();
-  showActionNotif('준공검사 시작...', 2000);
+  showActionNotif(({ ko:'준공검사 시작...', en:'Final inspection starting...', vi:'Bắt đầu nghiệm thu hoàn công...', ar:'بدء الفحص النهائي للتسليم...' })[currentLang] || '준공검사 시작...', 2000);
 
   setTimeout(() => {
     if (GAME.state.gameOver) return;

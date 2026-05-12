@@ -14,7 +14,7 @@ function startLoto() {
       MEP_STATE.lotoApplied = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 LOTO 적용 완료 — 가스누설 점검 단계', 4000);
+      showActionNotif(({ ko:'🎉 LOTO 적용 완료 — 가스누설 점검 단계', en:'🎉 LOTO applied — gas leak check next', vi:'🎉 Áp dụng LOTO xong — kiểm tra rò khí gas tiếp', ar:'🎉 تم تطبيق LOTO — التالي فحص تسرب الغاز' })[currentLang] || '🎉 LOTO 적용 완료 — 가스누설 점검 단계', 4000);
       setTimeout(() => { if (typeof startGasCheck === 'function') startGasCheck(); }, 1500);
     },
   });
@@ -38,7 +38,7 @@ function startGasCheck() {
       MEP_STATE.gasChecked = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 가스 누설 점검 완료 — 환기 가동 단계', 4000);
+      showActionNotif(({ ko:'🎉 가스 누설 점검 완료 — 환기 가동 단계', en:'🎉 Gas leak check done — start ventilation next', vi:'🎉 Kiểm tra rò khí xong — bật thông gió tiếp', ar:'🎉 اكتمل فحص تسرب الغاز — التالي تشغيل التهوية' })[currentLang] || '🎉 가스 누설 점검 완료 — 환기 가동 단계', 4000);
       setTimeout(() => { if (typeof startVentActivation === 'function') startVentActivation(); }, 1500);
     },
   });
@@ -63,7 +63,7 @@ function startVentActivation() {
       MEP_STATE.ventActivated = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 환기 가동 완료 — 소화기 배치 점검', 4000);
+      showActionNotif(({ ko:'🎉 환기 가동 완료 — 소화기 배치 점검', en:'🎉 Ventilation running — check fire extinguishers', vi:'🎉 Đã bật thông gió — kiểm tra bình chữa cháy', ar:'🎉 تم تشغيل التهوية — افحص أماكن طفايات الحريق' })[currentLang] || '🎉 환기 가동 완료 — 소화기 배치 점검', 4000);
       setTimeout(() => { if (typeof startExtCheck === 'function') startExtCheck(); }, 1500);
     },
   });
@@ -92,7 +92,7 @@ function startExtCheck() {
       MEP_STATE.extVerified = true;
       GAME.state.phase = getCurrentPhase();
       updateHUD();
-      showActionNotif('🎉 소화기 배치 점검 완료 — 책상 옆 준공검사 트리거로', 4000);
+      showActionNotif(({ ko:'🎉 소화기 배치 점검 완료 — 책상 옆 준공검사 트리거로', en:'🎉 Fire extinguisher check done — go to final inspection trigger by the desk', vi:'🎉 Kiểm tra bình chữa cháy xong — đến điểm nghiệm thu bên bàn', ar:'🎉 اكتمل فحص الطفايات — توجه إلى نقطة الفحص النهائي بجوار المكتب' })[currentLang] || '🎉 소화기 배치 점검 완료 — 책상 옆 준공검사 트리거로', 4000);
     },
   });
   EXT_GAME.start();
