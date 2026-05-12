@@ -14,7 +14,8 @@
   const D = {};
 
   D.tasks = function () {
-    const arr = (typeof getActiveTasks === 'function') ? getActiveTasks() : (GAME.activeTasks || []);
+    let arr = (typeof getActiveTasks === 'function') ? getActiveTasks() : (GAME.activeTasks || []);
+    if (!Array.isArray(arr)) arr = [];
     return arr.map(t => ({
       id:    t.id,
       type:  t.type,

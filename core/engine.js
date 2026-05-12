@@ -124,10 +124,25 @@ window.persistFines = persistFines;
   }
   // v2 4-zone group offset 빌드는 폐기됨 (PHASE_CONTROLLER 가 단일 좌표 페이즈 진행)
 
-  // v2.0 — 시나리오별 초기 작업 큐 시드 (lifting 은 RC_LOOP 가 동적 enqueue)
-  // v3 — unified 모드는 PHASE_CONTROLLER 가 페이즈 1 만 시드. 아래 통합 시드 분기는 폐기.
-  if (typeof enqueueScenarioTasks === 'function' && !GAME.unifiedMode) {
-    enqueueScenarioTasks(GAME.scenarioId);
+  // v3 — task seed 와 PHASE_CONTROLLER 는 tasks.js/phase_controller.js 로드 후 호출 필요.
+  // engine.js 가 먼저 로드되므로 DOMContentLoaded (모든 <script> 파싱 완료 후) 에 defer.
+  function _v3DeferredInit() {
+    if (GAME.activeTasks === undefined) GAME.activeTasks = [];
+    if (typeof enqueueScenarioTasks === 'function' && !GAME.unifiedMode) {
+      try { enqueueScenarioTasks(GAME.scenarioId); } catch (e) { console.warn('[deferred enqueue]', e.message); }
+    }
+    if (GAME.unifiedMode && typeof PHASE_CONTROLLER !== 'undefined') {
+      try { PHASE_CONTROLLER.enable(); } catch (e) { console.warn('[v3 phase_controller]', e.message); }
+      if (typeof unlockAchievement === 'function') unlockAchievement('unified_enter');
+    } else if (GAME.unifiedMode) {
+      console.warn('[v3] PHASE_CONTROLLER 미정의 — phase_controller.js 로딩 확인');
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _v3DeferredInit, { once: true });
+  } else {
+    // 이미 로드됨 (rare) → 다음 microtask 에 실행 (현 IIFE 후 다른 <script> 들이 같은 task 안에서 끝나길 보장)
+    Promise.resolve().then(_v3DeferredInit);
   }
 
   initPlayer();
@@ -172,12 +187,7 @@ window.persistFines = persistFines;
   const fallbackTitle = { ko: '안전 시뮬레이터', en: 'Safety Simulator', vi: 'Mô phỏng an toàn', ar: 'محاكي السلامة' }[currentLang] || '안전 시뮬레이터';
   if (nameSub) nameSub.textContent = (scenarioTitles[GAME.scenarioId] || fallbackTitle) + subSuffix;
 
-  // v3 통합 모드 — PHASE_CONTROLLER 활성화 (페이즈 1 = 굴착 시드)
-  // v2 의 모든 시나리오 동시 활성 + RC_LOOP 즉시 실행은 폐기. 각 페이즈 시작 시 그 페이즈 task 만.
-  if (GAME.unifiedMode && typeof PHASE_CONTROLLER !== 'undefined') {
-    try { PHASE_CONTROLLER.enable(); } catch (e) { console.warn('[v3 phase_controller]', e.message); }
-    if (typeof unlockAchievement === 'function') unlockAchievement('unified_enter');
-  }
+  // PHASE_CONTROLLER.enable() 은 위 setTimeout(0) 안에서 호출됨 (deferred)
 
   // v2.0 통합 모드 — 게임 시작 후 자유 모드 안내 토스트 (3초 후 등장 8초 노출)
   if (GAME.unifiedMode) {

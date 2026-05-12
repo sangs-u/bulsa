@@ -172,6 +172,41 @@
     }
   }
 
+  // ── 베이스라인 (sky / ground / lighting / colliders) 보장 ─────
+  let _baselineDone = false;
+  function _ensureUnifiedBaseline() {
+    if (_baselineDone) return;
+    if (typeof THREE === 'undefined' || !GAME.scene) return;
+
+    if (!Array.isArray(GAME.colliders)) GAME.colliders = [];
+
+    // 하늘 + 안개
+    if (!GAME.scene.background) {
+      GAME.scene.background = new THREE.Color(0x8AB2D0);
+    }
+    if (!GAME.scene.fog) {
+      GAME.scene.fog = new THREE.FogExp2(0x8AB2D0, 0.006);
+    }
+
+    // 라이팅 — 최소 hemi + ambient + directional
+    GAME.scene.add(new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.6));
+    GAME.scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+    const sun = new THREE.DirectionalLight(0xfff0e0, 0.85);
+    sun.position.set(20, 30, 15);
+    GAME.scene.add(sun);
+
+    // 지면 — 50x50 평지 (페이즈별 mesh 가 그 위에 덮음)
+    const groundGeo = new THREE.PlaneGeometry(80, 80);
+    const groundMat = new THREE.MeshLambertMaterial({ color: 0xA89878 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = 0;
+    ground.name = 'unified_baseline_ground';
+    GAME.scene.add(ground);
+
+    _baselineDone = true;
+  }
+
   // ── Scene build / teardown ────────────────────────────────────
   const _BUILD_FN_BY_KEY = {
     excavation: 'buildExcavationScene',
@@ -192,6 +227,11 @@
     if (typeof GAME === 'undefined' || !GAME.scene) return;
     const ph = PHASES[PHASE_CONTROLLER._currentIdx];
     if (!ph) return;
+
+    // v3 — 모든 scenario scene 이 unified 모드에선 baseline (sky/ground/lighting/colliders)
+    // 가 이미 있다고 가정하고 if (!_unified) 블록을 스킵함. v2 는 lifting baseline 으로 건졌지만
+    // v3 는 페이즈마다 build 하므로 baseline 을 우리가 보장해야 함.
+    _ensureUnifiedBaseline();
 
     // scene 자식 변화 추적 → 새로 추가된 mesh 만 phase group 으로 묶기
     const sceneChildSnapshot = GAME.scene.children.length;
@@ -343,7 +383,9 @@
   }
 
   // ── 디버그 콘솔 통합 ──────────────────────────────────────────
-  if (typeof window.__bulsa === 'object' && window.__bulsa) {
+  // debug_console.js 가 phase_controller.js 보다 늦게 로드되므로 DOMContentLoaded 에 defer.
+  function _registerDebugHooks() {
+    if (typeof window.__bulsa !== 'object' || !window.__bulsa) return;
     window.__bulsa.phase = function (n) {
       // 기존 phase(n) 헬퍼 의미 보존: n 인자 없으면 현재 상태, 있으면 그 페이즈로 강제 이동
       if (n === undefined) return PHASE_CONTROLLER.dump();
@@ -374,5 +416,13 @@
       }
       return { log, dump: PHASE_CONTROLLER.dump() };
     };
+  }
+
+  // 즉시 시도 (이미 __bulsa 가 있을 수도) + DOMContentLoaded 백업 (debug_console.js 늦게 로드)
+  _registerDebugHooks();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _registerDebugHooks, { once: true });
+  } else {
+    Promise.resolve().then(_registerDebugHooks);
   }
 })();
