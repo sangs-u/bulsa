@@ -141,7 +141,7 @@
       "id": "welding_mask_item",
       "name": "용접 마스크 (착용 아이템)",
       "glb": "assets/glb/welding_mask_item.glb",
-      "status": "pending",
+      "status": "done",
       "batch": 1,
       "style": "chibi",
       "category": "wearable_head",
