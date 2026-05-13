@@ -3,27 +3,27 @@
 
 ## 최근 완료 (2026-05-13) — v4 batch
 
-- **#56** 카메라 수직 360° 버그 수정 (YXZ Euler 쿼터니언 방식)
-- **#57** v4 코어 시스템 신규: material.js · carry.js · hazard_zone.js · act.js · marker.js · anim_gen.js
-- **#58** phase_v4.js (5페이즈 행위 기반 튜토리얼) + engine 루프 연결 (?mode=v4 진입점)
-  - 17개 행위 정의 (survey→railing→rebar→sling→signal→loto 등)
-  - 페이즈별 마커·위험구역·자재 자동 배치
-  - hazard_zone/marker/material/carry.js window.* exports 추가
-  - 구문검증 PASS 105/105
+- **#56~58** v4 코어 시스템 (material/carry/hazard_zone/act/marker/anim_gen/phase_v4.js)
+- **#59** 튜토리얼 가이드 (guidance.js): 3D 비콘 + 화살표 + 컨트롤 오버레이 + 다음할일카드
+- **#60** 3D TBM (tbm.js): NPC 원형 집합 + 말풍선 + 배너
+- **#61** PBR 텍스처 (tex_loader.js + assets/tex/ 9종): matConcrete/matWall/matDirt/matGravel/matMetal/matRust/matAsphalt
+- **#62** 콘크리트 타설 (pour.js): 채움 메시 + 파티클 + 진동기 + 양생 + 탈형
+- **#63** 굴착기 직접 조작 (excavator.js):
+  - WASD 트랙 이동 · 마우스 상부선회 · Q/E 붐 · R/F 아암 · Space 굴착 · X 덤프 · T 덤프트럭 · V 하차
+  - 관절 재구성 (root→upper→boomPvt→armPvt→bucketPvt 계층)
+  - 토사 청크 스폰 (matDirt PBR)
+  - 덤프트럭 AI (idle→coming→waiting→leaving)
+  - 굴착 깊이 HUD (바 + 수치)
+  - exitCraneCab 오버라이드 (크레인/굴착기 분기)
+  - excavation/scene.js PBR 재질 적용
 
 ## 검증 상태
-- `npm run check` PASS 105/105
-- **시각 플레이쓰루 미실시 (BLOCKING)** — ?mode=v4 진입 후 전체 흐름 검증 필요
+- `npm run check` PASS 109/109
+- 시각 플레이쓰루 미실시 (BLOCKING) — ?s=excavation 굴착기 탑승 → 굴착 → 덤프트럭 흐름
 
 ## 다음 작업
-1. ?mode=v4 실제 플레이쓰루 검증 (마커·비콘·화살표·다음할일카드 동작 확인)
-2. carry.js ↔ interaction.js 연동 (E키 자재 픽업 중복 방지)
-3. NPC 직종별 모션 연결 (trade→setMotion 매핑)
-4. 페이즈 완료 후 오픈 월드 진입 구현
-5. 지형 바닥 격자 가이드라인 (작업 영역 시각화)
-
-## 핵심 결정사항
-- 행위 기반: 물류→운반→설치가 실제 게임플레이
-- 위험 노출: 구역별 독립 수치, 임계점 초과 시 자연 사고
-- 안전 행위: 위험 감소 트리거 (체크리스트 아님)
-- Mixamo 애니메이션: 나중에 교체 가능 (현재 procedural + Idle/Walk/Run 폴백)
+1. ?s=excavation 플레이쓰루 — 굴착기 탑승 후 붐/아암/버킷 조작 동작 확인
+2. Phase 2 기초공사 상세: 철근 배근 (직접 운반·배치) + 거푸집 패널-by-패널 설치
+3. carry.js ↔ interaction.js E키 중복 방지 확인
+4. NPC 직종별 모션 매핑 (trade→setMotion)
+5. 페이즈 완료 → 오픈월드 전환
