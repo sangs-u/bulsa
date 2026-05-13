@@ -127,7 +127,7 @@
       "id": "safety_vest_item",
       "name": "안전조끼 (착용 아이템)",
       "glb": "assets/glb/safety_vest_item.glb",
-      "status": "pending",
+      "status": "done",
       "batch": 1,
       "style": "chibi",
       "category": "wearable_body",
