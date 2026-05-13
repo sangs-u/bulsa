@@ -97,7 +97,7 @@
       "id": "pile_driver",
       "name": "항타기",
       "glb": "assets/glb/pile_driver.glb",
-      "status": "pending",
+      "status": "done",
       "prompt": "chibi cute low-poly 3D pile driver machine, bright yellow, tall vertical leader mast, heavy drop hammer at top, crawler tracks, small cab, cartoon game asset, foundation construction equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
       "credits": 30
@@ -226,7 +226,9 @@
       "status": "pending",
       "prompt": "chibi cute low-poly 3D construction hard hat helmet, bright yellow, rounded dome shape with brim, oversized cute proportions, simple plastic look, cartoon game asset, construction safety equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
-      "credits": 30
+      "credits": 30,
+      "wearable_slot": "head",
+      "category": "wearable_head"
     },
     {
       "id": "safety_harness",
@@ -235,7 +237,9 @@
       "status": "pending",
       "prompt": "chibi cute low-poly 3D full body safety harness, bright orange straps forming Y and D-ring pattern, metal buckle clips, chest D-ring, simple strap design displayed on stand, cartoon game asset, construction safety equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
-      "credits": 30
+      "credits": 30,
+      "wearable_slot": "fullbody",
+      "category": "wearable_harness"
     },
     {
       "id": "scaffold_kit",
@@ -326,6 +330,104 @@
       "prompt": "chibi cute low-poly 3D submersible water pump unit, bright orange and grey, cylindrical pump body with discharge hose attached, power cable coming out, chunky cute design, cartoon game asset, construction dewatering equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
       "credits": 30
+    },
+    {
+      "id": "safety_vest_item",
+      "name": "안전조끼 (착용 아이템)",
+      "glb": "assets/glb/safety_vest_item.glb",
+      "status": "pending",
+      "batch": 4,
+      "style": "chibi",
+      "category": "wearable_body",
+      "wearable_slot": "body",
+      "prompt": "chibi cute low-poly 3D safety vest item, bright orange reflective vest folded neatly, silver reflective strips, simple clean design, standalone item on flat surface, cartoon game asset, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, person wearing it",
+      "credits": 20,
+      "preview_only": true
+    },
+    {
+      "id": "safety_gloves_item",
+      "name": "안전장갑 (착용 아이템)",
+      "glb": "assets/glb/safety_gloves_item.glb",
+      "status": "pending",
+      "batch": 4,
+      "style": "chibi",
+      "category": "wearable_hands",
+      "wearable_slot": "hands",
+      "prompt": "chibi cute low-poly 3D work safety gloves pair, bright orange and grey, thick padded palm, rubberized grip texture, pair placed together, cartoon game asset, construction safety equipment, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, person",
+      "credits": 20,
+      "preview_only": true
+    },
+    {
+      "id": "safety_boots_item",
+      "name": "안전화 (착용 아이템)",
+      "glb": "assets/glb/safety_boots_item.glb",
+      "status": "pending",
+      "batch": 4,
+      "style": "chibi",
+      "category": "wearable_feet",
+      "wearable_slot": "feet",
+      "prompt": "chibi cute low-poly 3D safety work boots pair, dark brown leather with steel toe cap visible, thick sole, laces, pair side by side, cartoon game asset, construction safety footwear, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, person",
+      "credits": 20,
+      "preview_only": true
+    },
+    {
+      "id": "welding_mask_item",
+      "name": "용접 마스크 (착용 아이템)",
+      "glb": "assets/glb/welding_mask_item.glb",
+      "status": "pending",
+      "batch": 4,
+      "style": "chibi",
+      "category": "wearable_head",
+      "wearable_slot": "face",
+      "prompt": "chibi cute low-poly 3D welding helmet mask, dark red and black, auto-darkening lens window, head strap, standalone item, cartoon game asset, welding safety equipment, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, person wearing",
+      "credits": 20,
+      "preview_only": true
+    },
+    {
+      "id": "safety_glasses_item",
+      "name": "보안경 (착용 아이템)",
+      "glb": "assets/glb/safety_glasses_item.glb",
+      "status": "pending",
+      "batch": 4,
+      "style": "chibi",
+      "category": "wearable_eyes",
+      "wearable_slot": "eyes",
+      "prompt": "chibi cute low-poly 3D safety goggles glasses, clear lens with orange frame, side vents, elastic head strap, standalone item on surface, cartoon game asset, construction safety equipment, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, person",
+      "credits": 20,
+      "preview_only": true
+    },
+    {
+      "id": "dust_mask_item",
+      "name": "방진마스크 (착용 아이템)",
+      "glb": "assets/glb/dust_mask_item.glb",
+      "status": "pending",
+      "batch": 4,
+      "style": "chibi",
+      "category": "wearable_breathing",
+      "wearable_slot": "mouth",
+      "prompt": "chibi cute low-poly 3D dust respirator mask, white with grey filter cartridges on sides, elastic straps, standalone item, cartoon game asset, construction safety equipment, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, person",
+      "credits": 20,
+      "preview_only": true
+    },
+    {
+      "id": "ear_protection_item",
+      "name": "귀마개 (착용 아이템)",
+      "glb": "assets/glb/ear_protection_item.glb",
+      "status": "pending",
+      "batch": 4,
+      "style": "chibi",
+      "category": "wearable_ears",
+      "wearable_slot": "ears",
+      "prompt": "chibi cute low-poly 3D ear protection muffs, bright yellow earmuffs with headband, round padded ear cups, standalone item, cartoon game asset, construction safety equipment, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, person",
+      "credits": 20,
+      "preview_only": true
     },
     {
       "id": "worker_female",
@@ -771,7 +873,7 @@
   "_total_credits_estimate": 2230,
   "_credits_breakdown": "done=270, pending=1870, total=2140, monthly_limit=1600",
   "_note": "Batch1(chibi장비·도구·NPC): Month1. Batch2(건축마감·철골): Month1. Batch4(현장토목·시설): Month2. Batch5(프리미엄차량): Month2. Batch6(실내가구): Month2. 플랜트 제외.",
-  "_total_models": 75,
+  "_total_models": 82,
   "_credit_plan": {
     "month1_budget": 1600,
     "month1_batch1": 1150,
@@ -779,10 +881,10 @@
     "month1_total": 1540,
     "month1_spare": 60,
     "month2_budget": 1000,
-    "month2_batch4": 240,
+    "month2_batch4": 380,
     "month2_batch5": 150,
     "month2_batch6": 300,
-    "month2_total": 690,
-    "month2_spare": 310
+    "month2_total": 830,
+    "month2_spare": 170
   }
 }
