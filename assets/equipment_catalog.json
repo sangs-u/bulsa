@@ -60,7 +60,7 @@
       "id": "knee_pads_item",
       "name": "무릎 보호대",
       "glb": "assets/glb/knee_pads_item.glb",
-      "status": "pending",
+      "status": "done",
       "batch": 1,
       "style": "chibi",
       "category": "wearable_knees",
