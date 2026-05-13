@@ -1,5 +1,6 @@
 # BULSA 개발 현황
-> 작업 완료 시 이 파일만 업데이트. 내용은 항상 30줄 이내로 유지.
+> 작업 완료 시 이 파일만 업데이트.
+> **v4 설계 전환 — 반드시 DESIGN_V4.md 먼저 읽을 것**
 
 ## 최근 완료 (2026-05-13) — batch #52~54
 
@@ -14,16 +15,23 @@
 ## 검증 상태
 - `npm run check` PASS 98/98 · **시각 플레이쓰루 미실시 (BLOCKING)**
 
-## 다음 작업
-1. **플레이어 카메라 euler.z 충돌** — `camera.rotation.z = bobRoll` 이 포인터락 마우스 룩과 충돌 가능. quaternion 기반 카메라라면 `.rotation.z` 직접 할당이 무시될 수 있음 → 검증 필요
-2. **NPC _avoidPlayer `PLAYER.position` 버그** — `player.js`는 `PLAYER.worldPos` 사용, `npc.js:297`은 `PLAYER.position` 참조 → 회피 무작동. `worldPos`로 수정 필요
-3. **시각 플레이쓰루** — 집 PC에서 `?s=unified` 굴착→기초→골조→외장→마감 순차 + 수료증 확인
-4. **단일 시나리오 5종 회귀** — lifting/excavation/foundation/envelope/mep_finish 진입 확인
+## v4 전환 — 현재 상태
+- 수직 회전 클램프 버그 수정 완료 (batch #56)
+- **v4 설계 확정 (2026-05-13)**: DESIGN_V4.md 참조
+- 기존 interaction.js flag 방식 → 행위 기반으로 전면 교체 결정
 
-## v3 이후
-- 오픈월드 + 부지 매물 + 협동 멀티 (Supabase 백엔드)
+## v4 다음 작업 (배치 순서)
+1. `core/material.js` — 자재 정의 + GAME.materials 레지스트리
+2. `core/carry.js` — 플레이어 휴대 상태 (E픽업, G내려놓기, 중량→속도)
+3. `core/hazard_zone.js` — 구역별 위험 누적·감소·사고 판정
+4. `core/act.js` — 행위 정의 + hold_e 게이지 + 완료 콜백
+5. `core/marker.js` — 3D 설치 마커
+6. `core/phase_v4.js` — 페이즈 전환 + 씬 빌드
+7. 페이즈 1 전체 구현
 
 ## 핵심 결정사항
-- 물리: cannon.js · BGM: Web Audio · 과태료 KRW · 등급 S/A/B/C/D
-- 무사이 저장소 수정 금지 · 시나리오 분기 신규 추가 금지
-- **명명**: 안전지수 → 명(命) · BULSA(不死) · 저장: localStorage → Supabase
+- 행위 기반: 물류→운반→설치가 실제 게임플레이
+- 위험 노출: 구역별 독립 수치, 임계점 초과 시 자연 사고
+- 안전 행위: 위험 감소 트리거 (체크리스트 아님)
+- 유지: engine.js, player.js, npc.js, accident.js, hud.js, i18n
+- 교체: interaction.js, phase_controller.js, scenarios/*/actions.js
