@@ -155,7 +155,7 @@
       "id": "work_coverall",
       "name": "작업복 (전신 커버올)",
       "glb": "assets/glb/work_coverall.glb",
-      "status": "pending",
+      "status": "done",
       "batch": 1,
       "style": "chibi",
       "category": "wearable_body",
