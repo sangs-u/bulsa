@@ -435,9 +435,10 @@
       "glb": "assets/glb/worker_female.glb",
       "status": "pending",
       "preview_only": true,
-      "prompt": "chibi cute low-poly 3D female construction worker, yellow hard hat, orange safety vest over work clothes, big round head, short body, simple smiling face, T-pose standing, cartoon game character, clean texture, white background",
-      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark, male, masculine",
-      "credits": 20
+      "prompt": "chibi cute low-poly 3D female worker base body, bare torso and arms, simple work pants and bare feet, big round head, short body, neutral expression, T-pose standing, no hat no vest no shoes, cartoon game character, clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, male, hat, helmet, vest, shoes, boots, gloves, harness",
+      "credits": 20,
+      "note": "base body only — all equipment attached as separate GLB layers"
     },
     {
       "id": "inspector",
@@ -445,18 +446,20 @@
       "glb": "assets/glb/inspector.glb",
       "status": "pending",
       "preview_only": true,
-      "prompt": "chibi cute low-poly 3D construction site safety inspector, white hard hat, bright green safety vest, clipboard in hand, glasses, big round head, short body, authoritative pose, T-pose, cartoon game character, clean texture, white background",
-      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
-      "credits": 20
+      "prompt": "chibi cute low-poly 3D inspector base body, bare torso, simple work pants, big round head, glasses, neutral expression, T-pose standing, holding clipboard in right hand, no hat no vest, cartoon game character, clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, hat, helmet, vest, shoes",
+      "credits": 20,
+      "note": "base body only — equipment layered on top"
     },
     {
       "id": "worker_male",
       "name": "NPC 남성 작업자 (베이스)",
       "glb": "assets/glb/worker.glb",
       "status": "done",
-      "prompt": "chibi cute low-poly 3D male construction worker, yellow hard hat, orange safety vest, big round head, short body, simple face, T-pose, cartoon game character, clean texture, white background",
-      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark, female",
-      "credits": 30
+      "prompt": "chibi cute low-poly 3D male worker base body, bare torso and arms, simple work pants and bare feet, big round head, short body, neutral expression, T-pose standing, no hat no vest no shoes, cartoon game character, clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, text, watermark, female, hat, helmet, vest, shoes, boots, gloves, harness",
+      "credits": 30,
+      "note": "base body only — all equipment attached as separate GLB layers"
     },
     {
       "id": "curtain_wall_unit",
