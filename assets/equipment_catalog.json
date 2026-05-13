@@ -102,7 +102,7 @@
       "id": "safety_gloves_item",
       "name": "안전장갑 (착용 아이템)",
       "glb": "assets/glb/safety_gloves_item.glb",
-      "status": "pending",
+      "status": "done",
       "batch": 1,
       "style": "chibi",
       "category": "wearable_hands",
