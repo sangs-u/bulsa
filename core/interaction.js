@@ -101,8 +101,8 @@ function initInteraction() {
     if (e.code === 'KeyY' && typeof PHASE_CONTROLLER !== 'undefined' && PHASE_CONTROLLER.isEnabled()) {
       const blocker = PHASE_CONTROLLER.advanceBlocker();
       if (blocker === 'final') {
-        const m = { ko: '🏁 모든 페이즈 완료!', en: '🏁 All phases done!', vi: '🏁 Hoàn thành!', ar: '🏁 تم!' };
-        if (typeof showActionNotif === 'function') showActionNotif(m[currentLang] || m.ko, 2200);
+        // 마지막 페이즈 완료 — advance(force) 로 isFinal 콜백 발화
+        PHASE_CONTROLLER.advance(true);
       } else if (blocker === 'inspector_flag') {
         const m = { ko: '⚠ 인스펙터 flag 해결 후 진입 가능', en: '⚠ Resolve inspector flag first', vi: '⚠ Giải quyết flag trước', ar: '⚠ احلّ الملاحظة أولاً' };
         if (typeof showActionNotif === 'function') showActionNotif(m[currentLang] || m.ko, 2200);
@@ -209,6 +209,9 @@ function _placeCommandMarker() {
   GAME.scene.add(marker);
 
   const npc = _findNearestNpcTo(hit);
+  if (npc && typeof window.npcMoveTo === 'function') {
+    window.npcMoveTo(npc, hit.x, hit.z);
+  }
   const msgs = npc
     ? { ko: `📍 ${npc.name || npc.id} 에게 위치 지시`, en: `📍 Position cmd → ${npc.name || npc.id}`, vi: `📍 Vị trí → ${npc.name || npc.id}`, ar: `📍 الموقع → ${npc.name || npc.id}` }
     : { ko: '📍 위치 표시 (NPC 미감지)', en: '📍 Marker placed (no NPC nearby)', vi: '📍 Đã đánh dấu (không có NPC)', ar: '📍 تم التحديد (لا عامل قريب)' };

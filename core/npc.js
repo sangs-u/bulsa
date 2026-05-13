@@ -625,6 +625,19 @@ function despawnNpcs(npcsToRemove) {
 window.spawnNpcsForScenario = spawnNpcsForScenario;
 window.despawnNpcs           = despawnNpcs;
 
+// RMB 위치 지시용 — NPC 를 목적지로 이동 + Yuka home 갱신 (도달 후 워프 방지)
+window.npcMoveTo = function (npc, x, z) {
+  if (!npc || !npc.group) return;
+  npc._targetPos = new THREE.Vector3(x, 0, z);
+  npc.setState(NPC_STATES.WORKING);
+  // Yuka vehicle home 도 갱신 — 도달 후 IDLE 복귀 시 새 위치 기준으로 wander
+  const entry = _yukaVehicles.get(npc.id);
+  if (entry) {
+    entry.home.set(x, 0, z);
+    if (entry.vehicle) entry.vehicle.position.set(x, 0, z);
+  }
+};
+
 function _addYukaVehicle(npc) {
   if (!_yukaManager) return;
 

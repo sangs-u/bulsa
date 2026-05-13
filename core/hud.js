@@ -28,7 +28,6 @@ function initHUD() {
 
 function _onPhaseChange(ev) {
   if (typeof showActionNotif !== 'function') return;
-  // 통과한 페이즈에 해당하는 업적 unlock
   const PHASE_ACH = ['phase_excavation','phase_foundation','phase_lifting','phase_envelope','phase_mep'];
   if (ev.fromPhase && typeof unlockAchievement === 'function') {
     const achId = PHASE_ACH[ev.fromPhase.id - 1];
@@ -38,11 +37,21 @@ function _onPhaseChange(ev) {
     if (typeof unlockAchievement === 'function') {
       try { unlockAchievement('tutorial_complete'); } catch (e) {}
     }
-    const m = { ko: '🏁 튜토리얼 완료 — 모든 페이즈 클리어!', en: '🏁 Tutorial complete — all phases cleared!', vi: '🏁 Hoàn thành tutorial!', ar: '🏁 اكتمل التعليم!' };
-    showActionNotif(m[currentLang] || m.ko, 6000);
+    _playPhaseClearFx(ev.fromPhase, true);
+    setTimeout(() => {
+      if (typeof startCompletionCutscene === 'function') {
+        startCompletionCutscene(() => {
+          if (typeof showCertificate === 'function') showCertificate();
+          else if (typeof showCompletePanel === 'function') showCompletePanel();
+        });
+      } else if (typeof showCompletePanel === 'function') {
+        showCompletePanel();
+      }
+    }, 1800);
     return;
   }
   if (!ev.toPhase) return;
+  _playPhaseClearFx(ev.fromPhase, false, ev.toPhase);
   const label = ev.toPhase.label[currentLang] || ev.toPhase.label.ko;
   const m = {
     ko: `▶ 페이즈 ${ev.toPhase.id}/5 진입 — ${label}`,
@@ -51,9 +60,46 @@ function _onPhaseChange(ev) {
     ar: `▶ دخلت المرحلة ${ev.toPhase.id}/5 — ${label}`,
   };
   showActionNotif(m[currentLang] || m.ko, 4500);
-  // 짧은 띵 효과음 (있으면)
   if (typeof SFX !== 'undefined' && typeof SFX.beep === 'function') {
-    try { SFX.beep(880, 0.18); } catch (e) {}
+    try { SFX.beep(880, 0.18); SFX.beep(1320, 0.22); } catch (e) {}
+  }
+}
+
+function _playPhaseClearFx(fromPhase, isFinal) {
+  // 흰색(일반) / 황금(최종) 플래시 — #flash-overlay 재사용
+  const flash = document.getElementById('flash-overlay');
+  if (flash) {
+    flash.style.background = isFinal ? '#FFE680' : '#FFFFFF';
+    flash.style.transition  = 'opacity 0.35s ease-out';
+    flash.style.opacity     = '0.85';
+    setTimeout(() => { flash.style.opacity = '0'; }, 180);
+    // 사고용 적색으로 복원
+    setTimeout(() => {
+      flash.style.background  = 'var(--red)';
+      flash.style.transition  = 'opacity 0.08s';
+    }, 700);
+  }
+  // 카메라 살짝 흔들기
+  if (typeof cameraShake === 'function') try { cameraShake(0.25, 0.4); } catch (e) {}
+  // cutscene-overlay 에 완료 캡션
+  const overlay = document.getElementById('cutscene-overlay');
+  const caption = document.getElementById('cutscene-caption');
+  if (overlay && caption && fromPhase) {
+    overlay.classList.remove('hidden');
+    overlay.style.background = 'rgba(0,0,0,0.55)';
+    const msgs = {
+      ko: `✓ ${fromPhase.label.ko} 완료`,
+      en: `✓ ${fromPhase.label.en} complete`,
+      vi: `✓ Hoàn thành ${fromPhase.label.vi}`,
+      ar: `✓ اكتمل ${fromPhase.label.ar}`,
+    };
+    caption.textContent = msgs[currentLang] || msgs.ko;
+    caption.classList.add('show');
+    setTimeout(() => {
+      caption.classList.remove('show');
+      overlay.style.background = 'rgba(0,0,0,0)';
+      setTimeout(() => overlay.classList.add('hidden'), 1000);
+    }, 1400);
   }
 }
 

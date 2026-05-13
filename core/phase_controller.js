@@ -163,12 +163,52 @@
         try { window.clearInterferenceLines(); } catch (e) {}
       }
     }
+    // 새 페이즈 STATE 초기화 — 이전 게임·이전 페이즈 플래그 잔재 제거
+    _resetPhaseStates(ph.key);
     if (typeof window.enqueueScenarioTasks === 'function') {
       try { window.enqueueScenarioTasks(ph.taskSeedScenario); } catch (e) {}
     }
     // 골조 페이즈 = RC_LOOP 동적 enqueue
     if (ph.key === 'lifting' && typeof window.initRcLoop === 'function') {
       try { window.initRcLoop(); } catch (e) {}
+    }
+  }
+
+  function _resetPhaseStates(phaseKey) {
+    if (phaseKey === 'excavation' && window.EXCAV_STATE) {
+      Object.assign(window.EXCAV_STATE, {
+        planWritten: false, planDepth: null, planSlope: null,
+        planShoring: null, planUnderground: false,
+        surveyDone: false, shoringInstalled: false,
+        railingInstalled: false, signalAssigned: false,
+      });
+    } else if (phaseKey === 'foundation' && window.FOUND_STATE) {
+      Object.assign(window.FOUND_STATE, {
+        planWritten: false, planMatArea: null, planRebarSpacing: null,
+        planConcStrength: null, planShoringSpace: null,
+        rebarCapsOk: false, formworkOk: false,
+        pumpOk: false, pourOrderAgreed: false,
+      });
+    } else if (phaseKey === 'envelope' && window.ENV_STATE) {
+      Object.assign(window.ENV_STATE, {
+        planWritten: false, planScaffoldType: null, planScaffoldHeight: null,
+        planGuardrailLevels: null, planPanelType: null,
+        scaffoldInspected: false, lifelineInstalled: false,
+        panelSecured: false, signalAssigned: false,
+      });
+    } else if (phaseKey === 'mep_finish' && window.MEP_STATE) {
+      Object.assign(window.MEP_STATE, {
+        planWritten: false, planBreaker: null, planPipeDiameter: null,
+        planFinishType: null, planLotoProcedure: false,
+        lotoApplied: false, gasChecked: false,
+        ventActivated: false, extVerified: false,
+      });
+    } else if (phaseKey === 'lifting' && window.LIFT_STATE) {
+      Object.assign(window.LIFT_STATE, {
+        planWritten: false, safetyChecked: false, outriggerExtended: false,
+        slingInspected: false, pinSecured: false, specChecked: false,
+        angleMeasured: false, signalAssigned: false, workerEvacuated: false,
+      });
     }
   }
 
