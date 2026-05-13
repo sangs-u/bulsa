@@ -8,16 +8,23 @@
 const MOTION = {
   // Mixamo 다운로드 후 assets/glb/ 에 떨어뜨리면 자동 인식 (없으면 Idle/Walk/Run 폴백)
   CLIPS: {
-    idle:    { url: 'assets/glb/anim_idle.glb',    fallback: 'Idle' },
-    walk:    { url: 'assets/glb/anim_walk.glb',    fallback: 'Walk' },
-    run:     { url: 'assets/glb/anim_run.glb',     fallback: 'Run'  },
-    hammer:  { url: 'assets/glb/anim_hammer.glb',  fallback: 'Walk' },  // 망치질 — formwork
-    weld:    { url: 'assets/glb/anim_weld.glb',    fallback: 'Walk' },  // 용접 — mep
-    climb:   { url: 'assets/glb/anim_climb.glb',   fallback: 'Walk' },  // 사다리/비계
-    lift:    { url: 'assets/glb/anim_lift.glb',    fallback: 'Walk' },  // 줄걸이 자세
-    signal:  { url: 'assets/glb/anim_signal.glb',  fallback: 'Idle' },  // 신호수 손짓
-    fall:    { url: 'assets/glb/anim_fall.glb',    fallback: 'Idle' },  // 추락
-    inspect: { url: 'assets/glb/anim_inspect.glb', fallback: 'Idle' },  // 점검 (쪼그려 앉음)
+    idle:       { url: 'assets/glb/anim_idle.glb',       fallback: 'Idle' },
+    walk:       { url: 'assets/glb/anim_walk.glb',       fallback: 'Walk' },
+    run:        { url: 'assets/glb/anim_run.glb',        fallback: 'Run'  },
+    // ── v4 행위 클립 ──────────────────────────────────────────
+    carry:      { url: 'assets/glb/anim_carry.glb',      fallback: 'Walk' },  // 자재 들고 이동
+    carry_idle: { url: 'assets/glb/anim_carry_idle.glb', fallback: 'Idle' },  // 자재 들고 정지
+    hammer:     { url: 'assets/glb/anim_hammer.glb',     fallback: 'Walk' },  // 망치질 (난간 설치)
+    drill:      { url: 'assets/glb/anim_drill.glb',      fallback: 'Walk' },  // 드릴 (앙카볼트)
+    survey:     { url: 'assets/glb/anim_survey.glb',     fallback: 'Walk' },  // 탐지기 들고 걷기
+    place:      { url: 'assets/glb/anim_place.glb',      fallback: 'Idle' },  // 물건 내려놓기
+    push:       { url: 'assets/glb/anim_push.glb',       fallback: 'Walk' },  // 밀기/항타
+    weld:       { url: 'assets/glb/anim_weld.glb',       fallback: 'Walk' },  // 용접
+    climb:      { url: 'assets/glb/anim_climb.glb',      fallback: 'Walk' },  // 사다리/비계
+    lift:       { url: 'assets/glb/anim_lift.glb',       fallback: 'Walk' },  // 양중 자세
+    signal:     { url: 'assets/glb/anim_signal.glb',     fallback: 'Idle' },  // 신호수 손짓
+    fall:       { url: 'assets/glb/anim_fall.glb',       fallback: 'Idle' },  // 추락
+    inspect:    { url: 'assets/glb/anim_inspect.glb',    fallback: 'Idle' },  // 점검 쪼그려 앉음
   },
 
   // 도구 GLB — 손에 부착
