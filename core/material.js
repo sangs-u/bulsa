@@ -268,3 +268,11 @@ function requiresEquipment(defId) {
   const def = MAT_DEFS[defId];
   return def && !!def.requiresEquip;
 }
+
+window.MAT_DEFS           = MAT_DEFS;
+window.spawnMaterial      = spawnMaterial;
+window.getMaterialInst    = getMaterialInst;
+window.getMaterialsNear   = getMaterialsNear;
+window.removeMaterialInst = removeMaterialInst;
+window.canSoloCarry       = canSoloCarry;
+window.requiresEquipment  = requiresEquipment;

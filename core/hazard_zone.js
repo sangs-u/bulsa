@@ -115,3 +115,13 @@ function _updateDebugRing(zone) {
   const r = Math.floor(max * 255);
   zone._debugMesh.material.color.setRGB(r / 255, (1 - max) * 0.5, 0);
 }
+
+window.HAZARD_ZONES      = HAZARD_ZONES;
+window.registerHazardZone = registerHazardZone;
+window.clearHazardZones  = clearHazardZones;
+window.adjustHazard      = adjustHazard;
+window.adjustHazards     = adjustHazards;
+window.getHazard         = getHazard;
+window.getZoneMaxHazard  = getZoneMaxHazard;
+window.tickHazardZones   = tickHazardZones;
+window.getGlobalMaxHazard = getGlobalMaxHazard;

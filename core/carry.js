@@ -143,3 +143,10 @@ function carryHudLabel() {
   const lang = (typeof currentLang !== 'undefined') ? currentLang : 'ko';
   return `📦 ${def.label[lang] || def.label.ko}${qty > 1 ? ` ×${qty}` : ''}`;
 }
+
+window.CARRY         = CARRY;
+window.carryPickup   = carryPickup;
+window.carryDrop     = carryDrop;
+window.carryConsume  = carryConsume;
+window.initCarry     = initCarry;
+window.carryHudLabel = carryHudLabel;

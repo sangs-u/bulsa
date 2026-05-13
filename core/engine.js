@@ -169,6 +169,9 @@ window.persistFines = persistFines;
   // Mixamo 클립 + 도구 미리 로드 (있을 때만 — 없으면 기본 Idle/Walk/Run 폴백)
   if (typeof preloadMotionClips === 'function') preloadMotionClips();
   if (typeof preloadMotionTools === 'function') preloadMotionTools();
+  if (typeof registerGeneratedAnims === 'function') registerGeneratedAnims();
+  if (typeof initCarry === 'function') initCarry();
+  if (typeof initPhaseV4 === 'function') initPhaseV4();
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
@@ -260,6 +263,11 @@ function _loop() {
     if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
     if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();
     if (typeof MINIMAP !== 'undefined')          MINIMAP.update();
+    // v4 행위 기반 시스템
+    if (typeof tickMarkers === 'function')       tickMarkers(delta);
+    if (typeof tickHazardZones === 'function')   tickHazardZones(delta);
+    if (typeof actTick === 'function')           actTick(delta, !!PLAYER.keys['KeyE']);
+    if (typeof tickPhaseV4 === 'function')       tickPhaseV4(delta);
   }
 
   if (typeof renderPostFX === 'function') renderPostFX();

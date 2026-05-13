@@ -107,3 +107,11 @@ function _buildPulseMesh() {
   mesh.rotation.x = -Math.PI / 2;
   return mesh;
 }
+
+window.MARKERS               = MARKERS;
+window.registerMarker        = registerMarker;
+window.clearMarkers          = clearMarkers;
+window.completeMarker        = completeMarker;
+window.getNearestPendingMarker = getNearestPendingMarker;
+window.getPendingCount       = getPendingCount;
+window.tickMarkers           = tickMarkers;
