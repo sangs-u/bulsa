@@ -56,173 +56,304 @@ function initExcavator() {
   });
 }
 
-// ── 관절 재구성 ───────────────────────────────────────────────
+// ── 관절 재구성 (상세 버전) ────────────────────────────────────
 function _rebuildExcavJoints() {
   const root = GAME._excavator;
   while (root.children.length) root.remove(root.children[0]);
   EXC.root = root;
 
-  const yellow = typeof matMetal === 'function'
-    ? matMetal({ color: 0xCFA418, roughness: 0.65, metalness: 0.5 })
-    : new THREE.MeshLambertMaterial({ color: 0xCFA418 });
-  const dark   = new THREE.MeshStandardMaterial({ color: 0x252220, roughness: 0.85, metalness: 0.5 });
-  const grey   = new THREE.MeshStandardMaterial({ color: 0x6A6860, roughness: 0.7,  metalness: 0.45 });
-  const glass  = new THREE.MeshLambertMaterial({ color: 0x88BBCC, transparent: true, opacity: 0.6 });
+  // 재질
+  const YELLOW = new THREE.MeshStandardMaterial({ color: 0xD4A818, roughness: 0.55, metalness: 0.30 });
+  const STEEL  = new THREE.MeshStandardMaterial({ color: 0x545250, roughness: 0.68, metalness: 0.65 });
+  const CHROME = new THREE.MeshStandardMaterial({ color: 0xBCBCBC, roughness: 0.06, metalness: 0.96 });
+  const BLACK  = new THREE.MeshStandardMaterial({ color: 0x181614, roughness: 0.88, metalness: 0.06 });
+  const GLASS  = new THREE.MeshStandardMaterial({ color: 0x90C8DC, transparent: true, opacity: 0.38, roughness: 0.04, metalness: 0.10 });
+  const STRIPE = new THREE.MeshStandardMaterial({ color: 0xCC3D08, roughness: 0.65, metalness: 0.15 });
+  const HVAC   = new THREE.MeshStandardMaterial({ color: 0x3A4850, roughness: 0.82, metalness: 0.35 });
 
-  // — 트랙 좌우 —
-  [-0.84, 0.84].forEach(dx => {
-    const geo = new THREE.BoxGeometry(0.68, 0.50, 3.5);
-    const m   = new THREE.Mesh(geo, dark);
-    m.position.set(dx, 0.25, 0);
+  function box(w, h, d, mat, px, py, pz, parent) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    m.position.set(px, py, pz);
     m.castShadow = true;
-    root.add(m);
-    // 트랙 휠 표현
-    [-1.4, 0, 1.4].forEach(dz => {
-      const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.72, 10), grey);
-      wh.rotation.z = Math.PI / 2;
-      wh.position.set(dx, 0.25, dz);
-      root.add(wh);
-    });
+    m.receiveShadow = true;
+    parent.add(m);
+    return m;
+  }
+  function cyl(rt, rb, h, seg, mat, px, py, pz, rx, rz, parent) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat);
+    m.position.set(px, py, pz);
+    if (rx !== undefined) m.rotation.x = rx;
+    if (rz !== undefined) m.rotation.z = rz;
+    m.castShadow = true;
+    parent.add(m);
+    return m;
+  }
+
+  // ── 트랙 시스템 ───────────────────────────────────────────────
+  [-0.95, 0.95].forEach(dx => {
+    // 트랙 프레임 빔
+    box(0.32, 0.52, 3.80, STEEL, dx, 0.30, 0, root);
+    // 트랙 슈 (발판 — 더 넓음)
+    box(0.74, 0.10, 3.82, BLACK, dx, 0.055, 0, root);
+    // 상단 트랙 패드
+    box(0.62, 0.07, 3.78, BLACK, dx, 0.565, 0, root);
+
+    // 하부 로드 휠 6개
+    for (let i = 0; i < 6; i++) {
+      const zPos = -1.50 + i * 0.60;
+      cyl(0.22, 0.22, 0.62, 12, STEEL, dx, 0.22, zPos, undefined, Math.PI/2, root);
+      // 휠 플랜지 링
+      [-0.32, 0.32].forEach(off => {
+        cyl(0.24, 0.24, 0.05, 12, BLACK, dx + off * Math.sign(dx), 0.22, zPos, undefined, Math.PI/2, root);
+      });
+    }
+    // 전방 아이들러
+    cyl(0.28, 0.28, 0.64, 14, STEEL, dx, 0.30, 1.82, undefined, Math.PI/2, root);
+    // 후방 구동 스프로킷
+    cyl(0.30, 0.30, 0.64, 10, STEEL, dx, 0.32, -1.82, undefined, Math.PI/2, root);
+    // 스프로킷 이빨 8개
+    for (let t = 0; t < 8; t++) {
+      const ang = (t / 8) * Math.PI * 2;
+      const m = box(0.07, 0.10, 0.66, STEEL, dx, 0.32 + Math.sin(ang)*0.32, -1.82 + Math.cos(ang)*0.32, root);
+      m.rotation.z = ang;
+    }
+    // 상단 캐리어 롤러 2개
+    cyl(0.14, 0.14, 0.50, 10, STEEL, dx, 0.56, -0.55, undefined, Math.PI/2, root);
+    cyl(0.14, 0.14, 0.50, 10, STEEL, dx, 0.56,  0.55, undefined, Math.PI/2, root);
   });
 
-  // — 하부 프레임 —
-  const frame = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.30, 2.8), dark);
-  frame.position.set(0, 0.55, 0);
-  root.add(frame);
+  // 하부 센터 프레임 (X-frame)
+  box(1.78, 0.26, 3.20, STEEL, 0, 0.54, 0, root);
+  // 선회 베어링 링
+  cyl(0.60, 0.60, 0.14, 20, STEEL, 0, 0.68, 0, undefined, undefined, root);
 
-  // — 상부체 그룹 (선회) —
+  // ── 상부체 그룹 (선회) ────────────────────────────────────────
   const upper = new THREE.Group();
-  upper.position.set(0, 0.70, 0);
+  upper.position.set(0, 0.76, 0);
   root.add(upper);
   EXC.upper = upper;
 
-  const body = new THREE.Mesh(new THREE.BoxGeometry(2.35, 1.0, 2.25), yellow);
-  body.position.set(0, 0.50, -0.18);
-  body.castShadow = true;
-  upper.add(body);
+  // 상부 메인 덱
+  box(2.58, 0.11, 2.62, YELLOW, 0, 0, 0, upper);
 
-  // 운전실
-  const cab = new THREE.Mesh(new THREE.BoxGeometry(1.18, 1.20, 1.18), yellow);
-  cab.position.set(-0.52, 1.45, 0.48);
-  cab.castShadow = true;
-  upper.add(cab);
+  // 엔진 커버 (후방)
+  const engCover = box(2.55, 0.94, 1.52, YELLOW, 0, 0.52, -0.55, upper);
+  // 엔진 환기구 슬릿
+  for (let i = -0.50; i <= 0.50; i += 0.25) {
+    box(1.60, 0.02, 0.07, BLACK, 0, 0.99, -0.55 + i, upper);
+  }
 
-  // 창문 (앞·좌·우)
-  const winFront = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.80), glass);
-  winFront.position.set(-0.52, 1.45, 1.07);
-  upper.add(winFront);
-  const winSide = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.80), glass);
-  winSide.position.set(-1.12, 1.45, 0.48);
-  winSide.rotation.y = Math.PI / 2;
-  upper.add(winSide);
+  // 배기관
+  cyl(0.09, 0.09, 0.92, 10, HVAC, 0.62, 1.46, -0.98, undefined, undefined, upper);
+  cyl(0.12, 0.09, 0.09, 10, HVAC, 0.62, 1.93, -0.98, undefined, undefined, upper);
 
-  // 카운터웨이트
-  const cw = new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.92, 0.75), dark);
-  cw.position.set(0, 0.72, -1.52);
-  upper.add(cw);
+  // 유압 오일 탱크 (우측 전방)
+  box(0.48, 0.98, 0.82,
+    new THREE.MeshStandardMaterial({ color: 0x1C4E6A, roughness: 0.68, metalness: 0.28 }),
+    0.88, 0.53, 0.80, upper);
 
-  // — 붐 피벗 —
+  // 카운터웨이트 (주물 리브)
+  const cw = box(2.58, 0.98, 0.86, STEEL, 0, 0.54, -1.48, upper);
+  for (let i = -0.84; i <= 0.84; i += 0.42) {
+    box(0.07, 0.94, 0.88, BLACK, i, 0.54, -1.48, upper);
+  }
+
+  // ── 운전실 ───────────────────────────────────────────────────
+  const cx = -0.64, cz = 0.64;
+
+  // 캐빈 바닥판
+  box(1.38, 0.10, 1.46, YELLOW, cx, 0.05, cz, upper);
+  // 캐빈 후벽
+  box(1.38, 1.68, 0.10, YELLOW, cx, 0.88, cz - 0.72, upper);
+  // 캐빈 상단 루프
+  box(1.45, 0.10, 1.52, YELLOW, cx, 1.72, cz, upper);
+  // A 필러 (전방 좌우)
+  box(0.09, 1.70, 0.09, YELLOW, cx - 0.68, 0.88, cz + 0.70, upper);
+  box(0.09, 1.70, 0.09, YELLOW, cx + 0.08, 0.88, cz + 0.70, upper);
+  // B 필러 (후방)
+  box(0.09, 1.70, 0.09, YELLOW, cx - 0.68, 0.88, cz - 0.70, upper);
+  box(0.09, 1.70, 0.09, YELLOW, cx + 0.08, 0.88, cz - 0.70, upper);
+
+  // 앞 유리 (windshield)
+  const ws = new THREE.Mesh(new THREE.PlaneGeometry(1.10, 1.48), GLASS);
+  ws.position.set(cx, 0.90, cz + 0.73);
+  upper.add(ws);
+  // 좌측 창문
+  const sw = new THREE.Mesh(new THREE.PlaneGeometry(1.36, 1.38), GLASS);
+  sw.rotation.y = Math.PI / 2;
+  sw.position.set(cx - 0.70, 0.90, cz);
+  upper.add(sw);
+  // 우측 창문 (좁음)
+  const rwi = new THREE.Mesh(new THREE.PlaneGeometry(0.72, 1.10), GLASS);
+  rwi.rotation.y = -Math.PI / 2;
+  rwi.position.set(cx + 0.11, 0.90, cz);
+  upper.add(rwi);
+
+  // 바이저 (앞유리 위 차양)
+  box(1.46, 0.06, 0.22, YELLOW, cx, 1.68, cz + 0.64, upper);
+  // 안전 스트라이프 (전면 하단)
+  box(1.42, 0.12, 0.04, STRIPE, cx, 0.18, cz + 0.74, upper);
+  // 그랩 레일
+  cyl(0.025, 0.025, 1.44, 8, STEEL, cx, 1.14, cz + 0.82, undefined, Math.PI/2, upper);
+
+  // ── 붐 피벗 ──────────────────────────────────────────────────
   const boomPvt = new THREE.Group();
-  boomPvt.position.set(0.30, 1.15, 1.0);
+  boomPvt.position.set(0.28, 1.10, 1.00);
   upper.add(boomPvt);
   EXC.boomPvt = boomPvt;
   boomPvt.rotation.x = EXC.boomAng;
 
-  const boom = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.44, 3.8), yellow);
-  boom.position.set(0, 0, 1.9);
-  boom.castShadow = true;
-  boomPvt.add(boom);
+  // 붐 (3단 테이퍼)
+  box(0.58, 0.56, 1.55, YELLOW, 0, 0, 0.78, boomPvt);
+  box(0.48, 0.48, 1.65, YELLOW, 0, 0, 2.42, boomPvt);
+  box(0.38, 0.38, 0.82, YELLOW, 0, 0, 3.65, boomPvt);
 
-  // 붐 유압 실린더 (시각)
-  const bCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 1.8, 8), grey);
-  bCyl.rotation.z = Math.PI / 2;
-  bCyl.position.set(0, -0.32, 1.0);
-  boomPvt.add(bCyl);
+  // 붐 풋 핀 (좌우)
+  cyl(0.09, 0.09, 0.70, 10, STEEL, -0.32, -0.24, 0.10, undefined, Math.PI/2, boomPvt);
+  cyl(0.09, 0.09, 0.70, 10, STEEL,  0.32, -0.24, 0.10, undefined, Math.PI/2, boomPvt);
 
-  // — 아암 피벗 (붐 끝) —
+  // 붐 유압 실린더 — 배럴 + 크롬 피스톤 로드
+  cyl(0.10, 0.10, 2.45, 10, STEEL, -0.22, -0.44, 1.38, -0.28, undefined, boomPvt);
+  cyl(0.055, 0.055, 1.50, 8, CHROME, -0.22, -0.32, 2.44, -0.28, undefined, boomPvt);
+
+  // ── 아암 피벗 ────────────────────────────────────────────────
   const armPvt = new THREE.Group();
-  armPvt.position.set(0, 0, 3.8);
+  armPvt.position.set(0, 0, 4.06);
   boomPvt.add(armPvt);
   EXC.armPvt = armPvt;
   armPvt.rotation.x = EXC.armAng;
 
-  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.36, 2.6), yellow);
-  arm.position.set(0, 0, 1.3);
-  arm.castShadow = true;
-  armPvt.add(arm);
+  // 아암 몸체 (테이퍼)
+  box(0.40, 0.40, 2.20, YELLOW, 0, 0, 1.10, armPvt);
+  box(0.30, 0.32, 0.65, YELLOW, 0, 0, 2.52, armPvt);
 
-  const aCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 1.4, 8), grey);
-  aCyl.rotation.z = Math.PI / 2;
-  aCyl.position.set(0, -0.28, 0.8);
-  armPvt.add(aCyl);
+  // 아암 실린더 배럴 + 크롬 로드
+  cyl(0.082, 0.082, 1.65, 10, STEEL, 0.17, -0.33, 0.88, -0.18, undefined, armPvt);
+  cyl(0.046, 0.046, 1.05, 8,  CHROME, 0.17, -0.22, 1.76, -0.18, undefined, armPvt);
 
-  // — 버킷 피벗 (아암 끝) —
+  // ── 버킷 피벗 ────────────────────────────────────────────────
   const bktPvt = new THREE.Group();
-  bktPvt.position.set(0, 0, 2.6);
+  bktPvt.position.set(0, 0, 2.84);
   armPvt.add(bktPvt);
   EXC.bktPvt = bktPvt;
   bktPvt.rotation.x = EXC.bktAng;
 
-  const bkt = new THREE.Mesh(new THREE.BoxGeometry(1.08, 0.75, 0.88), grey);
-  bkt.position.set(0, -0.30, 0.44);
-  bkt.castShadow = true;
-  bktPvt.add(bkt);
+  // 버킷 C-형 (후벽 + 바닥 + 측벽)
+  box(1.14, 0.72, 0.12, STEEL, 0, -0.18,  0.00, bktPvt); // 후벽
+  box(1.14, 0.12, 0.82, STEEL, 0, -0.58,  0.38, bktPvt); // 바닥 (앞쪽)
+  box(0.10, 0.72, 0.90, STEEL, -0.54, -0.22, 0.42, bktPvt); // 좌 측벽
+  box(0.10, 0.72, 0.90, STEEL,  0.54, -0.22, 0.42, bktPvt); // 우 측벽
+  box(1.18, 0.09, 0.10, BLACK, 0, -0.60, 0.80, bktPvt); // 커팅엣지
 
-  // 버킷 이빨
-  for (let i = -3; i <= 3; i++) {
-    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.19, 4), dark);
-    tooth.position.set(i * 0.15, -0.62, 0.86);
-    tooth.rotation.x = Math.PI / 2;
-    bktPvt.add(tooth);
+  // 버킷 이빨 6개 (베이스 + 팁)
+  for (let i = -2; i <= 2; i++) {
+    box(0.09, 0.13, 0.22, STEEL, i * 0.20, -0.66, 0.82, bktPvt);
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.052, 0.17, 4), BLACK);
+    tip.rotation.x = Math.PI / 2;
+    tip.position.set(i * 0.20, -0.66, 1.01);
+    bktPvt.add(tip);
   }
 
-  // 콜라이더 등록
+  // 버킷 링크 로드 (아암-버킷 연결 시각)
+  cyl(0.038, 0.038, 0.82, 8, CHROME, 0, 0.24, 0.44, 0.60, undefined, bktPvt);
+
+  // 콜라이더
   GAME.colliders = GAME.colliders || [];
-  GAME.colliders.push(body, cab, cw);
+  GAME.colliders.push(engCover, cw);
 }
 
-// ── 덤프트럭 메시 ─────────────────────────────────────────────
+// ── 덤프트럭 메시 (상세) ──────────────────────────────────────
 function _buildDumpTruckMesh() {
-  const orange = typeof matMetal === 'function'
-    ? matMetal({ color: 0xD05410, roughness: 0.6, metalness: 0.4 })
-    : new THREE.MeshLambertMaterial({ color: 0xD05410 });
-  const dark  = new THREE.MeshStandardMaterial({ color: 0x252220, roughness: 0.85, metalness: 0.5 });
-  const grey  = new THREE.MeshStandardMaterial({ color: 0x707070, roughness: 0.7,  metalness: 0.5 });
+  const ORANGE = new THREE.MeshStandardMaterial({ color: 0xCC4010, roughness: 0.58, metalness: 0.35 });
+  const STEEL  = new THREE.MeshStandardMaterial({ color: 0x484440, roughness: 0.70, metalness: 0.58 });
+  const BLACK  = new THREE.MeshStandardMaterial({ color: 0x151210, roughness: 0.90, metalness: 0.08 });
+  const GLASS  = new THREE.MeshStandardMaterial({ color: 0x90C8E0, transparent: true, opacity: 0.40, roughness: 0.04 });
+  const CHROME = new THREE.MeshStandardMaterial({ color: 0xB8B8B8, roughness: 0.06, metalness: 0.96 });
 
   const g = new THREE.Group();
 
-  // 캡 (cab)
-  const cab = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2.4, 2.3), orange);
-  cab.position.set(-2.4, 1.2, 0);
-  cab.castShadow = true;
-  g.add(cab);
+  // — 캐빈 —
+  const cabBody = new THREE.Mesh(new THREE.BoxGeometry(2.60, 2.30, 2.40), ORANGE);
+  cabBody.position.set(-2.30, 1.55, 0);
+  cabBody.castShadow = true;
+  g.add(cabBody);
 
-  // 덤프 베드
-  const bed = new THREE.Mesh(new THREE.BoxGeometry(4.8, 1.0, 2.3), dark);
-  bed.position.set(0.9, 0.5, 0);
-  bed.castShadow = true;
-  g.add(bed);
+  // 캐빈 전면 유리
+  const ws = new THREE.Mesh(new THREE.PlaneGeometry(2.20, 1.40), GLASS);
+  ws.position.set(-3.62, 1.80, 0);
+  ws.rotation.y = -Math.PI / 2;
+  g.add(ws);
 
-  // 베드 벽
-  [[0.9, 1.1, 1.15, [4.8, 0.8, 0.1], 0],
-   [0.9, 1.1,-1.15, [4.8, 0.8, 0.1], 0],
-   [3.3, 1.1, 0,   [0.1, 0.8, 2.3], 0]].forEach(([x,y,z,s]) => {
-    const w = new THREE.Mesh(new THREE.BoxGeometry(...s), dark);
-    w.position.set(x, y, z);
-    g.add(w);
+  // 캐빈 측면 창
+  const cws = new THREE.Mesh(new THREE.PlaneGeometry(1.80, 1.20), GLASS);
+  cws.position.set(-2.30, 1.80, 1.22);
+  g.add(cws);
+
+  // 배기관
+  const exhaust = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 1.20, 10), STEEL);
+  exhaust.position.set(-1.30, 2.95, -0.80);
+  g.add(exhaust);
+  const exhaustCap = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.09, 0.08, 10), STEEL);
+  exhaustCap.position.set(-1.30, 3.57, -0.80);
+  g.add(exhaustCap);
+
+  // — 섀시 프레임 —
+  const chassis = new THREE.Mesh(new THREE.BoxGeometry(9.20, 0.28, 1.20), STEEL);
+  chassis.position.set(0.20, 0.50, 0);
+  g.add(chassis);
+
+  // — 덤프 베드 —
+  const bedFloor = new THREE.Mesh(new THREE.BoxGeometry(5.20, 0.18, 2.40), STEEL);
+  bedFloor.position.set(1.30, 1.00, 0);
+  bedFloor.castShadow = true;
+  g.add(bedFloor);
+
+  // 베드 측벽 (좌우)
+  [-1.22, 1.22].forEach(dz => {
+    const sw = new THREE.Mesh(new THREE.BoxGeometry(5.20, 0.90, 0.12), STEEL);
+    sw.position.set(1.30, 1.50, dz);
+    sw.castShadow = true;
+    g.add(sw);
   });
+  // 베드 전벽
+  const fw = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.90, 2.44), STEEL);
+  fw.position.set(-1.22, 1.50, 0);
+  g.add(fw);
+  // 베드 후판 (열림 가능) — 닫힌 상태
+  const tailgate = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.90, 2.44), STEEL);
+  tailgate.position.set(3.82, 1.50, 0);
+  g.add(tailgate);
 
-  // 바퀴 4개
-  [[-1.5,-1.25],[-1.5,1.25],[1.8,-1.25],[1.8,1.25]].forEach(([x,z]) => {
-    const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.36, 14), grey);
-    wh.rotation.z = Math.PI / 2;
-    wh.position.set(x, 0.52, z);
-    wh.castShadow = true;
-    g.add(wh);
+  // 유압 리프트 실린더 (베드 아래)
+  const liftCyl = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 1.10, 10), STEEL);
+  liftCyl.rotation.x = -0.40;
+  liftCyl.position.set(0.80, 0.75, 0);
+  g.add(liftCyl);
+  const liftRod = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.70, 8), CHROME);
+  liftRod.rotation.x = -0.40;
+  liftRod.position.set(0.80, 1.12, 0);
+  g.add(liftRod);
+
+  // — 바퀴 6개 (앞 2 + 뒤 4) —
+  const TYRE = new THREE.MeshStandardMaterial({ color: 0x181614, roughness: 0.92, metalness: 0.04 });
+  const RIM  = new THREE.MeshStandardMaterial({ color: 0x909090, roughness: 0.30, metalness: 0.70 });
+
+  [[-1.80, 1.25], [-1.80, -1.25],
+   [ 1.60, 1.42], [ 1.60, -1.42],
+   [ 2.80, 1.42], [ 2.80, -1.42]].forEach(([x, z]) => {
+    const tyre = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.40, 16), TYRE);
+    tyre.rotation.z = Math.PI / 2;
+    tyre.position.set(x, 0.56, z);
+    tyre.castShadow = true;
+    g.add(tyre);
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.44, 14), RIM);
+    rim.rotation.z = Math.PI / 2;
+    rim.position.set(x, 0.56, z);
+    g.add(rim);
   });
 
   g.position.set(28, 0, -13);
-  g.rotation.y = Math.PI;  // 왼쪽을 향해 진입
+  g.rotation.y = Math.PI;
   g.visible = false;
   GAME.scene.add(g);
   EXC.truck.group = g;
