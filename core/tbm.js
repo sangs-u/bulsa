@@ -124,7 +124,10 @@ window.evaluateLift = function evaluateLift() {
   if (_origEvaluateLift) _origEvaluateLift();
 };
 
-// ── Show TBM panel ────────────────────────────────────────────
+// ── TBM 3D 집합 방식 (모달 제거) ─────────────────────────────
+// NPC 들이 플레이어 주위에 원형으로 모여 순서대로 대사를 말함.
+// 모든 대사 완료 후 onComplete 호출.
+
 function showTBM(phase, onComplete) {
   if (TBM._completed.has(phase)) {
     if (onComplete) onComplete();
@@ -132,112 +135,116 @@ function showTBM(phase, onComplete) {
   }
 
   TBM._pendingCallback = onComplete;
-  const panel = document.getElementById('tbm-panel');
-  if (!panel) {
-    TBM._completed.add(phase);
-    if (onComplete) onComplete();
-    return;
-  }
-
   const data = TBM_DATA[phase] || TBM_DATA[1];
-  // Suffix map: ko→Ko, en→En, vi→Vi, ar→Ar, fallback→Ko
   const sfx  = { ko: 'Ko', en: 'En', vi: 'Vi', ar: 'Ar' };
   const L    = sfx[currentLang] || 'Ko';
-  const unassigned = { Ko: '미지정', En: 'Unassigned', Vi: 'Chưa phân công', Ar: 'غير محدد' };
-  const startLabel = { Ko: '작업 시작', En: 'Start Work', Vi: 'Bắt đầu', Ar: 'ابدأ العمل' };
-  const secLabels  = {
-    work:      { Ko: '오늘의 작업',          En: "Today's Work",     Vi: 'Công việc hôm nay', Ar: 'عمل اليوم' },
-    hazards:   { Ko: '주요 위험요소',         En: 'Key Hazards',      Vi: 'Nguy hiểm chính',   Ar: 'المخاطر الرئيسية' },
-    checklist: { Ko: '필수 확인 체크리스트',   En: 'Required Checklist', Vi: 'Danh sách kiểm tra', Ar: 'قائمة التحقق' },
-    roles:     { Ko: '담당자 지정',           En: 'Role Assignments', Vi: 'Phân công vai trò',  Ar: 'تعيينات الأدوار' },
-  };
 
-  // Gather NPCs around player
+  // NPC 원형 집합
   _gatherNPCs();
 
-  // Title + section labels
-  document.getElementById('tbm-title').textContent      = data['title' + L] || data.titleKo;
-  document.getElementById('tbm-phase-label').textContent = `Phase ${phase}`;
-  document.getElementById('tbm-work').textContent        = data['work' + L]  || data.workKo;
-  ['work', 'hazards', 'checklist', 'roles'].forEach(k => {
-    const el = document.getElementById('tbm-lbl-' + k);
-    if (el) el.textContent = secLabels[k][L] || secLabels[k].Ko;
-  });
+  // 상단 진행 배너 표시
+  _showTBMBanner(data['title' + L] || data.titleKo);
 
-  // Hazard list
-  const hazList = document.getElementById('tbm-hazards');
-  hazList.innerHTML = '';
-  const hazards = data['hazards' + L] || data.hazardsKo;
-  hazards.forEach(h => {
-    const li = document.createElement('li');
-    li.textContent = h;
-    hazList.appendChild(li);
-  });
+  // 대화 줄 구성: 오늘의 작업 + 위험요소 2개 + 체크리스트 항목 3개
+  const lines = [
+    data['work' + L] || data.workKo,
+    ...(data['hazards' + L] || data.hazardsKo).slice(0, 2),
+    ...(data['checklist' + L] || data.checklistKo).slice(0, 3),
+  ];
 
-  // Checklist
-  const chkList = document.getElementById('tbm-checklist');
-  chkList.innerHTML = '';
-  const checks = data['checklist' + L] || data.checklistKo;
-  let checkedCount = 0;
+  const npcs = (GAME.npcs || []).filter(n => n && n.group);
+  let lineIdx = 0;
 
-  function updateProgress() {
-    const pct = (checkedCount / checks.length) * 100;
-    const fill = document.getElementById('tbm-progress-fill');
-    if (fill) fill.style.width = pct + '%';
-    const btn = document.getElementById('tbm-start-btn');
-    if (btn) btn.disabled = checkedCount < checks.length;
+  function nextLine() {
+    if (lineIdx >= lines.length) {
+      setTimeout(() => _completeTBM3D(phase), 800);
+      return;
+    }
+    const npc = npcs.length ? npcs[lineIdx % npcs.length] : null;
+    const text = lines[lineIdx++];
+    _showNpcBubble3D(npc, text, 2800);
+    setTimeout(nextLine, 3000);
   }
 
-  checks.forEach((text, i) => {
-    const row = document.createElement('div');
-    row.className = 'tbm-check-item';
-    row.innerHTML = `<div class="tbm-check-box"></div><span>${text}</span>`;
-    row.onclick = () => {
-      if (row.classList.contains('checked')) return;
-      row.classList.add('checked');
-      checkedCount++;
-      updateProgress();
-    };
-    chkList.appendChild(row);
-  });
-
-  updateProgress();
-
-  // Role assignments
-  const roleContainer = document.getElementById('tbm-roles');
-  roleContainer.innerHTML = '';
-  data.roles.forEach(r => {
-    const npc = r.npcId ? GAME.npcs.find(n => n.id === r.npcId) : null;
-    const row = document.createElement('div');
-    row.className = 'tbm-role-row';
-    row.innerHTML = `<span class="tbm-role-name">${r['role' + L] || r.roleKo}</span>
-      <span class="tbm-role-assigned">${npc ? npc.name : (unassigned[L] || '미지정')}</span>`;
-    roleContainer.appendChild(row);
-  });
-
-  // Start button
-  const startBtn = document.getElementById('tbm-start-btn');
-  if (startBtn) {
-    startBtn.textContent = startLabel[L] || '작업 시작';
-    startBtn.onclick = () => completeTBM(phase);
-  }
-
-  INTERACTION.popupOpen = true;
-  panel.classList.remove('hidden');
-  if (document.pointerLockElement) document.exitPointerLock();
+  // NPC 이동 후 대화 시작
+  setTimeout(nextLine, 1200);
 }
 
-function completeTBM(phase) {
-  TBM._completed.add(phase);
-  INTERACTION.popupOpen = false;
-  const panel = document.getElementById('tbm-panel');
-  if (panel) panel.classList.add('hidden');
+// ── 대화 버블 표시 ────────────────────────────────────────────
+let _tbmBubbleEl = null;
+let _tbmBubbleTimer = null;
 
-  // Unchecked items become violations
-  const unchecked = document.querySelectorAll('#tbm-checklist .tbm-check-item:not(.checked)').length;
-  if (unchecked > 0) {
-    applySafetyPenalty(unchecked * 5);
-    GAME.state.violations.add(`tbm_phase${phase}_${unchecked}unchecked`);
+function _showNpcBubble3D(npc, text, duration) {
+  if (_tbmBubbleEl) {
+    clearTimeout(_tbmBubbleTimer);
+    _tbmBubbleEl.remove();
+    _tbmBubbleEl = null;
+  }
+  const el = document.createElement('div');
+  el.style.cssText = [
+    'position:fixed', 'pointer-events:none', 'z-index:4500',
+    'background:rgba(10,18,30,0.90)', 'color:#F4F4F4',
+    'padding:10px 16px', 'border-radius:12px',
+    'font-family:monospace', 'font-size:13px', 'line-height:1.5',
+    'border:1px solid rgba(255,200,0,0.35)', 'max-width:280px',
+    'text-align:center', 'white-space:pre-wrap',
+    'box-shadow:0 0 12px rgba(255,190,0,0.15)',
+    'transform:translate(-50%,-100%)',
+  ].join(';');
+
+  const nameTag = npc && npc.name ? '<div style="font-size:10px;opacity:0.55;margin-bottom:4px">' + npc.name + '</div>' : '';
+  el.innerHTML = nameTag + '<div>' + text + '</div>';
+  document.body.appendChild(el);
+  _tbmBubbleEl = el;
+
+  // NPC 머리 위 위치 계산
+  let sx = innerWidth / 2, sy = innerHeight * 0.32;
+  if (npc && npc.group && GAME.camera) {
+    const head = npc.group.position.clone();
+    head.y += 1.9;
+    const proj = head.project(GAME.camera);
+    if (proj.z < 1) {
+      sx = Math.max(160, Math.min(innerWidth - 160, (proj.x * 0.5 + 0.5) * innerWidth));
+      sy = Math.max(60,  Math.min(innerHeight - 60, (-proj.y * 0.5 + 0.5) * innerHeight));
+    }
+  }
+  el.style.left = sx + 'px';
+  el.style.top  = sy + 'px';
+
+  _tbmBubbleTimer = setTimeout(() => {
+    if (_tbmBubbleEl === el) { el.remove(); _tbmBubbleEl = null; }
+  }, duration);
+}
+
+// ── 상단 TBM 배너 ─────────────────────────────────────────────
+let _tbmBannerEl = null;
+
+function _showTBMBanner(title) {
+  if (_tbmBannerEl) _tbmBannerEl.remove();
+  const el = document.createElement('div');
+  el.style.cssText = [
+    'position:fixed', 'top:56px', 'left:50%', 'transform:translateX(-50%)',
+    'background:rgba(0,0,0,0.78)', 'color:#FFD700',
+    'padding:6px 20px', 'border-radius:20px',
+    'font-family:monospace', 'font-size:13px', 'font-weight:bold',
+    'letter-spacing:1px', 'z-index:4400', 'pointer-events:none',
+    'border:1px solid rgba(255,215,0,0.3)',
+  ].join(';');
+  el.textContent = '📋 TBM — ' + title;
+  document.body.appendChild(el);
+  _tbmBannerEl = el;
+}
+
+// ── TBM 3D 완료 처리 ────────────────────────────────────────
+function _completeTBM3D(phase) {
+  TBM._completed.add(phase);
+  if (_tbmBannerEl) { _tbmBannerEl.remove(); _tbmBannerEl = null; }
+  if (_tbmBubbleEl) { _tbmBubbleEl.remove(); _tbmBubbleEl = null; }
+
+  if (typeof showActionNotif === 'function') {
+    const msg = { ko: '✅ TBM 완료 — 작업 시작!', en: '✅ TBM Complete — Let\'s work!',
+                  vi: '✅ Hoàn thành TBM — Bắt đầu!', ar: '✅ اكتمل TBM — ابدأ العمل!' };
+    showActionNotif(msg[currentLang] || msg.ko, 3000);
   }
 
   updateHUD();
@@ -248,9 +255,11 @@ function completeTBM(phase) {
   }
 
   if (GAME.state.gameStarted && !GAME.state.gameOver && window.matchMedia('(pointer: fine)').matches) {
-    GAME.renderer.domElement.requestPointerLock();
+    GAME.renderer.domElement.requestPointerLock().catch(() => {});
   }
 }
+
+function completeTBM(phase) { _completeTBM3D(phase); }
 
 // ── NPC gathering animation ───────────────────────────────────
 function _gatherNPCs() {

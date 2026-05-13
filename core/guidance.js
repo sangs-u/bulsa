@@ -1,18 +1,22 @@
 // guidance.js — 플레이어 안내 시스템
 // ① 게임 시작 조작법 오버레이  ② 마커 위 3D 비콘  ③ 화면 가장자리 방향 화살표
+// ④ 다음 할 일 카드 (화면 중앙 하단 — 6살도 따라할 수 있는 수준)
 
 const GUIDANCE = {
   _beacons:     [],   // { marker, mesh, label }
   _arrowEl:     null, // 화면 가장자리 방향 화살표 DOM
   _controlsEl:  null, // 조작법 오버레이 DOM
   _phaseDotsEl: null, // 페이즈 진행 점 DOM
+  _nextStepEl:  null, // 다음 할 일 카드 DOM
   _t:           0,
+  _lastStep:    '',   // 중복 업데이트 방지
 };
 
 // ── 초기화 ────────────────────────────────────────────────────
 function initGuidance() {
   _buildControlsOverlay();
   _buildArrowEl();
+  _buildNextStepCard();
   _buildPhaseDotsEl();
 }
 
@@ -24,6 +28,7 @@ function updateGuidance(delta) {
   _tickBeacons();
   _updateArrow();
   _updatePhaseDots();
+  _updateNextStepCard();
 }
 
 // ── 1. 조작법 오버레이 ────────────────────────────────────────
@@ -411,14 +416,114 @@ function _updatePhaseDots() {
   el.appendChild(lbl);
 }
 
+// ── 4. 다음 할 일 카드 (화면 중앙 하단) ─────────────────────
+function _buildNextStepCard() {
+  if (GUIDANCE._nextStepEl) return;
+  const el = document.createElement('div');
+  el.id = 'guidance-next-step';
+  el.style.cssText = [
+    'position:fixed', 'bottom:22%', 'left:50%', 'transform:translateX(-50%)',
+    'background:rgba(0,0,0,0.78)', 'color:#fff',
+    'padding:12px 24px', 'border-radius:28px',
+    'font-family:monospace', 'font-size:15px', 'font-weight:bold',
+    'pointer-events:none', 'z-index:3200', 'display:none',
+    'border:1.5px solid rgba(255,200,0,0.5)',
+    'box-shadow:0 0 20px rgba(255,180,0,0.15)',
+    'text-align:center', 'max-width:440px',
+    'transition:opacity 0.3s',
+  ].join(';');
+  document.body.appendChild(el);
+  GUIDANCE._nextStepEl = el;
+}
+
+function _updateNextStepCard() {
+  const el = GUIDANCE._nextStepEl;
+  if (!el) return;
+
+  // 현재 상황에 맞는 다음 할 일 계산
+  const step = _calcNextStep();
+  if (!step) {
+    el.style.display = 'none';
+    GUIDANCE._lastStep = '';
+    return;
+  }
+
+  if (step === GUIDANCE._lastStep) return;
+  GUIDANCE._lastStep = step;
+
+  el.style.display = 'block';
+  el.innerHTML = step;
+}
+
+// 우선순위에 따라 다음 할 일 1줄 반환
+function _calcNextStep() {
+  // ACT 진행 중이면 숨김 (게이지가 안내)
+  if (typeof ACT_STATE !== 'undefined' && ACT_STATE.active) return null;
+
+  // v4 모드: 가장 가까운 마커 안내
+  if (typeof PHASE_V4 !== 'undefined' && PHASE_V4._started) {
+    if (typeof MARKERS === 'undefined' || !MARKERS.length) return null;
+
+    const pending = MARKERS.filter(m => m.state === 'pending');
+    if (!pending.length) return '✅ 이 페이즈 완료!';
+
+    // 가장 가까운 마커 찾기
+    let nearest = null, nearestDist = Infinity;
+    if (typeof PLAYER !== 'undefined') {
+      pending.forEach(m => {
+        const dx = m.position.x - PLAYER.worldPos.x;
+        const dz = m.position.z - PLAYER.worldPos.z;
+        const d  = Math.sqrt(dx * dx + dz * dz);
+        if (d < nearestDist) { nearestDist = d; nearest = m; }
+      });
+    }
+
+    if (!nearest) return null;
+
+    const lang = (typeof currentLang !== 'undefined') ? currentLang : 'ko';
+    const label = nearest.label ? (nearest.label[lang] || nearest.label.ko || '') : '';
+
+    if (nearestDist < 2.8) {
+      // 근처에 있으면 E 홀드 안내
+      return `<span style="color:#4ade80">▶</span> <kbd style="background:rgba(255,255,255,0.15);padding:1px 7px;border-radius:4px;border:1px solid rgba(255,255,255,0.3)">E</kbd> 를 꾹 누르세요 — ${label}`;
+    } else {
+      const dist = Math.round(nearestDist);
+      // 멀면 이동 안내
+      return `<span style="color:#FFCC00">▶</span> 노란 링으로 이동하세요 — ${label} (${dist}m)`;
+    }
+  }
+
+  // 일반 모드: 근접 인터랙터블이 있으면
+  if (typeof INTERACTION !== 'undefined' && INTERACTION.currentTarget) return null; // hud-interact 가 이미 표시 중
+
+  return null;
+}
+
+// 외부에서 한 줄 안내 직접 설정 (phase_v4 등에서 호출 가능)
+function setNextStep(html, durationMs) {
+  const el = GUIDANCE._nextStepEl;
+  if (!el) return;
+  GUIDANCE._lastStep = html;
+  el.style.display = html ? 'block' : 'none';
+  el.innerHTML = html || '';
+  if (durationMs) {
+    setTimeout(() => {
+      if (GUIDANCE._lastStep === html) {
+        GUIDANCE._lastStep = '';
+        el.style.display = 'none';
+      }
+    }, durationMs);
+  }
+}
+
 // ── 공개 API ─────────────────────────────────────────────────
 function showControlsOverlay() {
-  // 이미 제거됐으면 다시 생성
   if (!GUIDANCE._controlsEl) _buildControlsOverlay();
   else GUIDANCE._controlsEl.style.opacity = '1';
 }
 
-window.GUIDANCE          = GUIDANCE;
-window.initGuidance      = initGuidance;
-window.updateGuidance    = updateGuidance;
+window.GUIDANCE            = GUIDANCE;
+window.initGuidance        = initGuidance;
+window.updateGuidance      = updateGuidance;
 window.showControlsOverlay = showControlsOverlay;
+window.setNextStep         = setNextStep;
