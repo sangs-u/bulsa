@@ -272,6 +272,7 @@ function _loop() {
     if (typeof tickHazardZones === 'function')   tickHazardZones(delta);
     if (typeof actTick === 'function')           actTick(delta, !!PLAYER.keys['KeyE']);
     if (typeof tickPhaseV4 === 'function')       tickPhaseV4(delta);
+    if (typeof tickPour === 'function')          tickPour(delta);
     if (typeof updateGuidance === 'function')    updateGuidance(delta);
   }
 

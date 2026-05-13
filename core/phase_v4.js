@@ -215,7 +215,16 @@ const _V4_ACTS = [
 
   { id: 'install_formwork',   label: { ko: '거푸집 설치 (E홀드)', en: 'Install Formwork (hold E)' },  duration: 4.0,
     hazardEffect: { zone_foundation: { collapse: -0.4 } }, motion: 'drill',
-    completeMsg: { ko: '✅ 거푸집 설치 완료', en: '✅ Formwork installed' } },
+    completeMsg: { ko: '✅ 거푸집 설치 완료 — 타설 준비', en: '✅ Formwork installed — ready to pour' },
+    _postComplete: (markerId) => {
+      // 거푸집 3D 생성 + 타설 act 등록
+      if (typeof registerFormwork === 'function') {
+        registerFormwork({ center: { x: 0, y: 0, z: -8 }, width: 3.5, depth: 3.5, height: 1.2 });
+      }
+      if (typeof POUR_ACT_DEF !== 'undefined' && typeof defineAct === 'function') {
+        defineAct(POUR_ACT_DEF);
+      }
+    } },
 
   { id: 'inspect_sling',      label: { ko: '줄걸이 점검 (E홀드)', en: 'Inspect Sling (hold E)' },     duration: 3.0,
     hazardEffect: { zone_lifting: { drop: -0.5 } }, motion: 'inspect',
@@ -385,7 +394,11 @@ function onV4ActComplete({ markerId }) {
 
 // act.js 의 onComplete 가 호출하도록 _V4_ACTS 에 콜백 주입
 _V4_ACTS.forEach(a => {
-  a.onComplete = onV4ActComplete;
+  const postFn = a._postComplete;
+  a.onComplete = (ctx) => {
+    onV4ActComplete(ctx);
+    if (typeof postFn === 'function') postFn(ctx.markerId);
+  };
 });
 
 // ── 페이즈 전환 ───────────────────────────────────────────────
