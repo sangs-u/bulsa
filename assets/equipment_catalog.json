@@ -418,7 +418,7 @@
       "id": "scissor_lift",
       "name": "시저리프트",
       "glb": "assets/glb/scissor_lift.glb",
-      "status": "pending",
+      "status": "done",
       "prompt": "chibi cute low-poly 3D scissor lift platform, bright yellow, extended scissor mechanism showing X-pattern, large flat work platform on top with guardrails, four wheels, compact base, cartoon game asset, construction equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
       "credits": 30
