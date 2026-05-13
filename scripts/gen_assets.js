@@ -77,6 +77,7 @@ if (!API_KEY) {
       await _downloadFile(glbUrl, outPath);
       console.log(`  [✓] 저장 완료: ${model.glb}`);
       _updateCatalogStatus(model.id, 'done');
+      await _gitPush(model.id, model.glb);
 
     } catch (e) {
       console.error(`  [!] 오류: ${e.message}`);
@@ -211,6 +212,22 @@ function _printSummary() {
   const pending     = catalog.models.filter(m => m.status === 'pending').length;
   console.log(`\n요약: ✓${done}개 완료 | ✗${err}개 실패 | ⏳${pending}개 대기`);
   if (err > 0) console.log('  실패 모델은 --id <id> 로 재시도 가능');
+}
+
+// ── Git 자동 푸시 ─────────────────────────────────────────────
+function _gitPush(id, glbPath) {
+  const { execSync } = require('child_process');
+  return new Promise(resolve => {
+    try {
+      execSync(`git add "${glbPath}" assets/equipment_catalog.json`, { cwd: path.join(__dirname, '..') });
+      execSync(`git commit -m "feat(assets): ${id}.glb 생성 완료"`, { cwd: path.join(__dirname, '..') });
+      execSync('git push', { cwd: path.join(__dirname, '..') });
+      console.log(`  [git] push 완료`);
+    } catch (e) {
+      console.log(`  [git] push 실패 (무시): ${e.message.split('\n')[0]}`);
+    }
+    resolve();
+  });
 }
 
 // ── 유틸 ──────────────────────────────────────────────────────

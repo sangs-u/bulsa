@@ -287,7 +287,7 @@
       "id": "air_compressor",
       "name": "에어컴프레서",
       "glb": "assets/glb/air_compressor.glb",
-      "status": "pending",
+      "status": "done",
       "prompt": "chibi cute low-poly 3D portable air compressor, bright blue and grey, large round pressure tank, small motor on side, rubber air hose coiled, wheels for transport, cartoon game asset, construction equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
       "credits": 30
@@ -324,7 +324,7 @@
       "id": "concrete_vibrator",
       "name": "콘크리트 진동기",
       "glb": "assets/glb/concrete_vibrator.glb",
-      "status": "pending",
+      "status": "done",
       "prompt": "chibi cute low-poly 3D concrete vibrator set, bright orange motor unit, long flexible hose with cylindrical vibrating head at end, portable with handle, cartoon game asset, construction tool, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
       "credits": 30,
@@ -361,7 +361,7 @@
       "id": "generator",
       "name": "발전기",
       "glb": "assets/glb/generator.glb",
-      "status": "pending",
+      "status": "done",
       "prompt": "chibi cute low-poly 3D portable diesel generator, dark grey and yellow, boxy rectangular body with ventilation slats, exhaust pipe on top, wheels at base, control panel, cartoon game asset, construction equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
       "credits": 30
@@ -493,7 +493,7 @@
       "id": "welding_machine",
       "name": "용접기",
       "glb": "assets/glb/welding_machine.glb",
-      "status": "pending",
+      "status": "done",
       "prompt": "chibi cute low-poly 3D arc welding machine, bright red and grey, boxy rectangular unit, welding cable and electrode holder on front, power switch, small wheels, cartoon game asset, construction equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
       "credits": 30
