@@ -7,7 +7,7 @@
       "id": "back_support_item",
       "name": "요대 (허리 보호대)",
       "glb": "assets/glb/back_support_item.glb",
-      "status": "pending",
+      "status": "done",
       "batch": 1,
       "style": "chibi",
       "category": "wearable_waist",
