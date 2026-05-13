@@ -74,7 +74,7 @@
       "id": "safety_boots_item",
       "name": "안전화 (착용 아이템)",
       "glb": "assets/glb/safety_boots_item.glb",
-      "status": "pending",
+      "status": "done",
       "batch": 1,
       "style": "chibi",
       "category": "wearable_feet",
