@@ -172,6 +172,7 @@ window.persistFines = persistFines;
   if (typeof registerGeneratedAnims === 'function') registerGeneratedAnims();
   if (typeof initCarry === 'function') initCarry();
   if (typeof initPhaseV4 === 'function') initPhaseV4();
+  if (typeof initGuidance === 'function') initGuidance();
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
@@ -268,6 +269,7 @@ function _loop() {
     if (typeof tickHazardZones === 'function')   tickHazardZones(delta);
     if (typeof actTick === 'function')           actTick(delta, !!PLAYER.keys['KeyE']);
     if (typeof tickPhaseV4 === 'function')       tickPhaseV4(delta);
+    if (typeof updateGuidance === 'function')    updateGuidance(delta);
   }
 
   if (typeof renderPostFX === 'function') renderPostFX();
