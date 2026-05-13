@@ -304,8 +304,8 @@ class NPC {
   // ── Player avoidance ─────────────────────────────────────────
   _avoidPlayer(delta) {
     if (this.state === NPC_STATES.ACCIDENT) return;
-    if (!window.PLAYER || !PLAYER.position) return;
-    const px = PLAYER.position.x, pz = PLAYER.position.z;
+    if (!window.PLAYER || !PLAYER.worldPos) return;
+    const px = PLAYER.worldPos.x, pz = PLAYER.worldPos.z;
     const dx = this.group.position.x - px;
     const dz = this.group.position.z - pz;
     const d2 = dx * dx + dz * dz;
