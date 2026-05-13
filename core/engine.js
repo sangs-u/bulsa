@@ -176,6 +176,7 @@ window.persistFines = persistFines;
   if (typeof initCarry === 'function') initCarry();
   if (typeof initPhaseV4 === 'function') initPhaseV4();
   if (typeof initGuidance === 'function') initGuidance();
+  if (typeof initExcavator === 'function') initExcavator();
 
   const bScenario = document.getElementById('blocker-scenario');
   const bControls = document.getElementById('blocker-controls');
@@ -274,6 +275,7 @@ function _loop() {
     if (typeof tickPhaseV4 === 'function')       tickPhaseV4(delta);
     if (typeof tickPour === 'function')          tickPour(delta);
     if (typeof updateGuidance === 'function')    updateGuidance(delta);
+    if (typeof tickExcavator === 'function')     tickExcavator(delta);
   }
 
   if (typeof renderPostFX === 'function') renderPostFX();

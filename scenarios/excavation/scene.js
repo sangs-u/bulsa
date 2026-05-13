@@ -10,8 +10,8 @@ function buildExcavationScene() {
     GAME.colliders = [];
 
     // ── Sky + Fog ──────────────────────────────────────────
-    scene.background = new THREE.Color(0x8AB2D0);
-    scene.fog = new THREE.FogExp2(0x8AB2D0, 0.006);
+    scene.background = new THREE.Color(0x89AECE);
+    scene.fog = new THREE.FogExp2(0x89AECE, 0.006);
 
     // ── Lighting ───────────────────────────────────────────
     const hemi = new THREE.HemisphereLight(0xB8D4F0, 0x8B7355, 0.6);
@@ -34,7 +34,9 @@ function buildExcavationScene() {
     GAME._sun = sun;
 
     // ── Ground (대지) ──────────────────────────────────────
-    const groundMat = new THREE.MeshLambertMaterial({ color: 0x8B7355 });
+    const groundMat = typeof matGravel === 'function'
+      ? matGravel({ color: 0x7A6E5A, repeat: 22 })
+      : new THREE.MeshLambertMaterial({ color: 0x8B7355 });
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
@@ -92,7 +94,9 @@ function _buildPit(scene) {
   const w = 12, d = 12;
 
   // 바닥 (어두운 흙)
-  const floorMat = new THREE.MeshLambertMaterial({ color: 0x5C4A30 });
+  const floorMat = typeof matDirt === 'function'
+    ? matDirt({ color: 0x4A3820, repeat: 5 })
+    : new THREE.MeshLambertMaterial({ color: 0x5C4A30 });
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(w, d), floorMat);
   floor.rotation.x = -Math.PI / 2;
   floor.position.set(cx, -pitDepth, cz);
@@ -100,7 +104,9 @@ function _buildPit(scene) {
   scene.add(floor);
 
   // 4개 측면 (사면 = 구덩이 벽)
-  const sideMat = new THREE.MeshLambertMaterial({ color: 0x6B5238 });
+  const sideMat = typeof matDirt === 'function'
+    ? matDirt({ color: 0x5A4228, repeat: 3 })
+    : new THREE.MeshLambertMaterial({ color: 0x6B5238 });
   const sides = [
     { w: w, h: pitDepth, d: 0.1, x: cx,        y: -pitDepth/2, z: cz - d/2 },
     { w: w, h: pitDepth, d: 0.1, x: cx,        y: -pitDepth/2, z: cz + d/2 },
@@ -196,7 +202,9 @@ function _buildExcavator(scene) {
 
 // 흙더미 (굴착으로 나온 흙 보관)
 function _buildSoilPiles(scene) {
-  const soilMat = new THREE.MeshLambertMaterial({ color: 0x7A5A38 });
+  const soilMat = typeof matDirt === 'function'
+    ? matDirt({ color: 0x7A5A38, repeat: 3 })
+    : new THREE.MeshLambertMaterial({ color: 0x7A5A38 });
   const piles = [
     { x: 14, z: -14, r: 2.2 },
     { x: 16, z: -10, r: 1.8 },
@@ -213,8 +221,12 @@ function _buildSoilPiles(scene) {
 
 // 흙막이 가시설 — H-pile + 토류판
 function _buildShoring(scene) {
-  const steelMat = new THREE.MeshLambertMaterial({ color: 0x4A4640 });
-  const woodMat  = new THREE.MeshLambertMaterial({ color: 0x8A6E3A });
+  const steelMat = typeof matMetal === 'function'
+    ? matMetal({ color: 0x484440, roughness: 0.7, metalness: 0.6 })
+    : new THREE.MeshLambertMaterial({ color: 0x4A4640 });
+  const woodMat  = typeof matConcrete === 'function'
+    ? matConcrete({ color: 0x8A7048, roughness: 0.92, repeat: 2 })
+    : new THREE.MeshLambertMaterial({ color: 0x8A6E3A });
 
   const cx = 0, cz = -17, w = 12, d = 12;
 
@@ -339,10 +351,12 @@ function _buildSwingRadius(scene) {
 
 // 현장 사무실 (작업계획서 작성 위치)
 function _buildExcavOffice(scene) {
-  const body  = new THREE.MeshLambertMaterial({ color: 0x3A6A8A });
-  const roof  = new THREE.MeshLambertMaterial({ color: 0x2C5070 });
+  const body  = typeof matWall === 'function'
+    ? matWall({ color: 0x3A6A8A, roughness: 0.82 })
+    : new THREE.MeshLambertMaterial({ color: 0x3A6A8A });
+  const roof  = new THREE.MeshStandardMaterial({ color: 0x2C5070, roughness: 0.88, metalness: 0.2 });
   const winM  = new THREE.MeshLambertMaterial({ color: 0x7BAABB, transparent:true, opacity:0.7 });
-  const grey  = new THREE.MeshLambertMaterial({ color: 0x888880 });
+  const grey  = new THREE.MeshStandardMaterial({ color: 0x808878, roughness: 0.85, metalness: 0.1 });
 
   const box = new THREE.Mesh(new THREE.BoxGeometry(6.0,2.6,2.4), body);
   box.position.set(-16, 1.3, 8); box.castShadow = true; box.receiveShadow = true;
