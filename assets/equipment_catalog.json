@@ -116,7 +116,7 @@
       "id": "safety_harness",
       "name": "안전대 (안전벨트)",
       "glb": "assets/glb/safety_harness.glb",
-      "status": "pending",
+      "status": "done",
       "prompt": "chibi cute low-poly 3D full body safety harness, bright orange straps forming Y and D-ring pattern, metal buckle clips, chest D-ring, simple strap design displayed on stand, cartoon game asset, construction safety equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
       "credits": 30,
