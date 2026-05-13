@@ -108,6 +108,9 @@ window.persistFines = persistFines;
 
   // v3 — unifiedMode 일 때는 PHASE_CONTROLLER 가 페이즈별 scene build 담당.
   // 단일 시나리오 모드에서만 이 시점에 baseline scene 빌드.
+  // 텍스처를 씬 빌드 전에 미리 시작 (Three.js Texture 객체 즉시 반환, 이미지는 비동기)
+  if (typeof preloadTextures === 'function') preloadTextures();
+
   const _buildFn    = window[_active.build];
   const _registerFn = window[_active.register];
   if (!GAME.unifiedMode) {

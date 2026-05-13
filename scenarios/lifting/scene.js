@@ -33,7 +33,9 @@ function buildLiftingScene() {
   scene.add(fill);
 
   // ── Ground ─────────────────────────────────────────────
-  const groundMat = new THREE.MeshLambertMaterial({ color: 0x6E6E66 });
+  const groundMat = typeof matGravel === 'function'
+    ? matGravel({ color: 0x706C64, repeat: 22 })
+    : new THREE.MeshStandardMaterial({ color: 0x706C64, roughness: 0.95 });
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), groundMat);
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
@@ -93,12 +95,15 @@ function _addGroundGrid(scene) {
 
 // ── RC frame building (3-storey, under construction) ──────
 function _buildStructure(scene) {
-  const concMat  = new THREE.MeshLambertMaterial({ color: 0xC4BEB4 });
-  const concDark = new THREE.MeshLambertMaterial({ color: 0xA09890 });
-  const rebarMat = new THREE.MeshLambertMaterial({ color: 0x585450 });
-  const woodMat  = new THREE.MeshLambertMaterial({ color: 0x9B7A2A });
-  const wallMat  = new THREE.MeshLambertMaterial({ color: 0xCDC8C0 });
-  const beamMat  = new THREE.MeshLambertMaterial({ color: 0xB8B2AA });
+  const _mc = typeof matConcrete === 'function';
+  const _mw = typeof matWall     === 'function';
+  const _mm = typeof matMetal    === 'function';
+  const concMat  = _mc ? matConcrete({ color: 0xC4BEB4, repeat: 4 }) : new THREE.MeshStandardMaterial({ color: 0xC4BEB4, roughness: 0.85 });
+  const concDark = _mc ? matConcrete({ color: 0xA09890, repeat: 4 }) : new THREE.MeshStandardMaterial({ color: 0xA09890, roughness: 0.88 });
+  const rebarMat = _mm ? matMetal({ color: 0x585450, roughness: 0.55, metalness: 0.7 }) : new THREE.MeshStandardMaterial({ color: 0x585450, roughness: 0.55, metalness: 0.7 });
+  const woodMat  = new THREE.MeshStandardMaterial({ color: 0x9B7A2A, roughness: 0.88 });
+  const wallMat  = _mw ? matWall({ color: 0xCDC8C0, repeat: 3 }) : new THREE.MeshStandardMaterial({ color: 0xCDC8C0, roughness: 0.82 });
+  const beamMat  = _mc ? matConcrete({ color: 0xB8B2AA, repeat: 3 }) : new THREE.MeshStandardMaterial({ color: 0xB8B2AA, roughness: 0.85 });
 
   const flH = 3.3;  // floor-to-floor height
   const colH = 16.5; // 5 floors total
@@ -197,9 +202,10 @@ function _buildStructure(scene) {
 // 정적 구조물(마스트/지브/캐빈 등)은 craneStaticGroup 으로 묶고, GLB 로드 시 visible=false.
 // 훅 블록/케이블은 양중 애니메이션이 의존하므로 항상 보이게 분리.
 function _buildCrane(scene) {
-  const yellow = new THREE.MeshLambertMaterial({ color: 0xD4A217 });
-  const dark   = new THREE.MeshLambertMaterial({ color: 0x3A3830 });
-  const cabin  = new THREE.MeshLambertMaterial({ color: 0xD2CEC4 });
+  const _mm = typeof matMetal === 'function';
+  const yellow = _mm ? matMetal({ color: 0xCFA210, roughness: 0.5, metalness: 0.6, repeat: 2 }) : new THREE.MeshStandardMaterial({ color: 0xCFA210, roughness: 0.5, metalness: 0.6 });
+  const dark   = _mm ? matMetal({ color: 0x3A3830, roughness: 0.6, metalness: 0.7, repeat: 2 }) : new THREE.MeshStandardMaterial({ color: 0x3A3830, roughness: 0.6, metalness: 0.7 });
+  const cabin  = typeof matWall === 'function' ? matWall({ color: 0xD2CEC4, repeat: 2 }) : new THREE.MeshStandardMaterial({ color: 0xD2CEC4, roughness: 0.7 });
 
   const craneStaticGroup = new THREE.Group();
   craneStaticGroup.name = 'craneStaticGroup';
@@ -323,9 +329,11 @@ function _buildCrane(scene) {
 
 // ── RC Beam (the load) ────────────────────────────────────
 function _buildBeam(scene) {
-  const beamMat  = new THREE.MeshLambertMaterial({ color: 0xA8A49C });
-  const plateMat = new THREE.MeshLambertMaterial({ color: 0x585450 });
-  const rebarMat = new THREE.MeshLambertMaterial({ color: 0x5A5652 });
+  const _mc = typeof matConcrete === 'function';
+  const _mm = typeof matMetal    === 'function';
+  const beamMat  = _mc ? matConcrete({ color: 0xA8A49C, repeat: 3 }) : new THREE.MeshStandardMaterial({ color: 0xA8A49C, roughness: 0.85 });
+  const plateMat = _mm ? matMetal({ color: 0x585450, roughness: 0.5, metalness: 0.7 }) : new THREE.MeshStandardMaterial({ color: 0x585450, roughness: 0.5, metalness: 0.7 });
+  const rebarMat = _mm ? matMetal({ color: 0x5A5652, roughness: 0.5, metalness: 0.8 }) : new THREE.MeshStandardMaterial({ color: 0x5A5652, roughness: 0.5, metalness: 0.8 });
 
   const beam = new THREE.Mesh(new THREE.BoxGeometry(7, 0.55, 0.55), beamMat);
   beam.position.set(-2, 0.28, -8);
