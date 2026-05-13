@@ -35,7 +35,7 @@
       "id": "ear_protection_item",
       "name": "귀마개 (착용 아이템)",
       "glb": "assets/glb/ear_protection_item.glb",
-      "status": "pending",
+      "status": "done",
       "batch": 1,
       "style": "chibi",
       "category": "wearable_ears",
