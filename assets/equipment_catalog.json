@@ -1,0 +1,363 @@
+{
+  "_comment": "BULSA 장비 카탈로그 — chibi 로우폴리 스타일, 건설 장비·NPC",
+  "_style_prefix": "chibi style, cute low-poly 3D game asset, rounded edges, bright saturated colors, oversized proportions, simple clean flat texture, white background, construction theme, cartoon 3D render, no text",
+  "_quality": "meshy-6",
+  "models": [
+    {
+      "id": "excavator",
+      "name": "굴착기 (크롤러 굴착기)",
+      "glb": "assets/glb/excavator.glb",
+      "status": "done",
+      "prompt": "chibi cute low-poly 3D crawler excavator, bright yellow, rounded chunky body, oversized cab with big window, short boom and arm, rubber tracks, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "dump_truck",
+      "name": "덤프트럭",
+      "glb": "assets/glb/dump_truck.glb",
+      "status": "done",
+      "prompt": "chibi cute low-poly 3D dump truck, bright orange, rounded chunky cab, big dump bed tilted back, oversized wheels, cartoon game asset, construction vehicle, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "tower_crane",
+      "name": "타워크레인",
+      "glb": "assets/glb/tower_crane.glb",
+      "status": "done",
+      "prompt": "chibi cute low-poly 3D tower crane, bright yellow and red, tall simple mast, horizontal jib, small cute operator cab, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "concrete_pump",
+      "name": "콘크리트 펌프카",
+      "glb": "assets/glb/concrete_pump.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D concrete pump truck, bright red, long folding boom arm extended upward, round concrete hopper at back, oversized wheels, cartoon game asset, construction vehicle, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "mixer_truck",
+      "name": "레미콘 (시멘트 믹서트럭)",
+      "glb": "assets/glb/mixer_truck.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D cement mixer truck, white with grey and orange stripes, large round spinning drum on back, chunky rounded cab, oversized wheels, cartoon game asset, construction vehicle, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "bulldozer",
+      "name": "불도저",
+      "glb": "assets/glb/bulldozer.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D bulldozer, bright yellow, wide front blade, chunky rubber tracks, rounded boxy cab with big windshield, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "mobile_crane",
+      "name": "이동식 크레인 (러프터 크레인)",
+      "glb": "assets/glb/mobile_crane.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D mobile rough terrain crane, bright yellow, big oversized wheels, long telescoping boom raised at angle, small cab, outriggers extended, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "forklift",
+      "name": "지게차",
+      "glb": "assets/glb/forklift.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D forklift, bright yellow, big counterweight at back, tall vertical mast with two forks in front, round solid tires, small cute cab, cartoon game asset, warehouse equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "aerial_lift",
+      "name": "고소작업차 (스카이차)",
+      "glb": "assets/glb/aerial_lift.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D aerial work platform truck, bright white and orange, articulating boom arm fully extended upward, small work basket on top, round wheels, cartoon game asset, construction vehicle, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "compactor",
+      "name": "진동 롤러 (다짐기)",
+      "glb": "assets/glb/compactor.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D vibration roller compactor, bright yellow, large smooth front drum roller, small rear wheels, rounded cab, cartoon game asset, road construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "pile_driver",
+      "name": "항타기",
+      "glb": "assets/glb/pile_driver.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D pile driver machine, bright yellow, tall vertical leader mast, heavy drop hammer at top, crawler tracks, small cab, cartoon game asset, foundation construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "backhoe_loader",
+      "name": "백호 로더",
+      "glb": "assets/glb/backhoe_loader.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D backhoe loader, bright yellow, front loader bucket and rear excavator arm, four wheels, boxy rounded body, dual-side digging arms, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "scissor_lift",
+      "name": "시저리프트",
+      "glb": "assets/glb/scissor_lift.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D scissor lift platform, bright yellow, extended scissor mechanism showing X-pattern, large flat work platform on top with guardrails, four wheels, compact base, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "generator",
+      "name": "발전기",
+      "glb": "assets/glb/generator.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D portable diesel generator, dark grey and yellow, boxy rectangular body with ventilation slats, exhaust pipe on top, wheels at base, control panel, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "air_compressor",
+      "name": "에어컴프레서",
+      "glb": "assets/glb/air_compressor.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D portable air compressor, bright blue and grey, large round pressure tank, small motor on side, rubber air hose coiled, wheels for transport, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "welding_machine",
+      "name": "용접기",
+      "glb": "assets/glb/welding_machine.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D arc welding machine, bright red and grey, boxy rectangular unit, welding cable and electrode holder on front, power switch, small wheels, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "concrete_vibrator",
+      "name": "콘크리트 진동기",
+      "glb": "assets/glb/concrete_vibrator.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D concrete vibrator set, bright orange motor unit, long flexible hose with cylindrical vibrating head at end, portable with handle, cartoon game asset, construction tool, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "rebar_bender",
+      "name": "철근 절곡기",
+      "glb": "assets/glb/rebar_bender.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D rebar bending machine, dark grey and orange, flat worktable with bending pin and disc on top, electric motor at base, simple sturdy construction, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "survey_tripod",
+      "name": "측량기 (토털스테이션 + 삼각대)",
+      "glb": "assets/glb/survey_tripod.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D surveying total station on tripod, bright yellow instrument head with telescope, three wooden legs forming tripod, cute and rounded, cartoon game asset, construction surveying equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "safety_cone",
+      "name": "안전콘 (라바콘)",
+      "glb": "assets/glb/safety_cone.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D traffic safety cone, bright orange with white reflective stripe, chubby rounded cone shape, thick base, oversized proportions, cartoon game asset, construction safety prop, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "barrier_fence",
+      "name": "안전 가설 울타리",
+      "glb": "assets/glb/barrier_fence.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D construction safety barrier fence panel, bright orange and white stripes, plastic interlocking panel with feet, reflective strips, chunky rounded design, cartoon game asset, construction safety prop, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "fire_extinguisher",
+      "name": "소화기",
+      "glb": "assets/glb/fire_extinguisher.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D fire extinguisher, bright red cylinder body, black hose and nozzle, pressure gauge, handle and trigger on top, oversized cute proportions, cartoon game asset, safety equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "safety_net",
+      "name": "낙하물 방지망 (방호망)",
+      "glb": "assets/glb/safety_net.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D safety net roll, bright green net material rolled into cylinder, orange frame brackets on sides, tied with rope, cartoon game asset, construction safety prop, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "first_aid_kit",
+      "name": "구급함",
+      "glb": "assets/glb/first_aid_kit.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D first aid kit box, bright white with large red cross symbol, boxy rectangular case with latch and handle, rounded corners, cartoon game asset, construction safety equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "hardhat",
+      "name": "안전모",
+      "glb": "assets/glb/hardhat.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D construction hard hat helmet, bright yellow, rounded dome shape with brim, oversized cute proportions, simple plastic look, cartoon game asset, construction safety equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "safety_harness",
+      "name": "안전대 (안전벨트)",
+      "glb": "assets/glb/safety_harness.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D full body safety harness, bright orange straps forming Y and D-ring pattern, metal buckle clips, chest D-ring, simple strap design displayed on stand, cartoon game asset, construction safety equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "scaffold_kit",
+      "name": "비계 섹션",
+      "glb": "assets/glb/scaffold_kit.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D scaffolding section, bright blue metal tubes connected with couplers, wooden planks as platform, cross bracing, modular construction, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "rebar_bundle",
+      "name": "철근 묶음",
+      "glb": "assets/glb/rebar_bundle.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D bundle of steel rebar bars, dark grey metallic, multiple cylindrical rods bundled together with wire ties, stacked neatly, chunky proportions, cartoon game asset, construction material, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "formwork_panel",
+      "name": "거푸집 패널",
+      "glb": "assets/glb/formwork_panel.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D concrete formwork panel, brown plywood face with orange steel frame around edges, rectangular panel with bolt holes, stacked pair of panels, cartoon game asset, construction material, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "concrete_block",
+      "name": "콘크리트 블록 (시멘트 블록)",
+      "glb": "assets/glb/concrete_block.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D concrete block stack, grey cement blocks with two hollow cores, three blocks stacked, slightly rounded edges, chunky cute proportions, cartoon game asset, construction material, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "steel_pipe_bundle",
+      "name": "강관 묶음 (SCH 파이프)",
+      "glb": "assets/glb/steel_pipe_bundle.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D bundle of steel pipes, shiny metallic silver, several hollow cylindrical pipes bundled together and tied, ends visible showing hollow cross-section, cartoon game asset, construction material, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "toolbox",
+      "name": "공구함",
+      "glb": "assets/glb/toolbox.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D metal toolbox, bright red with grey handle on top, latch clasp in front, lid slightly open showing tools inside like wrench and hammer, oversized cute proportions, cartoon game asset, construction equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "shovel",
+      "name": "삽",
+      "glb": "assets/glb/shovel.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D construction shovel, brown wooden handle, shiny steel spade blade at bottom, oversized cute proportions, standing upright, cartoon game asset, construction hand tool, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "site_office",
+      "name": "현장 사무소 (컨테이너 사무소)",
+      "glb": "assets/glb/site_office.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D construction site office container, bright white and blue, rectangular modular container building with door and windows, steps at entrance, air conditioner unit on side, cartoon game asset, construction site prop, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "signboard",
+      "name": "안전 표지판",
+      "glb": "assets/glb/signboard.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D construction safety signboard, bright yellow triangular warning sign on pole, black exclamation mark symbol, chunky metal post, oversized cute proportions, cartoon game asset, construction safety prop, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark, text label",
+      "credits": 30
+    },
+    {
+      "id": "waterpump",
+      "name": "양수기 (수중펌프)",
+      "glb": "assets/glb/waterpump.glb",
+      "status": "pending",
+      "prompt": "chibi cute low-poly 3D submersible water pump unit, bright orange and grey, cylindrical pump body with discharge hose attached, power cable coming out, chunky cute design, cartoon game asset, construction dewatering equipment, simple clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 30
+    },
+    {
+      "id": "worker_female",
+      "name": "NPC 여성 작업자",
+      "glb": "assets/glb/worker_female.glb",
+      "status": "pending",
+      "preview_only": true,
+      "prompt": "chibi cute low-poly 3D female construction worker, yellow hard hat, orange safety vest over work clothes, big round head, short body, simple smiling face, T-pose standing, cartoon game character, clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark, male, masculine",
+      "credits": 20
+    },
+    {
+      "id": "inspector",
+      "name": "NPC 감리원 (안전감독관)",
+      "glb": "assets/glb/inspector.glb",
+      "status": "pending",
+      "preview_only": true,
+      "prompt": "chibi cute low-poly 3D construction site safety inspector, white hard hat, bright green safety vest, clipboard in hand, glasses, big round head, short body, authoritative pose, T-pose, cartoon game character, clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
+      "credits": 20
+    },
+    {
+      "id": "worker_male",
+      "name": "NPC 남성 작업자 (베이스)",
+      "glb": "assets/glb/worker.glb",
+      "status": "done",
+      "prompt": "chibi cute low-poly 3D male construction worker, yellow hard hat, orange safety vest, big round head, short body, simple face, T-pose, cartoon game character, clean texture, white background",
+      "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark, female",
+      "credits": 30
+    }
+  ],
+  "_total_credits_estimate": 1070,
+  "_credits_breakdown": "done=120, pending_30c=27×30=810, pending_20c=2×20=40, reserve=1600-120-850=630",
+  "_note": "preview(20) + refine(10) = 30 credits/model. preview_only=true uses only 20 credits (characters). Total 1600 credits."
+}
