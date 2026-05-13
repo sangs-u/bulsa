@@ -49,7 +49,7 @@
       "id": "hardhat",
       "name": "안전모",
       "glb": "assets/glb/hardhat.glb",
-      "status": "pending",
+      "status": "done",
       "prompt": "chibi cute low-poly 3D construction hard hat helmet, bright yellow, rounded dome shape with brim, oversized cute proportions, simple plastic look, cartoon game asset, construction safety equipment, simple clean texture, white background",
       "negative_prompt": "realistic, photorealistic, high poly, complex, dark, gritty, text, watermark",
       "credits": 30,
