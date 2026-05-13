@@ -207,6 +207,26 @@ function updatePlayer(delta) {
       // ─────────────────────────────────────────────────────
 
       PLAYER.worldPos.add(move);
+
+      // NPC soft push-back — NPC가 GAME.colliders에 없으므로 직접 반경 체크
+      if (GAME.npcs && GAME.npcs.length) {
+        const NPC_R   = 0.55;
+        const PLR_R   = 0.22;
+        const minDist = NPC_R + PLR_R;
+        for (const npc of GAME.npcs) {
+          if (!npc.group) continue;
+          if (npc.state === NPC_STATES.ACCIDENT) continue;
+          const dx = PLAYER.worldPos.x - npc.group.position.x;
+          const dz = PLAYER.worldPos.z - npc.group.position.z;
+          const d2 = dx * dx + dz * dz;
+          if (d2 >= minDist * minDist || d2 < 1e-6) continue;
+          const d    = Math.sqrt(d2);
+          const push = minDist - d;
+          PLAYER.worldPos.x += (dx / d) * push;
+          PLAYER.worldPos.z += (dz / d) * push;
+        }
+      }
+
       PLAYER.worldPos.x = Math.max(-38, Math.min(38, PLAYER.worldPos.x));
       PLAYER.worldPos.z = Math.max(-38, Math.min(38, PLAYER.worldPos.z));
       PLAYER._stepTimer = (PLAYER._stepTimer || 0) + delta;
@@ -229,15 +249,17 @@ function updatePlayer(delta) {
 
   // ── Camera positioning by mode ─────────────────────────
   if (PLAYER.camMode === 'fps') {
-    // 카메라 보브 — 걸을 때 수직/좌우 미세한 진동 (현실감)
-    const bobAmp = Math.min(1, PLAYER._curSpeed / PLAYER.sprint) * 0.045;
-    const bobY = PLAYER.onGround ? Math.sin(PLAYER._bobT) * bobAmp : 0;
-    const bobX = PLAYER.onGround ? Math.sin(PLAYER._bobT * 0.5) * bobAmp * 0.4 : 0;
+    // 카메라 보브 — 걸을 때 수직/좌우 진동 (강화: 진폭 2배, abs(sin), roll)
+    const bobAmp  = Math.min(1, PLAYER._curSpeed / PLAYER.sprint) * 0.09;
+    const bobY    = PLAYER.onGround ? Math.abs(Math.sin(PLAYER._bobT)) * bobAmp : 0;
+    const bobX    = PLAYER.onGround ? Math.sin(PLAYER._bobT * 0.5) * bobAmp * 0.7 : 0;
+    const bobRoll = PLAYER.onGround ? Math.sin(PLAYER._bobT * 0.5) * bobAmp * 0.6 : 0;
     GAME.camera.position.set(
       PLAYER.worldPos.x + bobX,
       PLAYER.worldPos.y + PLAYER.eyeHeight + bobY,
       PLAYER.worldPos.z
     );
+    GAME.camera.rotation.z = bobRoll;
 
   } else if (PLAYER.camMode === 'tps') {
     const yaw = PLAYER.euler.y;

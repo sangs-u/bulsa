@@ -36,7 +36,10 @@ function startCompletionCutscene(onDone) {
 
   const caption = document.getElementById('cutscene-caption');
   if (caption) {
-    const msgs = { ko: '✓  인양 작업 완료', en: '✓  Lifting operation complete', vi: '✓  Hoàn thành nâng tải', ar: '✓  اكتملت عملية الرفع' };
+    const _isU = !!(window.GAME && GAME.unifiedMode);
+    const msgs = _isU
+      ? { ko: '✓  5페이즈 종합 튜토리얼 완료', en: '✓  5-Phase Tutorial Complete', vi: '✓  Hoàn thành hướng dẫn 5 phase', ar: '✓  اكتمل التدريب الشامل' }
+      : { ko: '✓  인양 작업 완료', en: '✓  Lifting operation complete', vi: '✓  Hoàn thành nâng tải', ar: '✓  اكتملت عملية الرفع' };
     setTimeout(() => {
       caption.textContent = msgs[currentLang] || msgs.ko;
       caption.classList.add('show');
@@ -92,6 +95,9 @@ function showCertificate() {
   const name = GAME.state.playerName || defaultNames[currentLang] || '수강자';
   const si   = GAME.state.safetyIndex;
   const violated = GAME.state.violations.size;
+  const isUnified = !!(GAME.unifiedMode);
+  const finesStr  = isUnified ? (GAME.state.finesKrw || 0).toLocaleString('ko-KR') : null;
+  const floorsStr = isUnified ? `${GAME.state.completedFloors || 0}/${GAME.state.targetFloors || 5}` : null;
   const locales  = { ko: 'ko-KR', en: 'en-US', vi: 'vi-VN', ar: 'ar-SA' };
   const date = new Date().toLocaleDateString(locales[currentLang] || 'ko-KR', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -108,9 +114,9 @@ function showCertificate() {
       certTitle:  '산업안전 교육 수료증',
       statement:  `성명 <strong class="cert-name">${name}</strong> 은(는) 아래 산업안전 시뮬레이션 교육 과정을 성실히 이수하였음을 증명합니다.`,
       thScenario: '시나리오', thKosha: 'KOSHA 기준', thSI: '명', thGrade: '등급',
-      scenario:   '줄걸이·인양 작업 (S-01)',
-      thSI2: '명', thViol: '위반 기록',
-      law:  '관련 법령: 산업안전보건기준에 관한 규칙 제163조, 제164조, 제147조',
+      scenario:   isUnified ? '5페이즈 종합 튜토리얼 (S-00)' : '줄걸이·인양 작업 (S-01)',
+      thSI2: '명', thViol: '위반 기록', thFines: '누적 과태료', thFloors: '완료 층수',
+      law: isUnified ? '관련 법령: 산업안전보건법 §38·163·164·332·336 (굴착·기초·양중·외장·마감)' : '관련 법령: 산업안전보건기준에 관한 규칙 제163조, 제164조, 제147조',
       dateLabel: '이수 일시: ',
       seal: 'BULSA\n불사',
       footer: '이 수료증은 BULSA 불사 안전교육 시뮬레이션 완료를 증명합니다.',
@@ -119,9 +125,9 @@ function showCertificate() {
       certTitle:  'Industrial Safety Training Certificate',
       statement:  `This is to certify that <strong class="cert-name">${name}</strong> has successfully completed the following industrial safety simulation training.`,
       thScenario: 'Scenario', thKosha: 'KOSHA Standard', thSI: 'Lives', thGrade: 'Grade',
-      scenario:   'Rigging & Lifting (S-01)',
-      thSI2: 'Lives', thViol: 'Violations',
-      law:  'Applicable Regulations: OSH Standards §163, §164, §147',
+      scenario:   isUnified ? '5-Phase Comprehensive Tutorial (S-00)' : 'Rigging & Lifting (S-01)',
+      thSI2: 'Lives', thViol: 'Violations', thFines: 'Total Fines', thFloors: 'Floors Done',
+      law: isUnified ? 'Regulations: OSH §38, §163, §164, §332, §336 (Excavation·Foundation·Lift·Envelope·MEP)' : 'Applicable Regulations: OSH Standards §163, §164, §147',
       dateLabel: 'Completion Date: ',
       seal: 'BULSA\nSAFETY',
       footer: 'This certificate confirms completion of the BULSA industrial safety simulation.',
@@ -130,9 +136,9 @@ function showCertificate() {
       certTitle:  'Chứng chỉ đào tạo an toàn lao động',
       statement:  `Chứng nhận <strong class="cert-name">${name}</strong> đã hoàn thành chương trình mô phỏng đào tạo an toàn lao động dưới đây.`,
       thScenario: 'Kịch bản', thKosha: 'Tiêu chuẩn KOSHA', thSI: 'Mạng', thGrade: 'Xếp loại',
-      scenario:   'Buộc móc & Nâng tải (S-01)',
-      thSI2: 'Mạng', thViol: 'Vi phạm',
-      law:  'Quy định áp dụng: Điều 163, 164, 147 – Tiêu chuẩn ATVSLĐ',
+      scenario:   isUnified ? 'Hướng dẫn tổng hợp 5 phase (S-00)' : 'Buộc móc & Nâng tải (S-01)',
+      thSI2: 'Mạng', thViol: 'Vi phạm', thFines: 'Phạt tích lũy', thFloors: 'Tầng hoàn thành',
+      law: isUnified ? 'Quy định: ATVSLĐ §38·163·164·332·336 (Đào·Móng·Cẩu·Vỏ·M&E)' : 'Quy định áp dụng: Điều 163, 164, 147 – Tiêu chuẩn ATVSLĐ',
       dateLabel: 'Ngày hoàn thành: ',
       seal: 'BULSA\nSAFETY',
       footer: 'Chứng chỉ này xác nhận đã hoàn thành mô phỏng an toàn lao động BULSA.',
@@ -141,9 +147,9 @@ function showCertificate() {
       certTitle:  'شهادة تدريب السلامة الصناعية',
       statement:  `يُشهد بأن <strong class="cert-name">${name}</strong> قد أتمّ بنجاح برنامج المحاكاة التدريبي للسلامة الصناعية الموضّح أدناه.`,
       thScenario: 'السيناريو', thKosha: 'معيار KOSHA', thSI: 'أرواح', thGrade: 'الدرجة',
-      scenario:   'ربط الأحمال والرفع (S-01)',
-      thSI2: 'أرواح', thViol: 'المخالفات',
-      law:  'اللوائح المطبّقة: المادة 163 و164 و147 – معايير السلامة',
+      scenario:   isUnified ? 'البرنامج التدريبي الشامل (S-00)' : 'ربط الأحمال والرفع (S-01)',
+      thSI2: 'أرواح', thViol: 'المخالفات', thFines: 'الغرامات الإجمالية', thFloors: 'الطوابق المكتملة',
+      law: isUnified ? 'اللوائح: §38·163·164·332·336 (حفر·أساسات·رفع·واجهة·تركيب)' : 'اللوائح المطبّقة: المادة 163 و164 و147 – معايير السلامة',
       dateLabel: 'تاريخ الإتمام: ',
       seal: 'BULSA\nSAFETY',
       footer: 'تؤكد هذه الشهادة إتمام محاكاة السلامة الصناعية BULSA.',
@@ -188,6 +194,7 @@ function showCertificate() {
           <th>${c.thViol}</th>
           <td>${violated}</td>
         </tr>
+        ${isUnified ? `<tr><th>${c.thFines}</th><td>${finesStr}원</td><th>${c.thFloors}</th><td>${floorsStr}</td></tr>` : ''}
       </table>
     </div>
 

@@ -243,11 +243,20 @@ class NPC {
   }
 
   _onStateAnim(state) {
-    const animName = STATE_ANIM[state] || 'Idle';
-    this._playAnim(animName);
-    if (this._char) {
-      this._char.mixer.timeScale = STATE_SPEED[state] || 1.0;
+    let animName = STATE_ANIM[state] || 'Idle';
+    if (state === NPC_STATES.WORKING && this._char) {
+      const tradeMotion = {
+        signal: 'signal', formwork: 'hammer', rebar: 'hammer',
+        lifting: 'lift', scaffold: 'climb', electric: 'weld',
+        plumbing: 'weld', mep: 'weld', survey: 'inspect', excavator: 'inspect',
+      };
+      const mapped = tradeMotion[this.trade];
+      if (mapped && typeof setMotion === 'function') {
+        try { setMotion(this._char, mapped, 0.3); } catch (e) {}
+      }
     }
+    this._playAnim(animName);
+    if (this._char) this._char.mixer.timeScale = STATE_SPEED[state] || 1.0;
   }
 
   _updateColor() {
@@ -288,6 +297,7 @@ class NPC {
     } else {
       this._animateGeometry(elapsed);
     }
+    this._updateAck(delta);
     this._syncTriggerMesh();
   }
 
@@ -463,9 +473,53 @@ class NPC {
   receiveInstruction(lang) {
     this.hasInstruction = true;
     this.instructionLangMismatch = (lang !== this.language && lang !== 'en');
-    if (this.instructionLangMismatch) return false;
+    if (this.instructionLangMismatch) {
+      this._startAck('shake');
+      return false;
+    }
+    this._startAck('nod');
     this.setState(NPC_STATES.WORKING);
     return true;
+  }
+
+  _startAck(kind) {
+    this._ackT    = 0;
+    this._ackDur  = 0.7;
+    this._ackKind = kind;
+    if (this.group && window.PLAYER && PLAYER.worldPos) {
+      const dx = PLAYER.worldPos.x - this.group.position.x;
+      const dz = PLAYER.worldPos.z - this.group.position.z;
+      this._ackTargetYaw = Math.atan2(dx, dz) + (this._char ? Math.PI : 0);
+    }
+  }
+
+  _updateAck(delta) {
+    if (this._ackT == null || this._ackT >= this._ackDur) return;
+    this._ackT += delta;
+    const k = this._ackT / this._ackDur;
+    const head = this._bodyParts && this._bodyParts.head;
+    if (head) {
+      head.rotation.x = this._ackKind === 'nod'
+        ? Math.sin(k * Math.PI * 3) * 0.35
+        : 0;
+      head.rotation.y = this._ackKind === 'shake'
+        ? Math.sin(k * Math.PI * 4) * 0.45
+        : 0;
+    }
+    if (this._char && this.group) {
+      const headBone = this.group.getObjectByName('mixamorigHead')
+                    || this.group.getObjectByName('Head');
+      if (headBone) {
+        headBone.rotation.x = this._ackKind === 'nod'  ? Math.sin(k * Math.PI * 3) * 0.35 : 0;
+        headBone.rotation.y = this._ackKind === 'shake' ? Math.sin(k * Math.PI * 4) * 0.45 : 0;
+      }
+    }
+    if (this._ackTargetYaw != null && this.group) {
+      let d = this._ackTargetYaw - this.group.rotation.y;
+      while (d >  Math.PI) d -= Math.PI * 2;
+      while (d < -Math.PI) d += Math.PI * 2;
+      this.group.rotation.y += d * Math.min(1, delta * 6);
+    }
   }
 
   evacuate() {

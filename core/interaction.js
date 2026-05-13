@@ -330,6 +330,7 @@ function _dispatchHoldStart() {
   if (typeof RAILING !== 'undefined' && RAILING.active) { tryPlaceRailing(); return true; }
   if (typeof SIGNAL !== 'undefined' && SIGNAL.active)   { tryPlaceSignal();  return true; }
   // 미니게임 미활성 — 일반 인터랙트
+  if (typeof cameraShake === 'function') try { cameraShake(0.18, 0.12); } catch (e) {}
   _handleE();
   return false;
 }
