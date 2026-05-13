@@ -36,6 +36,8 @@ const PLAYER = {
 
 // Fixed camera presets — populated in initPlayer after Three.js is ready
 let FIXED_CAMS;
+// 프레임마다 재사용 — GC 방지
+const _BOB_ROLL_Q = new THREE.Quaternion();
 
 function initPlayer() {
   PLAYER.euler   = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -259,7 +261,13 @@ function updatePlayer(delta) {
       PLAYER.worldPos.y + PLAYER.eyeHeight + bobY,
       PLAYER.worldPos.z
     );
-    GAME.camera.rotation.z = bobRoll;
+    // PLAYER.euler(YXZ) → quaternion 재적용 후 roll을 쿼터니언으로 합성
+    // (camera.rotation.z 직접 할당은 XYZ 짐벌락 → 수직 클램프 파괴)
+    GAME.camera.quaternion.setFromEuler(PLAYER.euler);
+    if (bobRoll !== 0) {
+      const s = Math.sin(bobRoll * 0.5), c = Math.cos(bobRoll * 0.5);
+      GAME.camera.quaternion.multiply(_BOB_ROLL_Q.set(0, 0, s, c));
+    }
 
   } else if (PLAYER.camMode === 'tps') {
     const yaw = PLAYER.euler.y;
