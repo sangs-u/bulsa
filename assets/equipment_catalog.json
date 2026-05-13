@@ -88,7 +88,7 @@
       "id": "safety_glasses_item",
       "name": "보안경 (착용 아이템)",
       "glb": "assets/glb/safety_glasses_item.glb",
-      "status": "pending",
+      "status": "done",
       "batch": 1,
       "style": "chibi",
       "category": "wearable_eyes",
