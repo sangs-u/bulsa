@@ -2,218 +2,537 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>불사(BULSA) — 건설 안전 시뮬레이터</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.webmanifest">
+  <style>
+    :root {
+      --bg-p:  #0D1B2A;
+      --bg-s:  #162840;
+      --bg-t:  #2A4A6B;
+      --acc:   #8DC63F;
+      --dng:   #E85A3A;
+      --txt:   #C8D8E8;
+      --dim:   #3A6B9A;
+      --bdr:   #2A4A6B;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: 'Nunito', 'Noto Sans KR', sans-serif;
+      background: var(--bg-p);
+      color: var(--txt);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    /* ─── 화면 공통 ───────────────────────────────────────── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      transform: translateY(14px);
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+
+    /* ─── ① 로딩 ─────────────────────────────────────────── */
+    #s-load { gap: 0; background: var(--bg-p); }
+
+    .load-title {
+      font-size: clamp(4rem, 14vw, 7rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--acc);
+      text-shadow: 0 0 80px rgba(141,198,63,.45);
+    }
+    .load-en {
+      font-size: clamp(0.7rem, 2.5vw, 1rem);
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      color: var(--dim);
+      margin-top: 6px;
+      margin-bottom: 52px;
+      text-transform: uppercase;
+    }
+    .load-track {
+      width: min(260px, 68vw);
+      height: 4px;
+      background: var(--bg-t);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .load-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6aad1a, var(--acc));
+      border-radius: 99px;
+      width: 0;
+      box-shadow: 0 0 14px rgba(141,198,63,.7);
+      animation: barFill 2s cubic-bezier(.3,0,.15,1) forwards;
+    }
+    @keyframes barFill {
+      0%   { width: 0% }
+      55%  { width: 65% }
+      80%  { width: 88% }
+      100% { width: 100% }
+    }
+
+    /* ─── ② 언어 선택 ────────────────────────────────────── */
+    #s-lang { gap: 32px; padding: 24px; }
+
+    .screen-eyebrow {
+      font-size: clamp(.72rem, 2.5vw, .9rem);
+      font-weight: 800;
+      letter-spacing: .22em;
+      color: var(--dim);
+      text-transform: uppercase;
+    }
+
+    .lang-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      width: min(360px, 90vw);
+    }
+    .lang-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      padding: 22px 12px 18px;
+      background: var(--bg-s);
+      border: 1.5px solid var(--bdr);
+      border-radius: 18px;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--txt);
+      transition: all .18s ease;
+    }
+    .lang-btn:hover, .lang-btn:active {
+      background: rgba(141,198,63,.1);
+      border-color: var(--acc);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 28px rgba(0,0,0,.35);
+    }
+    .lang-flag  { font-size: 2.4rem; line-height: 1; }
+    .lang-name  { font-size: .95rem; font-weight: 800; }
+    .lang-sub   { font-size: .7rem; color: var(--dim); }
+
+    /* ─── ③ 캐릭터 생성 ──────────────────────────────────── */
+    #s-char { gap: 0; padding: 16px; }
+
+    .char-panel {
+      background: var(--bg-s);
+      border: 1.5px solid var(--bdr);
+      border-radius: 22px;
+      padding: 22px 24px 26px;
+      width: min(480px, 96vw);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .char-panel-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .back-btn {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--dim);
+      cursor: pointer;
+      transition: color .15s;
+    }
+    .back-btn:hover { color: var(--txt); }
+
+    .section-label {
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      color: var(--dim);
+      text-transform: uppercase;
+    }
+
+    /* 외형 선택 카드 */
+    .look-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .look-opt {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 2px solid var(--bdr);
+      border-radius: 14px;
+      padding: 8px 4px 8px;
+      cursor: pointer;
+      background: rgba(255,255,255,.03);
+      transition: all .2s ease;
+      font-family: inherit;
+    }
+    .look-opt svg {
+      width: 100%;
+      max-width: 74px;
+      height: auto;
+      display: block;
+    }
+    .look-opt .look-tag {
+      font-size: .65rem;
+      font-weight: 800;
+      color: var(--dim);
+      margin-top: 5px;
+      letter-spacing: .06em;
+    }
+    .look-opt:hover {
+      border-color: rgba(141,198,63,.5);
+      background: rgba(141,198,63,.06);
+      transform: translateY(-4px);
+    }
+    .look-opt.sel {
+      border-color: var(--acc);
+      background: rgba(141,198,63,.1);
+      transform: translateY(-6px);
+      box-shadow: 0 10px 28px rgba(141,198,63,.22);
+    }
+    .look-opt.sel .look-tag { color: var(--acc); }
+    .look-opt.sel::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--acc);
+      box-shadow: 0 0 6px rgba(141,198,63,.8);
+    }
+
+    /* 이름 입력 */
+    .name-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .name-input {
+      width: 100%;
+      padding: 13px 16px;
+      background: var(--bg-p);
+      border: 1.5px solid var(--bdr);
+      border-radius: 12px;
+      color: var(--txt);
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .name-input:focus { border-color: var(--acc); }
+    .name-input::placeholder { color: var(--dim); opacity: .6; }
+
+    /* 시작 버튼 */
+    .start-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--acc);
+      border: none;
+      border-radius: 14px;
+      color: #0D1B2A;
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: .06em;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .18s ease;
+      box-shadow: 0 4px 20px rgba(141,198,63,.3);
+    }
+    .start-btn:hover {
+      background: #9ed647;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(141,198,63,.45);
+    }
+    .start-btn:active { transform: translateY(0); }
+
+    /* 반응형 */
+    @media (max-height: 600px) {
+      .char-panel { padding: 14px 18px 18px; gap: 12px; }
+      .load-title { font-size: 3rem; }
+      .load-en    { margin-bottom: 32px; }
+    }
+  </style>
 </head>
-<body class="onboarding">
+<body>
 
-  <!-- ① 언어 선택 화면 -->
-  <div id="screen-lang" class="screen active">
-    <div class="ob-title">불사</div>
-    <div class="ob-subtitle">건설 안전 시뮬레이터</div>
-    <div class="lang-grid">
-      <button class="lang-btn" data-lang="ko">
-        <span class="flag">🇰🇷</span>
-        <span><span class="lang-name">한국어</span><span class="lang-native">Korean</span></span>
-      </button>
-      <button class="lang-btn" data-lang="en">
-        <span class="flag">🇺🇸</span>
-        <span><span class="lang-name">English</span><span class="lang-native">영어</span></span>
-      </button>
-      <button class="lang-btn" data-lang="vi">
-        <span class="flag">🇻🇳</span>
-        <span><span class="lang-name">Tiếng Việt</span><span class="lang-native">베트남어</span></span>
-      </button>
-      <button class="lang-btn" data-lang="ar">
-        <span class="flag">🇸🇦</span>
-        <span><span class="lang-name">العربية</span><span class="lang-native">아랍어</span></span>
-      </button>
-    </div>
+<!-- ① 로딩 화면 ────────────────────────────── -->
+<div id="s-load" class="screen active">
+  <div class="load-title">불사</div>
+  <div class="load-en">不死 · BULSA · Construction Safety Sim</div>
+  <div class="load-track">
+    <div class="load-fill" id="load-fill"></div>
   </div>
+</div>
 
-  <!-- ② 캐릭터 생성 화면 -->
-  <div id="screen-char" class="screen">
-    <div class="ob-card">
-      <button class="back-btn" id="btn-back">← 언어 선택</button>
-      <h2 id="char-title">캐릭터 생성</h2>
-
-      <!-- 외형 선택 -->
-      <div>
-        <span class="name-label" id="look-label">외형 선택</span>
-        <div class="look-grid" id="look-grid">
-
-          <!-- 0: 주황 안전모 -->
-          <button class="look-opt selected" data-look="0" aria-label="외형 A">
-            <svg viewBox="0 0 60 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <ellipse cx="30" cy="16" rx="23" ry="7" fill="#F97316"/>
-              <rect x="10" y="19" width="40" height="4" rx="2" fill="#ea6800"/>
-              <ellipse cx="30" cy="36" rx="17" ry="19" fill="#FBBF80"/>
-              <circle cx="23" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="25" cy="31.5" r="1" fill="#fff"/>
-              <circle cx="37" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="39" cy="31.5" r="1" fill="#fff"/>
-              <path d="M24 43 Q30 47 36 43" stroke="#c97b50" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-              <rect x="17" y="54" width="26" height="22" rx="5" fill="#F97316"/>
-              <rect x="22" y="54" width="16" height="4" rx="2" fill="#fff" opacity=".3"/>
-              <rect x="7"  y="55" width="9"  height="18" rx="4" fill="#FBBF80"/>
-              <rect x="44" y="55" width="9"  height="18" rx="4" fill="#FBBF80"/>
-              <rect x="18" y="75" width="10" height="13" rx="3" fill="#374151"/>
-              <rect x="32" y="75" width="10" height="13" rx="3" fill="#374151"/>
-              <rect x="17" y="85" width="12" height="5"  rx="2" fill="#1e2936"/>
-              <rect x="31" y="85" width="12" height="5"  rx="2" fill="#1e2936"/>
-            </svg>
-          </button>
-
-          <!-- 1: 노란 안전모 -->
-          <button class="look-opt" data-look="1" aria-label="외형 B">
-            <svg viewBox="0 0 60 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <ellipse cx="30" cy="16" rx="23" ry="7" fill="#FCD34D"/>
-              <rect x="10" y="19" width="40" height="4" rx="2" fill="#e0b800"/>
-              <ellipse cx="30" cy="36" rx="17" ry="19" fill="#f5c07a"/>
-              <circle cx="23" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="25" cy="31.5" r="1" fill="#fff"/>
-              <circle cx="37" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="39" cy="31.5" r="1" fill="#fff"/>
-              <path d="M24 43 Q30 47 36 43" stroke="#b8793a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-              <rect x="17" y="54" width="26" height="22" rx="5" fill="#3B82F6"/>
-              <rect x="22" y="54" width="16" height="4" rx="2" fill="#fff" opacity=".3"/>
-              <rect x="7"  y="55" width="9"  height="18" rx="4" fill="#f5c07a"/>
-              <rect x="44" y="55" width="9"  height="18" rx="4" fill="#f5c07a"/>
-              <rect x="18" y="75" width="10" height="13" rx="3" fill="#1e3a5f"/>
-              <rect x="32" y="75" width="10" height="13" rx="3" fill="#1e3a5f"/>
-              <rect x="17" y="85" width="12" height="5"  rx="2" fill="#111c2e"/>
-              <rect x="31" y="85" width="12" height="5"  rx="2" fill="#111c2e"/>
-            </svg>
-          </button>
-
-          <!-- 2: 흰 안전모 -->
-          <button class="look-opt" data-look="2" aria-label="외형 C">
-            <svg viewBox="0 0 60 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <ellipse cx="30" cy="16" rx="23" ry="7" fill="#e8e8e8"/>
-              <rect x="10" y="19" width="40" height="4" rx="2" fill="#c0c0c0"/>
-              <ellipse cx="30" cy="36" rx="17" ry="19" fill="#c8976a"/>
-              <circle cx="23" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="25" cy="31.5" r="1" fill="#fff"/>
-              <circle cx="37" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="39" cy="31.5" r="1" fill="#fff"/>
-              <path d="M24 43 Q30 47 36 43" stroke="#8a5e35" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-              <rect x="17" y="54" width="26" height="22" rx="5" fill="#22C55E"/>
-              <rect x="22" y="54" width="16" height="4" rx="2" fill="#fff" opacity=".3"/>
-              <rect x="7"  y="55" width="9"  height="18" rx="4" fill="#c8976a"/>
-              <rect x="44" y="55" width="9"  height="18" rx="4" fill="#c8976a"/>
-              <rect x="18" y="75" width="10" height="13" rx="3" fill="#14532d"/>
-              <rect x="32" y="75" width="10" height="13" rx="3" fill="#14532d"/>
-              <rect x="17" y="85" width="12" height="5"  rx="2" fill="#0a2e14"/>
-              <rect x="31" y="85" width="12" height="5"  rx="2" fill="#0a2e14"/>
-            </svg>
-          </button>
-
-          <!-- 3: 빨간 안전모 -->
-          <button class="look-opt" data-look="3" aria-label="외형 D">
-            <svg viewBox="0 0 60 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <ellipse cx="30" cy="16" rx="23" ry="7" fill="#EF4444"/>
-              <rect x="10" y="19" width="40" height="4" rx="2" fill="#c02020"/>
-              <ellipse cx="30" cy="36" rx="17" ry="19" fill="#a87850"/>
-              <circle cx="23" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="25" cy="31.5" r="1" fill="#fff"/>
-              <circle cx="37" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="39" cy="31.5" r="1" fill="#fff"/>
-              <path d="M24 43 Q30 47 36 43" stroke="#6e4420" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-              <rect x="17" y="54" width="26" height="22" rx="5" fill="#6B21A8"/>
-              <rect x="22" y="54" width="16" height="4" rx="2" fill="#fff" opacity=".3"/>
-              <rect x="7"  y="55" width="9"  height="18" rx="4" fill="#a87850"/>
-              <rect x="44" y="55" width="9"  height="18" rx="4" fill="#a87850"/>
-              <rect x="18" y="75" width="10" height="13" rx="3" fill="#3b0764"/>
-              <rect x="32" y="75" width="10" height="13" rx="3" fill="#3b0764"/>
-              <rect x="17" y="85" width="12" height="5"  rx="2" fill="#1e0033"/>
-              <rect x="31" y="85" width="12" height="5"  rx="2" fill="#1e0033"/>
-            </svg>
-          </button>
-
-        </div>
-      </div>
-
-      <!-- 이름 입력 -->
-      <div>
-        <label class="name-label" id="name-label" for="name-input">이름</label>
-        <input
-          type="text"
-          id="name-input"
-          class="name-input"
-          maxlength="16"
-          autocomplete="off"
-          spellcheck="false"
-          placeholder="이름을 입력하세요"
-        >
-      </div>
-
-      <button class="start-btn" id="btn-start">현장 투입 →</button>
-    </div>
+<!-- ② 언어 선택 ─────────────────────────────── -->
+<div id="s-lang" class="screen">
+  <div class="screen-eyebrow" id="t-lang-title">언어를 선택하세요</div>
+  <div class="lang-grid">
+    <button class="lang-btn" data-lang="ko">
+      <span class="lang-flag">🇰🇷</span>
+      <span class="lang-name">한국어</span>
+      <span class="lang-sub">Korean</span>
+    </button>
+    <button class="lang-btn" data-lang="en">
+      <span class="lang-flag">🇺🇸</span>
+      <span class="lang-name">English</span>
+      <span class="lang-sub">영어</span>
+    </button>
+    <button class="lang-btn" data-lang="vi">
+      <span class="lang-flag">🇻🇳</span>
+      <span class="lang-name">Tiếng Việt</span>
+      <span class="lang-sub">베트남어</span>
+    </button>
+    <button class="lang-btn" data-lang="ar">
+      <span class="lang-flag">🇸🇦</span>
+      <span class="lang-name">العربية</span>
+      <span class="lang-sub">아랍어</span>
+    </button>
   </div>
+</div>
 
-  <script src="i18n/strings.js"></script>
-  <script>
-    /* ── 상태 ─────────────────────────────────────── */
-    let selectedLang = 'ko';
-    let selectedLook = 0;
+<!-- ③ 캐릭터 생성 ───────────────────────────── -->
+<div id="s-char" class="screen">
+  <div class="char-panel">
 
-    const I18N = {
-      ko: { charTitle:'캐릭터 생성', lookLabel:'외형 선택', namePlaceholder:'이름을 입력하세요', nameLabel:'이름', startBtn:'현장 투입 →', back:'← 언어 선택', subtitle:'건설 안전 시뮬레이터' },
-      en: { charTitle:'Create Character', lookLabel:'Appearance', namePlaceholder:'Enter your name', nameLabel:'Name', startBtn:'Enter Site →', back:'← Language', subtitle:'Construction Safety Sim' },
-      vi: { charTitle:'Tạo nhân vật', lookLabel:'Ngoại hình', namePlaceholder:'Nhập tên của bạn', nameLabel:'Tên', startBtn:'Vào công trường →', back:'← Ngôn ngữ', subtitle:'Mô phỏng an toàn xây dựng' },
-      ar: { charTitle:'إنشاء شخصية', lookLabel:'المظهر', namePlaceholder:'أدخل اسمك', nameLabel:'الاسم', startBtn:'← دخول الموقع', back:'← اللغة', subtitle:'محاكي سلامة البناء' },
-    };
+    <div class="char-panel-top">
+      <button class="back-btn" id="btn-back">← <span id="t-back">언어 선택</span></button>
+      <div class="section-label" id="t-char-title">캐릭터 생성</div>
+    </div>
 
-    /* ── DOM ──────────────────────────────────────── */
-    const screenLang = document.getElementById('screen-lang');
-    const screenChar = document.getElementById('screen-char');
-    const nameInput  = document.getElementById('name-input');
+    <!-- 외형 선택 -->
+    <div class="look-grid" id="look-grid">
 
-    /* ── 언어 선택 ────────────────────────────────── */
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        selectedLang = btn.dataset.lang;
-        applyI18n(selectedLang);
-        transition(screenLang, screenChar);
-        nameInput.focus();
-      });
+      <!-- A: 주황 안전모 · 라임 조끼 -->
+      <button class="look-opt sel" data-look="0">
+        <svg viewBox="0 0 70 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 24 Q35 4 60 24" fill="#F97316"/>
+          <ellipse cx="35" cy="24" rx="26" ry="6.5" fill="#c85c00"/>
+          <ellipse cx="35" cy="42" rx="18" ry="20" fill="#FBBF80"/>
+          <circle cx="27" cy="39" r="3.8" fill="#1a1a1a"/><circle cx="28.8" cy="37.4" r="1.3" fill="#fff"/>
+          <circle cx="43" cy="39" r="3.8" fill="#1a1a1a"/><circle cx="44.8" cy="37.4" r="1.3" fill="#fff"/>
+          <path d="M28 50 Q35 55.5 42 50" stroke="#b07040" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <rect x="19" y="61" width="32" height="23" rx="7" fill="#8DC63F"/>
+          <rect x="32" y="64" width="6" height="2.5" rx="1.2" fill="rgba(255,255,255,.28)"/>
+          <rect x="7"  y="62" width="11" height="20" rx="5" fill="#FBBF80"/>
+          <rect x="52" y="62" width="11" height="20" rx="5" fill="#FBBF80"/>
+          <rect x="21" y="83" width="12" height="13" rx="4" fill="#1e3358"/>
+          <rect x="37" y="83" width="12" height="13" rx="4" fill="#1e3358"/>
+          <rect x="19" y="91" width="15" height="5" rx="2.5" fill="#0d1b2a"/>
+          <rect x="36" y="91" width="15" height="5" rx="2.5" fill="#0d1b2a"/>
+        </svg>
+        <span class="look-tag" id="lt0">A형</span>
+      </button>
+
+      <!-- B: 노란 안전모 · 파란 조끼 -->
+      <button class="look-opt" data-look="1">
+        <svg viewBox="0 0 70 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 24 Q35 4 60 24" fill="#FCD34D"/>
+          <ellipse cx="35" cy="24" rx="26" ry="6.5" fill="#c8a000"/>
+          <ellipse cx="35" cy="42" rx="18" ry="20" fill="#F5C07A"/>
+          <circle cx="27" cy="39" r="3.8" fill="#1a1a1a"/><circle cx="28.8" cy="37.4" r="1.3" fill="#fff"/>
+          <circle cx="43" cy="39" r="3.8" fill="#1a1a1a"/><circle cx="44.8" cy="37.4" r="1.3" fill="#fff"/>
+          <path d="M28 50 Q35 55.5 42 50" stroke="#a07030" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <rect x="19" y="61" width="32" height="23" rx="7" fill="#3B82F6"/>
+          <rect x="32" y="64" width="6" height="2.5" rx="1.2" fill="rgba(255,255,255,.28)"/>
+          <rect x="7"  y="62" width="11" height="20" rx="5" fill="#F5C07A"/>
+          <rect x="52" y="62" width="11" height="20" rx="5" fill="#F5C07A"/>
+          <rect x="21" y="83" width="12" height="13" rx="4" fill="#1e3358"/>
+          <rect x="37" y="83" width="12" height="13" rx="4" fill="#1e3358"/>
+          <rect x="19" y="91" width="15" height="5" rx="2.5" fill="#0d1b2a"/>
+          <rect x="36" y="91" width="15" height="5" rx="2.5" fill="#0d1b2a"/>
+        </svg>
+        <span class="look-tag" id="lt1">B형</span>
+      </button>
+
+      <!-- C: 흰 안전모 · 위험 오렌지 조끼 -->
+      <button class="look-opt" data-look="2">
+        <svg viewBox="0 0 70 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 24 Q35 4 60 24" fill="#E8E8E8"/>
+          <ellipse cx="35" cy="24" rx="26" ry="6.5" fill="#b8b8b8"/>
+          <ellipse cx="35" cy="42" rx="18" ry="20" fill="#C8976A"/>
+          <circle cx="27" cy="39" r="3.8" fill="#1a1a1a"/><circle cx="28.8" cy="37.4" r="1.3" fill="#fff"/>
+          <circle cx="43" cy="39" r="3.8" fill="#1a1a1a"/><circle cx="44.8" cy="37.4" r="1.3" fill="#fff"/>
+          <path d="M28 50 Q35 55.5 42 50" stroke="#8a5535" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <rect x="19" y="61" width="32" height="23" rx="7" fill="#E85A3A"/>
+          <rect x="32" y="64" width="6" height="2.5" rx="1.2" fill="rgba(255,255,255,.28)"/>
+          <rect x="7"  y="62" width="11" height="20" rx="5" fill="#C8976A"/>
+          <rect x="52" y="62" width="11" height="20" rx="5" fill="#C8976A"/>
+          <rect x="21" y="83" width="12" height="13" rx="4" fill="#1e3358"/>
+          <rect x="37" y="83" width="12" height="13" rx="4" fill="#1e3358"/>
+          <rect x="19" y="91" width="15" height="5" rx="2.5" fill="#0d1b2a"/>
+          <rect x="36" y="91" width="15" height="5" rx="2.5" fill="#0d1b2a"/>
+        </svg>
+        <span class="look-tag" id="lt2">C형</span>
+      </button>
+
+      <!-- D: 라임 안전모 · 남색 조끼 -->
+      <button class="look-opt" data-look="3">
+        <svg viewBox="0 0 70 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 24 Q35 4 60 24" fill="#8DC63F"/>
+          <ellipse cx="35" cy="24" rx="26" ry="6.5" fill="#5e9800"/>
+          <ellipse cx="35" cy="42" rx="18" ry="20" fill="#A87850"/>
+          <circle cx="27" cy="39" r="3.8" fill="#1a1a1a"/><circle cx="28.8" cy="37.4" r="1.3" fill="#fff"/>
+          <circle cx="43" cy="39" r="3.8" fill="#1a1a1a"/><circle cx="44.8" cy="37.4" r="1.3" fill="#fff"/>
+          <path d="M28 50 Q35 55.5 42 50" stroke="#6e4420" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <rect x="19" y="61" width="32" height="23" rx="7" fill="#2A4A6B"/>
+          <rect x="32" y="64" width="6" height="2.5" rx="1.2" fill="rgba(255,255,255,.28)"/>
+          <rect x="7"  y="62" width="11" height="20" rx="5" fill="#A87850"/>
+          <rect x="52" y="62" width="11" height="20" rx="5" fill="#A87850"/>
+          <rect x="21" y="83" width="12" height="13" rx="4" fill="#1e3358"/>
+          <rect x="37" y="83" width="12" height="13" rx="4" fill="#1e3358"/>
+          <rect x="19" y="91" width="15" height="5" rx="2.5" fill="#0d1b2a"/>
+          <rect x="36" y="91" width="15" height="5" rx="2.5" fill="#0d1b2a"/>
+        </svg>
+        <span class="look-tag" id="lt3">D형</span>
+      </button>
+
+    </div>
+
+    <!-- 이름 -->
+    <div class="name-wrap">
+      <div class="section-label" id="t-name-label">이름</div>
+      <input
+        type="text"
+        id="name-input"
+        class="name-input"
+        maxlength="16"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="이름을 입력하세요"
+      >
+    </div>
+
+    <button class="start-btn" id="btn-start">현장 투입 →</button>
+
+  </div>
+</div>
+
+<script>
+  /* ── 상태 ─────────────────────────────────────────────── */
+  let lang = localStorage.getItem('bulsa_lang') || 'ko';
+  let look = Number(localStorage.getItem('bulsa_look') || 0);
+
+  /* ── i18n ─────────────────────────────────────────────── */
+  const T = {
+    ko: { langHd:'언어를 선택하세요', charHd:'캐릭터 생성', nameHd:'이름', namePh:'이름을 입력하세요', start:'현장 투입 →', back:'언어 선택', lt:['A형','B형','C형','D형'], def:'신입' },
+    en: { langHd:'Select Language', charHd:'Create Character', nameHd:'Name', namePh:'Enter your name', start:'Enter Site →', back:'Language', lt:['Type A','Type B','Type C','Type D'], def:'Rookie' },
+    vi: { langHd:'Chọn ngôn ngữ', charHd:'Tạo nhân vật', nameHd:'Tên', namePh:'Nhập tên của bạn', start:'Vào công trường →', back:'Ngôn ngữ', lt:['Kiểu A','Kiểu B','Kiểu C','Kiểu D'], def:'Tân binh' },
+    ar: { langHd:'اختر اللغة', charHd:'إنشاء شخصية', nameHd:'الاسم', namePh:'أدخل اسمك', start:'دخول الموقع ←', back:'اللغة', lt:['نوع أ','نوع ب','نوع ج','نوع د'], def:'مبتدئ' },
+  };
+
+  /* ── DOM refs ──────────────────────────────────────────── */
+  const sLoad  = document.getElementById('s-load');
+  const sLang  = document.getElementById('s-lang');
+  const sChar  = document.getElementById('s-char');
+  const nameEl = document.getElementById('name-input');
+
+  /* ── 로딩 완료 → 언어 선택 ───────────────────────────── */
+  const fillEl = document.getElementById('load-fill');
+  let advanced = false;
+  function advanceToLang() {
+    if (advanced) return;
+    advanced = true;
+    go(sLoad, sLang);
+  }
+  fillEl.addEventListener('animationend', () => setTimeout(advanceToLang, 150));
+  setTimeout(advanceToLang, 2600); // fallback
+
+  /* ── 언어 선택 ────────────────────────────────────────── */
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      lang = btn.dataset.lang;
+      localStorage.setItem('bulsa_lang', lang);
+      applyI18n();
+      go(sLang, sChar);
+      setTimeout(() => nameEl.focus(), 500);
     });
+  });
 
-    function applyI18n(lang) {
-      const s = I18N[lang] || I18N.ko;
-      document.documentElement.lang = lang;
-      document.documentElement.dir  = lang === 'ar' ? 'rtl' : 'ltr';
-      document.getElementById('char-title').textContent     = s.charTitle;
-      document.getElementById('look-label').textContent     = s.lookLabel;
-      document.getElementById('name-label').textContent     = s.nameLabel;
-      document.getElementById('btn-back').textContent       = s.back;
-      document.getElementById('btn-start').textContent      = s.startBtn;
-      nameInput.placeholder = s.namePlaceholder;
-    }
-
-    /* ── 외형 선택 ────────────────────────────────── */
-    document.querySelectorAll('.look-opt').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.look-opt').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedLook = Number(btn.dataset.look);
-      });
+  /* ── 외형 선택 ────────────────────────────────────────── */
+  document.querySelectorAll('.look-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.look-opt').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+      look = Number(btn.dataset.look);
     });
+  });
+  // 저장된 외형 복원
+  const savedLookBtn = document.querySelector(`.look-opt[data-look="${look}"]`);
+  if (savedLookBtn) {
+    document.querySelectorAll('.look-opt').forEach(b => b.classList.remove('sel'));
+    savedLookBtn.classList.add('sel');
+  }
 
-    /* ── 뒤로 ─────────────────────────────────────── */
-    document.getElementById('btn-back').addEventListener('click', () => {
-      transition(screenChar, screenLang);
+  /* ── 뒤로 ─────────────────────────────────────────────── */
+  document.getElementById('btn-back').addEventListener('click', () => go(sChar, sLang));
+
+  /* ── 시작 ─────────────────────────────────────────────── */
+  document.getElementById('btn-start').addEventListener('click', startGame);
+  nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') startGame(); });
+
+  function startGame() {
+    const t    = T[lang] || T.ko;
+    const name = nameEl.value.trim() || t.def;
+    localStorage.setItem('bulsa_lang', lang);
+    localStorage.setItem('bulsa_name', name);
+    localStorage.setItem('bulsa_look', look);
+    const p = new URLSearchParams({ lang, name, look });
+    window.location.href = 'game.html?' + p.toString();
+  }
+
+  /* ── i18n 적용 ────────────────────────────────────────── */
+  function applyI18n() {
+    const t = T[lang] || T.ko;
+    document.documentElement.lang = lang;
+    document.documentElement.dir  = lang === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('t-lang-title').textContent = t.langHd;
+    document.getElementById('t-char-title').textContent = t.charHd;
+    document.getElementById('t-name-label').textContent = t.nameHd;
+    document.getElementById('t-back').textContent       = t.back;
+    document.getElementById('btn-start').textContent    = t.start;
+    nameEl.placeholder = t.namePh;
+    t.lt.forEach((label, i) => {
+      const el = document.getElementById('lt' + i);
+      if (el) el.textContent = label;
     });
+  }
 
-    /* ── 시작 ─────────────────────────────────────── */
-    document.getElementById('btn-start').addEventListener('click', startGame);
-    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') startGame(); });
+  /* ── 화면 전환 ────────────────────────────────────────── */
+  function go(from, to) {
+    from.classList.remove('active');
+    setTimeout(() => to.classList.add('active'), 90);
+  }
 
-    function startGame() {
-      const name = nameInput.value.trim() || (selectedLang === 'ko' ? '신입' : 'Rookie');
-      const params = new URLSearchParams({ lang: selectedLang, name, look: selectedLook });
-      window.location.href = 'game.html?' + params.toString();
-    }
-
-    /* ── 화면 전환 ────────────────────────────────── */
-    function transition(from, to) {
-      from.classList.remove('active');
-      setTimeout(() => to.classList.add('active'), 60);
-    }
-  </script>
+  /* ── 초기화 ───────────────────────────────────────────── */
+  applyI18n();
+  const savedName = localStorage.getItem('bulsa_name');
+  if (savedName) nameEl.value = savedName;
+</script>
 </body>
 </html>
