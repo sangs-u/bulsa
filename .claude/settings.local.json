@@ -1,19 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(*)",
-      "PowerShell(*)",
-      "Read(*)",
-      "Write(*)",
-      "Edit(*)",
-      "Glob(*)",
-      "Grep(*)",
-      "WebFetch(*)",
-      "WebSearch(*)",
-      "mcp__claude-in-chrome__*",
-      "mcp__*",
-      "Bash(rm -rf .git/rebase-merge)",
-      "Bash(rm -rf .git/rebase-apply)"
+      "Bash(git -C /workspaces/bulsa status --short)",
+      "Bash(node qa/syntax-check.js)",
+      "Bash(node qa/static-server.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/index.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/game.html)"
     ]
   }
 }

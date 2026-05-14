@@ -1,839 +1,142 @@
 <!DOCTYPE html>
-<html lang="ko" dir="ltr">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BULSA — 산업안전 시뮬레이션</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <meta name="description" content="브라우저에서 실행되는 1인칭 3D 산업안전 교육 시뮬레이션 게임">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>불사(BULSA) — 건설 안전 시뮬레이터</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    body { overflow-y: auto; }
-    .hub-body { min-height: 100vh; background: #071424; display: block; }
-
-    /* ── BLUEPRINT GRID BACKGROUND ────────────────────────── */
-    .fp-bg {
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(44,111,172,0.10) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(44,111,172,0.10) 1px, transparent 1px),
-        linear-gradient(rgba(44,111,172,0.032) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(44,111,172,0.032) 1px, transparent 1px);
-      background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
-      pointer-events: none; z-index: 0;
-    }
-
-    .fp-page {
-      position: relative; z-index: 1;
-      min-height: 100vh;
-      padding: 28px 40px 72px;
-      display: flex; flex-direction: column; align-items: center;
-    }
-
-    /* ── TITLE BLOCK ────────────────────────────────────────── */
-    .fp-title-block {
-      width: 100%; max-width: 1520px;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      border: 2px solid rgba(107,184,232,0.42);
-      border-bottom: 3px solid rgba(107,184,232,0.42);
-      background: rgba(5,14,28,0.99);
-      padding: 20px 36px;
-      gap: 36px;
-      position: relative;
-    }
-
-    .fp-title-block::before {
-      content: '+ + + + + + + + + + + + + + + + + +';
-      position: absolute;
-      bottom: -20px; left: 0; right: 0;
-      font-size: 0.5rem; color: rgba(107,184,232,0.1);
-      letter-spacing: 8px; text-align: center;
-      font-family: monospace; pointer-events: none;
-    }
-
-    .fp-tb-logo-group { display: flex; flex-direction: column; gap: 5px; }
-
-    .fp-tb-logo {
-      font-size: 2.6rem; font-weight: 700; letter-spacing: 0.24em;
-      background: linear-gradient(135deg, #00A896 0%, #2C6FAC 55%, #6BB8E8 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text; line-height: 1; font-family: 'Inter', sans-serif;
-    }
-
-    .fp-tb-subtitle {
-      font-size: 0.58rem; color: rgba(107,184,232,0.4);
-      font-family: monospace; letter-spacing: 0.2em; text-transform: uppercase;
-    }
-
-    .fp-tb-tagline {
-      font-size: 0.7rem; color: rgba(107,184,232,0.45);
-      font-family: monospace; font-style: italic; margin-top: 4px;
-    }
-
-    .fp-tb-center {
-      text-align: center;
-      border-left: 1px solid rgba(107,184,232,0.18);
-      border-right: 1px solid rgba(107,184,232,0.18);
-      padding: 4px 32px;
-    }
-
-    .fp-tb-drawing-title {
-      font-size: 1.05rem; font-weight: 700;
-      color: rgba(107,184,232,0.85);
-      font-family: monospace; letter-spacing: 0.08em;
-    }
-
-    .fp-tb-drawing-sub {
-      font-size: 0.58rem; color: rgba(107,184,232,0.38);
-      font-family: monospace; letter-spacing: 0.16em;
-      text-transform: uppercase; margin-top: 4px;
-    }
-
-    .fp-tb-right-col {
-      display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
-    }
-
-    .hub-lang { display: flex; gap: 5px; }
-
-    .hub-lang button {
-      background: transparent; border: 1px solid rgba(107,184,232,0.22);
-      color: rgba(107,184,232,0.45); padding: 3px 10px;
-      border-radius: 2px; font-size: 0.66rem; cursor: pointer;
-      font-family: monospace; letter-spacing: 0.04em; transition: all 0.18s;
-    }
-
-    .hub-lang button.active,
-    .hub-lang button:hover {
-      border-color: rgba(107,184,232,0.55);
-      color: rgba(107,184,232,0.9);
-      background: rgba(107,184,232,0.08);
-    }
-
-    .fp-tb-meta-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      border: 1px solid rgba(107,184,232,0.2);
-      font-family: monospace; font-size: 0.58rem;
-    }
-
-    .fp-tb-cell {
-      display: flex; flex-direction: column;
-      padding: 4px 10px;
-      border-right: 1px solid rgba(107,184,232,0.2);
-      border-bottom: 1px solid rgba(107,184,232,0.2);
-    }
-
-    .fp-tb-cell:nth-child(even) { border-right: none; }
-    .fp-tb-cell:nth-last-child(-n+2) { border-bottom: none; }
-    .fp-tb-key { font-size: 0.5rem; color: rgba(107,184,232,0.35); letter-spacing: 0.12em; text-transform: uppercase; }
-    .fp-tb-val { color: rgba(107,184,232,0.7); font-weight: 600; margin-top: 1px; }
-
-    /* ── FLOOR PLAN SHELL ───────────────────────────────────── */
-    .fp-shell {
-      width: 100%; max-width: 1520px;
-      border: 2px solid rgba(107,184,232,0.42);
-      border-top: none;
-      background: rgba(5,13,26,0.97);
-      position: relative;
-      padding: 38px 44px 56px;
-    }
-
-    /* Compass rose */
-    .fp-compass {
-      position: absolute; top: 18px; right: 26px;
-      width: 44px; height: 44px;
-      border: 1px solid rgba(107,184,232,0.3);
-      border-radius: 50%;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      font-family: monospace; font-size: 0.62rem;
-      color: rgba(107,184,232,0.55); font-weight: 700;
-    }
-
-    .fp-compass::before {
-      content: '▲'; font-size: 0.7rem;
-      color: rgba(107,184,232,0.7); line-height: 1;
-    }
-
-    /* Scale + legend bar */
-    .fp-bottom-bar {
-      position: absolute;
-      bottom: 14px; left: 44px; right: 44px;
-      display: flex; align-items: center; justify-content: space-between;
-      pointer-events: none;
-    }
-
-    .fp-scale-bar { display: flex; align-items: flex-end; gap: 6px; }
-    .fp-scale-segs { display: flex; }
-
-    .fp-scale-seg {
-      width: 28px; height: 7px;
-      border: 1px solid rgba(107,184,232,0.4); border-right: none;
-    }
-
-    .fp-scale-seg:nth-child(odd)  { background: rgba(107,184,232,0.22); }
-    .fp-scale-seg:nth-child(even) { background: transparent; }
-    .fp-scale-seg:last-child      { border-right: 1px solid rgba(107,184,232,0.4); }
-
-    .fp-scale-label {
-      font-size: 0.5rem; color: rgba(107,184,232,0.35);
-      font-family: monospace; letter-spacing: 0.05em;
-    }
-
-    .fp-legend { display: flex; gap: 18px; }
-
-    .fp-legend-item {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.52rem; color: rgba(107,184,232,0.4);
-      font-family: monospace; letter-spacing: 0.08em;
-    }
-
-    .fp-legend-swatch { width: 18px; height: 11px; border: 1px solid; }
-    .fp-legend-swatch.ready { background: rgba(0,168,150,0.14); border-color: rgba(0,168,150,0.45); }
-    .fp-legend-swatch.soon  { background: rgba(107,184,232,0.04); border-color: rgba(107,184,232,0.22); }
-
-    /* ── DIMENSION ANNOTATION WRAPPER ──────────────────────── */
-    .fp-dim-wrap {
-      position: relative;
-      padding-top: 36px;   /* space for horizontal dim bar */
-      padding-left: 52px;  /* space for vertical dim bar */
-    }
-
-    /* ── TOP DIMENSION BAR ─────────────────────────────────── */
-    .fp-dim-h {
-      position: absolute;
-      top: 0; left: 52px; right: 0;
-      height: 36px;
-      display: grid;
-      grid-template-columns: 2.2fr 1fr 1fr;
-      font-family: 'Courier New', monospace;
-      font-size: 0.52rem;
-      color: rgba(107,184,232,0.38);
-      letter-spacing: 0.08em;
-    }
-
-    .fp-dh-seg {
-      display: flex; align-items: center; justify-content: center;
-      border-bottom: 1px solid rgba(107,184,232,0.25);
-      position: relative; gap: 5px;
-    }
-
-    .fp-dh-seg::before,
-    .fp-dh-seg::after {
-      content: '';
-      position: absolute; bottom: 0;
-      width: 1px; height: 8px;
-      background: rgba(107,184,232,0.38);
-    }
-    .fp-dh-seg::before { left: 0; }
-    .fp-dh-seg::after  { right: 0; }
-
-    .fp-dh-arrow { color: rgba(107,184,232,0.28); font-size: 0.6rem; }
-
-    /* ── LEFT DIMENSION BAR ────────────────────────────────── */
-    .fp-dim-v {
-      position: absolute;
-      top: 36px; left: 0; width: 52px;
-      display: grid;
-      grid-template-rows: 300px 300px 52px 210px;
-      font-family: 'Courier New', monospace;
-      font-size: 0.46rem;
-      color: rgba(107,184,232,0.36);
-      letter-spacing: 0.06em;
-    }
-
-    .fp-dv-seg {
-      display: flex; align-items: center; justify-content: center;
-      border-right: 1px solid rgba(107,184,232,0.25);
-      border-top: 1px solid rgba(107,184,232,0.22);
-      position: relative;
-    }
-
-    .fp-dv-seg:last-child { border-bottom: 1px solid rgba(107,184,232,0.22); }
-
-    .fp-dv-seg span {
-      writing-mode: vertical-rl; text-orientation: mixed;
-      transform: rotate(180deg); white-space: nowrap;
-    }
-
-    .fp-dv-sm { font-size: 0.38rem; }
-
-    /* ── FLOOR PLAN CSS GRID ───────────────────────────────── */
-    .fp-grid {
-      display: grid;
-      grid-template-columns: 2.2fr 1fr 1fr;
-      grid-template-rows: 300px 300px 52px 210px;
-      border: 4px solid #3A84C4;
-      border-bottom: none;
-      background: transparent;
-      position: relative;
-      box-shadow: inset 0 0 0 2px rgba(58,132,196,0.12);
-    }
-
-    /* Outer corner extension marks */
-    .fp-grid::before,
-    .fp-grid::after {
-      content: ''; position: absolute;
-      width: 20px; height: 20px;
-      border-color: rgba(100,180,255,0.5); border-style: solid; z-index: 2;
-    }
-    .fp-grid::before { top: -8px; left: -8px; border-width: 2px 0 0 2px; }
-    .fp-grid::after  { top: -8px; right: -8px; border-width: 2px 2px 0 0; }
-
-    /* ── ROOMS ─────────────────────────────────────────────── */
-    .fp-room {
-      border: 2px solid rgba(107,184,232,0.28);
-      padding: 22px 22px 18px;
-      display: flex; flex-direction: column;
-      gap: 10px; position: relative;
-      background: rgba(6,16,38,0.7);
-      overflow: hidden; transition: background 0.22s;
-    }
-
-    .fp-room.fp-ready {
-      cursor: pointer;
-      background: rgba(0,55,50,0.32);
-      border-color: rgba(0,168,150,0.42);
-    }
-
-    .fp-room.fp-ready:hover { background: rgba(0,80,72,0.42); }
-    .fp-room.fp-soon { opacity: 0.50; }
-
-    /* Hatch pattern */
-    .fp-hatch {
-      position: absolute; inset: 0;
-      background-image: repeating-linear-gradient(
-        -45deg, transparent, transparent 18px,
-        rgba(107,184,232,0.04) 18px, rgba(107,184,232,0.04) 19px
-      );
-      pointer-events: none;
-    }
-
-    .fp-room > * { position: relative; z-index: 1; }
-
-    /* Inner corner tick mark */
-    .fp-room::after {
-      content: ''; position: absolute;
-      bottom: 8px; right: 8px;
-      width: 14px; height: 14px;
-      border-bottom: 1px solid rgba(107,184,232,0.22);
-      border-right: 1px solid rgba(107,184,232,0.22);
-      z-index: 1;
-    }
-
-    /* ── GRID CELL POSITIONS ───────────────────────────────── */
-    .fp-room.s01 { grid-column: 1; grid-row: 1 / 3; }
-    .fp-room.s02 { grid-column: 2; grid-row: 1; }
-    .fp-room.s03 { grid-column: 3; grid-row: 1; }
-    .fp-room.s04 { grid-column: 2; grid-row: 2; }
-    .fp-room.s05 { grid-column: 3; grid-row: 2; }
-    .fp-room.s06 { grid-column: 1 / 4; grid-row: 4; }
-
-    .fp-room.s01 .fp-room-title { font-size: 1.26rem; }
-
-    /* ── ROOM LABEL TAG (on top wall) ─────────────────────── */
-    .fp-room-tag {
-      position: absolute; top: 0; left: 18px;
-      transform: translateY(-50%);
-      background: rgba(5,13,26,0.95);
-      padding: 0 7px;
-      font-size: 0.5rem; color: rgba(107,184,232,0.35);
-      font-family: monospace; letter-spacing: 0.12em;
-      text-transform: uppercase; white-space: nowrap;
-    }
-
-    .fp-room.fp-ready .fp-room-tag { color: rgba(0,168,150,0.55); }
-
-    /* ── WINDOW MARKS ─────────────────────────────────────── */
-    .fp-win {
-      position: absolute; pointer-events: none; z-index: 2;
-    }
-
-    .fp-win-top {
-      top: 0; left: 16%; width: 68%; height: 5px;
-      background: linear-gradient(180deg,
-        rgba(130,210,255,0.6) 0px, rgba(130,210,255,0.6) 1px,
-        transparent 1px, transparent 2.5px,
-        rgba(130,210,255,0.3) 2.5px, rgba(130,210,255,0.3) 3.5px,
-        transparent 3.5px, transparent 4px,
-        rgba(130,210,255,0.15) 4px
-      );
-    }
-
-    .fp-win-right {
-      top: 18%; right: 0; width: 5px; height: 64%;
-      background: linear-gradient(90deg,
-        rgba(130,210,255,0.15) 0px, transparent 1px, transparent 1.5px,
-        rgba(130,210,255,0.3) 1.5px, rgba(130,210,255,0.3) 2.5px,
-        transparent 2.5px, transparent 4px,
-        rgba(130,210,255,0.6) 4px, rgba(130,210,255,0.6) 5px
-      );
-    }
-
-    .fp-win-left {
-      top: 18%; left: 0; width: 5px; height: 64%;
-      background: linear-gradient(90deg,
-        rgba(130,210,255,0.6) 0px, rgba(130,210,255,0.6) 1px,
-        transparent 1px, transparent 2.5px,
-        rgba(130,210,255,0.3) 2.5px, rgba(130,210,255,0.3) 3.5px,
-        transparent 3.5px, transparent 4px,
-        rgba(130,210,255,0.15) 4px
-      );
-    }
-
-    .fp-win-bottom {
-      bottom: 0; left: 22%; width: 56%; height: 5px;
-      background: linear-gradient(0deg,
-        rgba(130,210,255,0.6) 0px, rgba(130,210,255,0.6) 1px,
-        transparent 1px, transparent 2.5px,
-        rgba(130,210,255,0.3) 2.5px, rgba(130,210,255,0.3) 3.5px,
-        transparent 3.5px
-      );
-    }
-
-    /* ── DOOR SWINGS ───────────────────────────────────────── */
-    /*
-      Quarter-circle arcs. border-radius on 56×56 square:
-        border-radius: 0 100% 0 0 → center at BOTTOM-LEFT
-        border-radius: 100% 0 0 0 → center at BOTTOM-RIGHT
-        border-radius: 0 0 100% 0 → center at TOP-LEFT
-        border-radius: 0 0 0 100% → center at TOP-RIGHT
-    */
-    .fp-door {
-      position: absolute;
-      width: 54px; height: 54px;
-      pointer-events: none; z-index: 3;
-    }
-
-    .fp-door::before { content: ''; position: absolute; inset: 0; }
-    .fp-door::after  { content: ''; position: absolute; background: rgba(107,184,232,0.6); }
-
-    /* Hinge: bottom-left */
-    .door-bl { bottom: 0; left: 0; }
-    .door-bl::before { border-top: 1.5px solid rgba(107,184,232,0.5); border-right: 1.5px solid rgba(107,184,232,0.5); border-radius: 0 100% 0 0; }
-    .door-bl::after  { left: 0; top: 0; width: 1.5px; height: 100%; }
-
-    /* Hinge: bottom-right */
-    .door-br { bottom: 0; right: 0; }
-    .door-br::before { border-top: 1.5px solid rgba(107,184,232,0.5); border-left: 1.5px solid rgba(107,184,232,0.5); border-radius: 100% 0 0 0; }
-    .door-br::after  { right: 0; top: 0; width: 1.5px; height: 100%; }
-
-    /* Hinge: top-left */
-    .door-tl { top: 0; left: 0; }
-    .door-tl::before { border-bottom: 1.5px solid rgba(107,184,232,0.5); border-right: 1.5px solid rgba(107,184,232,0.5); border-radius: 0 0 100% 0; }
-    .door-tl::after  { left: 0; bottom: 0; top: auto; width: 1.5px; height: 100%; }
-
-    /* Hinge: top-right */
-    .door-tr { top: 0; right: 0; }
-    .door-tr::before { border-bottom: 1.5px solid rgba(107,184,232,0.5); border-left: 1.5px solid rgba(107,184,232,0.5); border-radius: 0 0 0 100%; }
-    .door-tr::after  { right: 0; bottom: 0; top: auto; width: 1.5px; height: 100%; }
-
-    /* ── CORRIDOR ──────────────────────────────────────────── */
-    .fp-corridor {
-      grid-column: 1 / 4; grid-row: 3;
-      border: 2px solid rgba(107,184,232,0.28);
-      background: rgba(8,18,44,0.6);
-      display: flex; align-items: center; justify-content: center;
-      position: relative; overflow: hidden;
-    }
-
-    .fp-corridor::before {
-      content: '';
-      position: absolute; left: 3%; right: 3%; top: 50%;
-      border-top: 1px dashed rgba(107,184,232,0.3);
-    }
-
-    .fp-corridor-label {
-      font-family: 'Courier New', monospace;
-      font-size: 0.5rem; color: rgba(107,184,232,0.3);
-      letter-spacing: 0.38em; text-transform: uppercase;
-      position: relative; z-index: 1;
-      background: rgba(6,14,38,0.6); padding: 2px 14px;
-    }
-
-    /* ── ROOM CONTENT ─────────────────────────────────────── */
-    .fp-room-inner {
-      display: flex; flex-direction: column; gap: 9px; flex: 1;
-    }
-
-    .fp-room-header {
-      display: flex; align-items: flex-start;
-      justify-content: space-between; gap: 8px;
-    }
-
-    .fp-room-num {
-      font-size: 0.62rem; color: rgba(107,184,232,0.38);
-      font-family: monospace; letter-spacing: 0.14em;
-    }
-
-    .fp-room.fp-ready .fp-room-num { color: rgba(0,168,150,0.55); }
-
-    .fp-room-badge {
-      font-size: 0.56rem; font-weight: 700; letter-spacing: 0.1em;
-      padding: 2px 8px; border-radius: 2px; white-space: nowrap;
-    }
-
-    .fp-badge-ready {
-      background: rgba(0,168,150,0.14); color: var(--teal);
-      border: 1px solid rgba(0,168,150,0.32);
-    }
-
-    .fp-badge-soon {
-      background: rgba(107,184,232,0.06); color: rgba(107,184,232,0.38);
-      border: 1px solid rgba(107,184,232,0.14);
-    }
-
-    .fp-room-title {
-      font-size: 1.0rem; font-weight: 700;
-      color: #c8ddf0; line-height: 1.32;
-    }
-
-    .fp-room.fp-soon .fp-room-title { color: rgba(180,200,220,0.42); }
-
-    .fp-room-desc {
-      font-size: 0.76rem; color: rgba(139,163,186,0.65);
-      line-height: 1.55; flex: 1;
-    }
-
-    .fp-room-kosha {
-      font-size: 0.6rem; color: rgba(44,111,172,0.5);
-      font-family: monospace;
-      padding-top: 8px; border-top: 1px solid rgba(107,184,232,0.1);
-    }
-
-    .fp-room-btn {
-      margin-top: 10px; background: var(--teal); color: #fff;
-      border: none; padding: 10px 22px; border-radius: 3px;
-      font-size: 0.84rem; font-weight: 700; cursor: pointer;
-      font-family: var(--font-ko); transition: background 0.18s;
-      letter-spacing: 0.04em; width: 100%; text-transform: uppercase;
-    }
-
-    .fp-room-btn:hover { background: #008F7E; }
-
-    /* Room dimension annotation */
-    .fp-dim-ann {
-      position: absolute; bottom: 10px; right: 12px;
-      font-size: 0.46rem; color: rgba(107,184,232,0.18);
-      font-family: monospace; letter-spacing: 0.05em; z-index: 1;
-    }
-
-    /* ── ARABIC RTL ──────────────────────────────────────── */
-    [dir="rtl"] .fp-title-block { direction: rtl; }
-    [dir="rtl"] .fp-tb-right-col { align-items: flex-start; }
-    [dir="rtl"] .fp-room-tag { left: auto; right: 18px; }
-    [dir="rtl"] .fp-room-header { flex-direction: row-reverse; }
-
-    /* ── RESPONSIVE ──────────────────────────────────────── */
-    @media (max-width: 1100px) {
-      .fp-page { padding: 18px 20px 56px; }
-      .fp-title-block { grid-template-columns: 1fr; gap: 14px; padding: 14px 18px; }
-      .fp-tb-center { border: none; padding: 0; }
-      .fp-tb-right-col { align-items: flex-start; }
-      .fp-shell { padding: 28px 18px 48px; }
-      .fp-dim-wrap { padding-top: 28px; padding-left: 40px; }
-      .fp-dim-h { left: 40px; height: 28px; font-size: 0.46rem; }
-      .fp-dim-v { top: 28px; width: 40px; font-size: 0.4rem; }
-      .fp-grid {
-        grid-template-columns: 2fr 1fr 1fr;
-        grid-template-rows: 260px 260px 48px 190px;
-      }
-      .fp-dim-v { grid-template-rows: 260px 260px 48px 190px; }
-      .fp-compass { display: none; }
-    }
-
-    @media (max-width: 680px) {
-      .fp-dim-wrap { padding-top: 0; padding-left: 0; }
-      .fp-dim-h, .fp-dim-v { display: none; }
-      .fp-grid {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 210px 190px 190px 44px 180px;
-      }
-      .fp-room.s01 { grid-column: 1 / 3; grid-row: 1; }
-      .fp-room.s02 { grid-column: 1; grid-row: 2; }
-      .fp-room.s03 { grid-column: 2; grid-row: 2; }
-      .fp-room.s04 { grid-column: 1; grid-row: 3; }
-      .fp-room.s05 { grid-column: 2; grid-row: 3; }
-      .fp-corridor  { grid-column: 1 / 3; grid-row: 4; }
-      .fp-room.s06 { grid-column: 1 / 3; grid-row: 5; }
-      .fp-tb-meta-grid { display: none; }
-      .fp-bottom-bar { position: static; margin-top: 18px; flex-wrap: wrap; gap: 10px; }
-    }
-  </style>
+  <link rel="manifest" href="manifest.webmanifest">
 </head>
-<body class="hub-body">
+<body class="onboarding">
 
-<div class="fp-bg"></div>
-
-<div class="fp-page">
-
-  <!-- ── TITLE BLOCK ────────────────────────────────── -->
-  <div class="fp-title-block">
-    <div class="fp-tb-logo-group">
-      <div class="fp-tb-logo">BULSA</div>
-      <div class="fp-tb-subtitle">Industrial Safety Training Center</div>
-      <div class="fp-tb-tagline" id="tagline"></div>
-    </div>
-
-    <div class="fp-tb-center">
-      <div class="fp-tb-drawing-title" data-lang-ko="시뮬레이션 훈련구역 배치도" data-lang-en="Simulation Training Zone Layout" data-lang-vi="Sơ đồ khu huấn luyện mô phỏng" data-lang-ar="مخطط منطقة التدريب">시뮬레이션 훈련구역 배치도</div>
-      <div class="fp-tb-drawing-sub">Simulation Training Zone · Floor Plan</div>
-    </div>
-
-    <div class="fp-tb-right-col">
-      <div class="hub-lang">
-        <button onclick="switchLang('ko')" id="lang-ko" class="active">한국어</button>
-        <button onclick="switchLang('en')" id="lang-en">EN</button>
-        <button onclick="switchLang('vi')" id="lang-vi">VI</button>
-        <button onclick="switchLang('ar')" id="lang-ar">AR</button>
-      </div>
-      <div class="fp-tb-meta-grid">
-        <div class="fp-tb-cell"><span class="fp-tb-key">PROJECT</span><span class="fp-tb-val" id="v1-label">—</span></div>
-        <div class="fp-tb-cell"><span class="fp-tb-key">PROGRESS</span><span class="fp-tb-val">1 / 5</span></div>
-        <div class="fp-tb-cell"><span class="fp-tb-key">DWG NO.</span><span class="fp-tb-val">BULSA-FP-001</span></div>
-        <div class="fp-tb-cell"><span class="fp-tb-key">REV</span><span class="fp-tb-val">A · 2026.05</span></div>
-      </div>
+  <!-- ① 언어 선택 화면 -->
+  <div id="screen-lang" class="screen active">
+    <div class="ob-title">불사</div>
+    <div class="ob-subtitle">건설 안전 시뮬레이터</div>
+    <div class="lang-grid">
+      <button class="lang-btn" data-lang="ko">
+        <span class="flag">🇰🇷</span>
+        <span><span class="lang-name">한국어</span><span class="lang-native">Korean</span></span>
+      </button>
+      <button class="lang-btn" data-lang="en">
+        <span class="flag">🇺🇸</span>
+        <span><span class="lang-name">English</span><span class="lang-native">영어</span></span>
+      </button>
+      <button class="lang-btn" data-lang="vi">
+        <span class="flag">🇻🇳</span>
+        <span><span class="lang-name">Tiếng Việt</span><span class="lang-native">베트남어</span></span>
+      </button>
+      <button class="lang-btn" data-lang="ar">
+        <span class="flag">🇸🇦</span>
+        <span><span class="lang-name">العربية</span><span class="lang-native">아랍어</span></span>
+      </button>
     </div>
   </div>
 
-  <!-- ── FLOOR PLAN SHELL ───────────────────────────── -->
-  <div class="fp-shell">
+  <!-- ② 캐릭터 생성 화면 -->
+  <div id="screen-char" class="screen">
+    <div class="ob-card">
+      <button class="back-btn" id="btn-back">← 언어 선택</button>
+      <h2 id="char-title">캐릭터 생성</h2>
 
-    <div class="fp-compass">N</div>
-
-    <div class="fp-dim-wrap">
-      <!-- Top dimension bar (columns) -->
-      <div class="fp-dim-h">
-        <div class="fp-dh-seg"><span class="fp-dh-arrow">←</span>18,000<span class="fp-dh-arrow">→</span></div>
-        <div class="fp-dh-seg"><span class="fp-dh-arrow">←</span>7,500<span class="fp-dh-arrow">→</span></div>
-        <div class="fp-dh-seg"><span class="fp-dh-arrow">←</span>7,500<span class="fp-dh-arrow">→</span></div>
-      </div>
-
-      <!-- Left dimension bar (rows) -->
-      <div class="fp-dim-v">
-        <div class="fp-dv-seg"><span>12,000</span></div>
-        <div class="fp-dv-seg"><span>12,000</span></div>
-        <div class="fp-dv-seg fp-dv-sm"><span>2,400</span></div>
-        <div class="fp-dv-seg"><span>8,500</span></div>
-      </div>
-
-      <!-- 환영 바 (저장된 프로필이 있을 때만 표시) -->
-      <div id="fp-welcome" class="fp-welcome" style="display:none"></div>
-
-      <!-- Main floor plan grid -->
-      <div class="fp-grid" id="fp-grid"></div>
-    </div>
-
-    <!-- Bottom annotation bar -->
-    <div class="fp-bottom-bar">
-      <div class="fp-scale-bar">
-        <div class="fp-scale-segs">
-          <div class="fp-scale-seg"></div>
-          <div class="fp-scale-seg"></div>
-          <div class="fp-scale-seg"></div>
-          <div class="fp-scale-seg"></div>
-          <div class="fp-scale-seg"></div>
+      <!-- 외형 선택 -->
+      <div>
+        <span class="name-label" id="look-label">외형 선택</span>
+        <div class="look-grid" id="look-grid">
+          <button class="look-opt selected" data-look="0">👷</button>
+          <button class="look-opt" data-look="1">👷‍♀️</button>
+          <button class="look-opt" data-look="2">🧑‍🔧</button>
+          <button class="look-opt" data-look="3">👩‍🔧</button>
         </div>
-        <span class="fp-scale-label">0 &nbsp; 10 &nbsp; 20 m &nbsp;·&nbsp; SCALE 1:200</span>
       </div>
-      <div class="fp-legend">
-        <div class="fp-legend-item"><div class="fp-legend-swatch ready"></div>ACTIVE ZONE</div>
-        <div class="fp-legend-item"><div class="fp-legend-swatch soon"></div>SCHEDULED</div>
+
+      <!-- 이름 입력 -->
+      <div>
+        <label class="name-label" id="name-label" for="name-input">이름</label>
+        <input
+          type="text"
+          id="name-input"
+          class="name-input"
+          maxlength="16"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="이름을 입력하세요"
+        >
       </div>
+
+      <button class="start-btn" id="btn-start">현장 투입 →</button>
     </div>
+  </div>
 
-  </div><!-- /fp-shell -->
+  <script src="i18n/strings.js"></script>
+  <script>
+    /* ── 상태 ─────────────────────────────────────── */
+    let selectedLang = 'ko';
+    let selectedLook = 0;
 
-</div><!-- /fp-page -->
+    const I18N = {
+      ko: { charTitle:'캐릭터 생성', lookLabel:'외형 선택', namePlaceholder:'이름을 입력하세요', nameLabel:'이름', startBtn:'현장 투입 →', back:'← 언어 선택', subtitle:'건설 안전 시뮬레이터' },
+      en: { charTitle:'Create Character', lookLabel:'Appearance', namePlaceholder:'Enter your name', nameLabel:'Name', startBtn:'Enter Site →', back:'← Language', subtitle:'Construction Safety Sim' },
+      vi: { charTitle:'Tạo nhân vật', lookLabel:'Ngoại hình', namePlaceholder:'Nhập tên của bạn', nameLabel:'Tên', startBtn:'Vào công trường →', back:'← Ngôn ngữ', subtitle:'Mô phỏng an toàn xây dựng' },
+      ar: { charTitle:'إنشاء شخصية', lookLabel:'المظهر', namePlaceholder:'أدخل اسمك', nameLabel:'الاسم', startBtn:'← دخول الموقع', back:'← اللغة', subtitle:'محاكي سلامة البناء' },
+    };
 
-<script src="i18n/strings.js"></script>
-<script>
-  /*
-    door: which corner the hinge is at (bl/br/tl/tr)
-    win:  which exterior walls have windows
-  */
-  // 시나리오 데이터 — title/desc 는 4언어 객체. renderPlan/makeRoom 이 currentLang 기준 선택
-  const SCENARIOS = [
-    { id:'s01', num:'S-01', room:'ROOM A', dim:'18.0×24.0',
-      title: { ko:'토공사 · 굴착', en:'Earthworks · Excavation', vi:'San nền · Đào', ar:'الحفر · أعمال التربة' },
-      desc:  { ko:'부지 굴착 + 흙막이 가시설 + 매설물 사전조사', en:'Site excavation + shoring + utility survey', vi:'Đào nền + chống vách + khảo sát ngầm', ar:'الحفر + الدعم + مسح المرافق' },
-      kosha:'KOSHA C-39-2011', ready:true, url:'game.html?s=excavation', door:'door-br', win:['top','left'] },
-    { id:'s02', num:'S-02', room:'ROOM B', dim:'7.5×12.0',
-      title: { ko:'기초공사 · 매트 타설', en:'Foundation · Mat Pour', vi:'Móng · Đổ bê tông', ar:'الأساسات · صب الخرسانة' },
-      desc:  { ko:'동바리·거푸집·철근·콘크리트 타설', en:'Shoring · formwork · rebar · pour', vi:'Chống · ván khuôn · thép · đổ', ar:'الدعم · القوالب · الحديد · الصب' },
-      kosha:'KOSHA C-67-2018', ready:true, url:'game.html?s=foundation', door:'door-bl', win:['top'] },
-    { id:'s03', num:'S-03', room:'ROOM C', dim:'7.5×12.0',
-      title: { ko:'골조 양중 · 줄걸이·인양', en:'RC Frame · Rigging & Lifting', vi:'Khung · Cẩu', ar:'الهيكل · الرفع' },
-      desc:  { ko:'5층 RC 보 크레인 인양 (3,000 kg)', en:'5F RC beam crane lift (3,000 kg)', vi:'Cẩu dầm BTCT 5 tầng (3,000 kg)', ar:'رفع عتبة خرسانية 5 طوابق (3,000 كغ)' },
-      kosha:'KOSHA G-133-2020', ready:true, url:'game.html?s=lifting', door:'door-br', win:['top','right'] },
-    { id:'s04', num:'S-04', room:'ROOM D', dim:'7.5×12.0',
-      title: { ko:'외장공사 · 비계·창호', en:'Envelope · Scaffold & Windows', vi:'Vỏ ngoài · Giàn giáo', ar:'الواجهة · السقالة' },
-      desc:  { ko:'시스템 비계 + 외벽 패널 + 안전대 부착설비', en:'System scaffold + cladding + lifeline anchors', vi:'Giàn giáo hệ + tấm + dây neo', ar:'سقالة نظامية + ألواح + مرساة' },
-      kosha:'KOSHA G-110-2020', ready:true, url:'game.html?s=envelope', door:'door-bl', win:[] },
-    { id:'s05', num:'S-05', room:'ROOM E', dim:'7.5×12.0',
-      title: { ko:'설비·마감 · LOTO', en:'MEP & Finishing · LOTO', vi:'M&E · LOTO', ar:'التركيب والتشطيب · LOTO' },
-      desc:  { ko:'전기 LOTO + 배관 + 가스 점검 + 환기', en:'Electrical LOTO + piping + gas check + ventilation', vi:'LOTO điện + ống + kiểm tra gas + thông gió', ar:'كهرباء LOTO + أنابيب + غاز + تهوية' },
-      kosha:'KOSHA G-82-2018', ready:true, url:'game.html?s=mep_finish', door:'door-br', win:['right'] },
-    { id:'s06', num:'S-06', room:'ROOM F', dim:'33.0×8.5',
-      title: { ko:'🆕 자유 모드 — 통합 부지', en:'🆕 Free Mode — Unified Site', vi:'🆕 Tự do — Khu thống nhất', ar:'🆕 الوضع الحر — موقع موحد' },
-      desc:  { ko:'5 시나리오 NPC·작업·간섭이 한 부지에 동시 활성 (v2.0)', en:'All 5 scenarios in one site — open world (v2.0)', vi:'Tất cả 5 kịch bản trong 1 khu — thế giới mở (v2.0)', ar:'كل 5 سيناريوهات في موقع واحد — عالم مفتوح (v2.0)' },
-      kosha:'v2.0 BETA', ready:true, url:'game.html?s=unified', door:'door-tl', win:['bottom','top'] },
-  ];
+    /* ── DOM ──────────────────────────────────────── */
+    const screenLang = document.getElementById('screen-lang');
+    const screenChar = document.getElementById('screen-char');
+    const nameInput  = document.getElementById('name-input');
 
-  // 다국어 객체에서 현재 언어 텍스트 선택 (fallback: en → ko)
-  function _l(field) {
-    if (field == null) return '';
-    if (typeof field === 'string') return field;
-    return field[currentLang] || field.en || field.ko || '';
-  }
-
-  // 저장된 시나리오 통계 로드 (game.html 의 bulsa_stats 형식 그대로)
-  function _readScenarioStats() {
-    try {
-      const raw = localStorage.getItem('bulsa_stats');
-      if (!raw) return {};
-      const obj = JSON.parse(raw);
-      return (obj && typeof obj === 'object') ? obj : {};
-    } catch (e) { return {}; }
-  }
-  // s01..s05 → 시나리오 id 매핑
-  const _SCENARIO_KEYS = {
-    s01: 'excavation', s02: 'foundation', s03: 'lifting',
-    s04: 'envelope',   s05: 'mep_finish', s06: 'unified',
-  };
-  const _HUB_L = {
-    runs:    { ko: '완주',         en: 'runs',       vi: 'hoàn thành', ar: 'الإكمالات' },
-    unset:   { ko: '(이름 미지정)', en: '(unset)',    vi: '(chưa đặt)', ar: '(غير محدد)' },
-    total:   { ko: '완주',         en: 'completions',vi: 'hoàn thành', ar: 'الإكمالات' },
-    ptHour:  { ko: '시간',         en: 'h',          vi: 'giờ',        ar: 'س' },
-    ptMin:   { ko: '분',           en: 'm',          vi: 'phút',       ar: 'د' },
-  };
-  function _hubL(k) {
-    const e = _HUB_L[k];
-    if (!e) return k;
-    return e[currentLang] || e.ko;
-  }
-  function _statsBlockHtml(scenId) {
-    const stats = _readScenarioStats();
-    const st = (stats[scenId] || {});
-    if (!st.bestGrade && !st.completions && !st.deathCount) return '';
-    const parts = [];
-    if (st.bestGrade) {
-      const g = String(st.bestGrade).toLowerCase();
-      parts.push(`<span class="fp-room-stat fp-stat-grade-${g}">★ ${st.bestGrade}</span>`);
-    }
-    if (st.completions) {
-      parts.push(`<span class="fp-room-stat fp-stat-runs">${_hubL('runs')} ${st.completions}</span>`);
-    }
-    if (st.deathCount) {
-      parts.push(`<span class="fp-room-stat fp-stat-deaths">☠ ${st.deathCount}</span>`);
-    }
-    return `<div class="fp-room-stats">${parts.join('')}</div>`;
-  }
-
-  function _renderWelcome() {
-    let el = document.getElementById('fp-welcome');
-    if (!el) return;
-    let profile = null;
-    try {
-      const raw = localStorage.getItem('bulsa_profile');
-      if (raw) profile = JSON.parse(raw);
-    } catch (e) {}
-    if (!profile || (!profile.name && !profile.totalPlaySec)) {
-      el.style.display = 'none';
-      return;
-    }
-    const playSec = Math.max(0, Math.floor(profile.totalPlaySec || 0));
-    const h = Math.floor(playSec / 3600);
-    const m = Math.floor((playSec % 3600) / 60);
-    const ptText = h > 0 ? `${h}${_hubL('ptHour')} ${m}${_hubL('ptMin')}` : `${m}${_hubL('ptMin')}`;
-    const nameText = profile.name ? `<b>${profile.name}</b>` : `<b>${_hubL('unset')}</b>`;
-    const stats = _readScenarioStats();
-    let totalRuns = 0, totalDeaths = 0;
-    Object.keys(_SCENARIO_KEYS).forEach(sid => {
-      const sk = _SCENARIO_KEYS[sid];
-      const st = stats[sk] || {};
-      totalRuns   += (st.completions || 0);
-      totalDeaths += (st.deathCount  || 0);
+    /* ── 언어 선택 ────────────────────────────────── */
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedLang = btn.dataset.lang;
+        applyI18n(selectedLang);
+        transition(screenLang, screenChar);
+        nameInput.focus();
+      });
     });
-    el.style.display = 'flex';
-    el.innerHTML = `
-      <span>👤 ${nameText}</span>
-      <span class="fp-welcome-sep">·</span>
-      <span>⏱ ${ptText}</span>
-      <span class="fp-welcome-sep">·</span>
-      <span>📋 ${_hubL('total')} <b>${totalRuns}</b></span>
-      <span class="fp-welcome-sep">·</span>
-      <span>☠ <b>${totalDeaths}</b></span>
-    `;
-  }
 
-  function makeRoom(s) {
-    const div = document.createElement('div');
-    div.className = `fp-room ${s.id} ${s.ready ? 'fp-ready' : 'fp-soon'}`;
-    if (s.ready) div.onclick = () => window.location.href = s.url;
+    function applyI18n(lang) {
+      const s = I18N[lang] || I18N.ko;
+      document.documentElement.lang = lang;
+      document.documentElement.dir  = lang === 'ar' ? 'rtl' : 'ltr';
+      document.getElementById('char-title').textContent     = s.charTitle;
+      document.getElementById('look-label').textContent     = s.lookLabel;
+      document.getElementById('name-label').textContent     = s.nameLabel;
+      document.getElementById('btn-back').textContent       = s.back;
+      document.getElementById('btn-start').textContent      = s.startBtn;
+      nameInput.placeholder = s.namePlaceholder;
+    }
 
-    const winHtml = (s.win || []).map(w => `<div class="fp-win fp-win-${w}"></div>`).join('');
-    const doorHtml = s.door ? `<div class="fp-door ${s.door}"></div>` : '';
-    const btnHtml = s.ready
-      ? `<button class="fp-room-btn" onclick="event.stopPropagation();window.location.href='${s.url}'">${t('scenarioReady')} →</button>`
-      : '';
-
-    const statsHtml = s.ready ? _statsBlockHtml(_SCENARIO_KEYS[s.id]) : '';
-    div.innerHTML = `
-      ${s.ready ? '' : '<div class="fp-hatch"></div>'}
-      <div class="fp-room-tag">${s.room} · ${s.num}</div>
-      ${winHtml}
-      ${doorHtml}
-      <div class="fp-room-inner">
-        <div class="fp-room-header">
-          <span class="fp-room-num">${s.num}</span>
-          <span class="fp-room-badge ${s.ready ? 'fp-badge-ready' : 'fp-badge-soon'}">
-            ${s.ready ? t('scenarioReady') : t('scenarioSoon')}
-          </span>
-        </div>
-        <div class="fp-room-title">${_l(s.title) || t(s.titleKey)}</div>
-        <div class="fp-room-desc">${_l(s.desc) || t(s.descKey)}</div>
-        <div class="fp-room-kosha">${s.kosha || t(s.koshaKey)}</div>
-        ${statsHtml}
-        ${btnHtml}
-      </div>
-      <span class="fp-dim-ann">${s.dim} m</span>
-    `;
-    return div;
-  }
-
-  function renderPlan() {
-    document.getElementById('tagline').textContent  = t('tagline');
-    document.getElementById('v1-label').textContent = t('v1Progress');
-    _renderWelcome();
-
-    const grid = document.getElementById('fp-grid');
-    grid.innerHTML = '';
-
-    SCENARIOS.forEach(s => grid.appendChild(makeRoom(s)));
-
-    /* Corridor between rows 2 and 4 */
-    const corridor = document.createElement('div');
-    corridor.className = 'fp-corridor';
-    const corridorLabel = { ko: '복도', en: 'Corridor', vi: 'Hành lang', ar: 'الممر' }[currentLang] || '복도';
-    corridor.innerHTML = `<span class="fp-corridor-label">CORRIDOR &nbsp;·&nbsp; ${corridorLabel} &nbsp;·&nbsp; W = 3.0 m</span>`;
-    grid.appendChild(corridor);
-  }
-
-  function switchLang(lang) {
-    setLang(lang);
-    ['ko','en','vi','ar'].forEach(l => {
-      const btn = document.getElementById('lang-' + l);
-      if (btn) btn.classList.toggle('active', l === lang);
+    /* ── 외형 선택 ────────────────────────────────── */
+    document.querySelectorAll('.look-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.look-opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedLook = Number(btn.dataset.look);
+      });
     });
-    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-    document.documentElement.setAttribute('lang', lang);
-    renderPlan();
-  }
 
-  renderPlan();
-</script>
+    /* ── 뒤로 ─────────────────────────────────────── */
+    document.getElementById('btn-back').addEventListener('click', () => {
+      transition(screenChar, screenLang);
+    });
+
+    /* ── 시작 ─────────────────────────────────────── */
+    document.getElementById('btn-start').addEventListener('click', startGame);
+    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') startGame(); });
+
+    function startGame() {
+      const name = nameInput.value.trim() || (selectedLang === 'ko' ? '신입' : 'Rookie');
+      const params = new URLSearchParams({ lang: selectedLang, name, look: selectedLook });
+      window.location.href = 'game.html?' + params.toString();
+    }
+
+    /* ── 화면 전환 ────────────────────────────────── */
+    function transition(from, to) {
+      from.classList.remove('active');
+      setTimeout(() => to.classList.add('active'), 60);
+    }
+  </script>
 </body>
 </html>

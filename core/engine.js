@@ -1,283 +1,311 @@
-// Main engine — scene init + game loop
+// engine.js — BULSA v0 메인 엔진
+// Three.js 씬, 카메라, 렌더러, 게임루프, 기본 건설 현장
 
+/* ─── GAME 전역 상태 ─────────────────────────────────────── */
 const GAME = {
   scene:    null,
   camera:   null,
   renderer: null,
   clock:    null,
-  hazards:  [],
-  interactables: [],
-  liftBeam: null,
-  _cranePanelMesh: null,
-  _pulseHazards:   null,
-  _dangerWorker:   null,
-  _prevCamMode:    null,
-  _prevWorldPos:   null,
-  npcs: [],
+  colliders: [],   // 플레이어 충돌 메시 목록
+  npcs:      [],   // NPC 목록 (Batch 4에서 채워짐)
   state: {
-    phase:          1,
-    safetyIndex:    100,
-    hazardsResolved: new Set(),
-    violations:      new Set(),
-    accidentTriggered: false,
-    gameOver:        false,
-    gameStarted:     false,
-    liftStarted:     false,
-    craneBoarded:    false,
-    playerName:      '',
-    targetFloors:    5,
-    completedFloors: 0,
-    // 작업계획서 (시나리오별 확정 — 사전 수립, 이후 실제 작업의 근거)
-    workPlans:       {},
-    // 누적 과태료 (감독관 적발 시 부과) — localStorage 에서 복원
-    finesKrw:        _loadCumulativeFines(),
-    fineHistory:     _loadFineHistory(),
+    gameStarted: false,
+    gameOver:    false,
+    paused:      false,
+    playerName:  '',
+    safetyIndex: 100,   // 命 게이지 (0~100, 0이면 위험)
+    lifeWater:   0,     // 수위 % (0=안전, 100=만수=사고)
   },
 };
 
-function _loadCumulativeFines() {
-  try { return parseInt(localStorage.getItem('bulsa_finesKrw') || '0', 10); }
-  catch (e) { return 0; }
-}
-function _loadFineHistory() {
-  try { return JSON.parse(localStorage.getItem('bulsa_fineHistory') || '[]'); }
-  catch (e) { return []; }
-}
-function persistFines() {
-  try {
-    localStorage.setItem('bulsa_finesKrw', String(GAME.state.finesKrw || 0));
-    localStorage.setItem('bulsa_fineHistory', JSON.stringify(GAME.state.fineHistory || []));
-  } catch (e) {}
-}
-window.persistFines = persistFines;
+/* ─── INTERACTION 스텁 (Batch 5에서 완성) ───────────────── */
+const INTERACTION = {
+  popupOpen: false,
+};
 
+/* ─── 엔진 초기화 ─────────────────────────────────────────── */
 (function initEngine() {
+
+  /* 씬 */
   GAME.scene = new THREE.Scene();
+  GAME.scene.background = new THREE.Color(0x87CEEB);  // 하늘색
+  GAME.scene.fog = new THREE.Fog(0xB8D4E8, 40, 90);
 
-  GAME.camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 250);
-  // 통합 모드는 부지가 넓어 시작 위치를 뒤로 빼서 4 영역 전체 보이게
-  const _unifiedStart = (new URLSearchParams(location.search).get('s') === 'unified');
-  if (_unifiedStart) {
-    GAME.camera.position.set(0, 1.7, 22);
-    GAME.camera.lookAt(0, 1.7, -10);
-  } else {
-    GAME.camera.position.set(0, 1.7, 12);
-    GAME.camera.lookAt(0, 1.7, -8);
-  }
+  /* 카메라 */
+  GAME.camera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 200);
+  GAME.camera.position.set(0, 1.7, 12);
+  GAME.camera.lookAt(0, 1.7, 0);
 
+  /* 렌더러 */
   const canvas = document.getElementById('gameCanvas');
   GAME.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   GAME.renderer.setSize(innerWidth, innerHeight);
   GAME.renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   GAME.renderer.shadowMap.enabled = true;
   GAME.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  GAME.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  GAME.renderer.toneMappingExposure = 1.1;
 
+  /* 클락 */
   GAME.clock = new THREE.Clock();
 
+  /* 리사이즈 */
   window.addEventListener('resize', () => {
     GAME.camera.aspect = innerWidth / innerHeight;
     GAME.camera.updateProjectionMatrix();
     GAME.renderer.setSize(innerWidth, innerHeight);
   });
 
-  // ── Scenario dispatch ──────────────────────────────────────
-  const _params = new URLSearchParams(location.search);
-  const _scenarioId = _params.get('s') || 'lifting';
-  const _scenarios = {
-    lifting:    { build: 'buildLiftingScene',    register: 'registerLiftingHazards' },
-    excavation: { build: 'buildExcavationScene', register: 'registerExcavationHazards' },
-    foundation: { build: 'buildFoundationScene', register: 'registerFoundationHazards' },
-    envelope:   { build: 'buildEnvelopeScene',   register: 'registerEnvelopeHazards' },
-    mep_finish: { build: 'buildMepFinishScene',  register: 'registerMepFinishHazards' },
-  };
-  // v2.0 unified — 한 부지 통합 모드 (?s=unified). baseline scene 은 lifting 사용,
-  // 모든 시나리오의 task seed 를 합쳐서 활성화. 향후 점진적 hazard 통합 토대.
-  GAME.unifiedMode = (_scenarioId === 'unified');
-  const _activeId  = GAME.unifiedMode ? 'lifting' : (_scenarioId in _scenarios ? _scenarioId : 'lifting');
-  const _active    = _scenarios[_activeId];
-  GAME.scenarioId  = GAME.unifiedMode ? 'unified' : _activeId;
+  /* 조명 */
+  _setupLights();
 
-  // 공정 시퀀스 — showCompletePanel 에서 "다음 공정" 버튼 노출
-  GAME.scenarioOrder = ['excavation', 'foundation', 'lifting', 'envelope', 'mep_finish'];
-  GAME.nextScenarioId = (() => {
-    const idx = GAME.scenarioOrder.indexOf(GAME.scenarioId);
-    return idx >= 0 && idx < GAME.scenarioOrder.length - 1
-      ? GAME.scenarioOrder[idx + 1]
-      : null;
-  })();
+  /* 기본 건설 현장 씬 */
+  _buildScene();
 
-  // v3 — unifiedMode 일 때는 PHASE_CONTROLLER 가 페이즈별 scene build 담당.
-  // 단일 시나리오 모드에서만 이 시점에 baseline scene 빌드.
-  // 텍스처를 씬 빌드 전에 미리 시작 (Three.js Texture 객체 즉시 반환, 이미지는 비동기)
-  if (typeof preloadTextures === 'function') preloadTextures();
+  /* 서브시스템 초기화 */
+  if (typeof initPlayer    === 'function') initPlayer();
+  if (typeof initHUD       === 'function') initHUD();
+  if (typeof initAccident  === 'function') initAccident();
 
-  const _buildFn    = window[_active.build];
-  const _registerFn = window[_active.register];
-  if (!GAME.unifiedMode) {
-    if (typeof _buildFn === 'function') {
-      _buildFn();
-    } else {
-      console.error(`${_active.build} 없음 — scene.js 로딩 순서 확인`);
-    }
-    if (typeof _registerFn === 'function') {
-      _registerFn();
-    } else {
-      console.error(`${_active.register} 없음 — hazards.js 로딩 순서 확인`);
-    }
-  }
-  // v2 4-zone group offset 빌드는 폐기됨 (PHASE_CONTROLLER 가 단일 좌표 페이즈 진행)
-
-  // v3 — task seed 와 PHASE_CONTROLLER 는 tasks.js/phase_controller.js 로드 후 호출 필요.
-  // engine.js 가 먼저 로드되므로 DOMContentLoaded (모든 <script> 파싱 완료 후) 에 defer.
-  function _v3DeferredInit() {
-    if (GAME.activeTasks === undefined) GAME.activeTasks = [];
-    if (typeof enqueueScenarioTasks === 'function' && !GAME.unifiedMode) {
-      try { enqueueScenarioTasks(GAME.scenarioId); } catch (e) { console.warn('[deferred enqueue]', e.message); }
-    }
-    if (GAME.unifiedMode && typeof PHASE_CONTROLLER !== 'undefined') {
-      try { PHASE_CONTROLLER.enable(); } catch (e) { console.warn('[v3 phase_controller]', e.message); }
-      if (typeof unlockAchievement === 'function') unlockAchievement('unified_enter');
-    } else if (GAME.unifiedMode) {
-      console.warn('[v3] PHASE_CONTROLLER 미정의 — phase_controller.js 로딩 확인');
-    }
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', _v3DeferredInit, { once: true });
-  } else {
-    // 이미 로드됨 (rare) → 다음 microtask 에 실행 (현 IIFE 후 다른 <script> 들이 같은 task 안에서 끝나길 보장)
-    Promise.resolve().then(_v3DeferredInit);
-  }
-
-  initPlayer();
-  initInteraction();
-  initHUD();
-  initAccident();
-  if (typeof initUnsafe === 'function') initUnsafe();
-  if (typeof initAvatar === 'function') initAvatar();
-  if (typeof initSkill     === 'function') initSkill();
-  if (typeof initInventory === 'function') initInventory();
-  if (typeof initBlueprintViewer === 'function') initBlueprintViewer();
-  if (typeof initPostFX === 'function') initPostFX();
-  if (typeof initPhysics === 'function') initPhysics();
-  if (typeof spawnDemoHazards === 'function') spawnDemoHazards(GAME.scene, GAME.scenarioId);
-  if (typeof initInspector === 'function') initInspector();
-  if (typeof initPauseMenu === 'function') initPauseMenu();
-  if (typeof initAchievements === 'function') initAchievements();
-  if (typeof initPerf === 'function') initPerf();
-  if (typeof initPickup === 'function') initPickup();
-  if (typeof spawnDemoPickups === 'function') spawnDemoPickups(GAME.scene, GAME.scenarioId);
-  if (typeof initWeatherFX === 'function') initWeatherFX();
-  if (typeof initEvents === 'function') initEvents();
-  if (typeof spawnSceneDecor === 'function') spawnSceneDecor(GAME.scene, GAME.scenarioId);
-  // Mixamo 클립 + 도구 미리 로드 (있을 때만 — 없으면 기본 Idle/Walk/Run 폴백)
-  if (typeof preloadMotionClips === 'function') preloadMotionClips();
-  if (typeof preloadMotionTools === 'function') preloadMotionTools();
-  if (typeof registerGeneratedAnims === 'function') registerGeneratedAnims();
-  if (typeof initCarry === 'function') initCarry();
-  if (typeof initPhaseV4 === 'function') initPhaseV4();
-  if (typeof initGuidance === 'function') initGuidance();
-  if (typeof initExcavator === 'function') initExcavator();
-
-  const bScenario = document.getElementById('blocker-scenario');
-  const bControls = document.getElementById('blocker-controls');
-  const scenarioTitlesByLang = {
-    ko: { excavation: '토공사 · 굴착·흙막이', foundation: '기초공사 · 거푸집·철근·타설', lifting: '골조 양중 · 줄걸이·인양', envelope: '외장공사 · 비계·창호', mep_finish: '설비·마감 · 전기·배관', unified: '🏗 자유 모드 — 통합 부지' },
-    en: { excavation: 'Earthworks · Excavation', foundation: 'Foundation · Formwork & Pour', lifting: 'RC Frame · Lifting', envelope: 'Envelope · Scaffold & Glass', mep_finish: 'MEP & Finishing · Electrical/Piping', unified: '🏗 Free Mode — Unified Site' },
-    vi: { excavation: 'San nền · Đào', foundation: 'Móng · Ván khuôn & Đổ', lifting: 'Khung · Cẩu', envelope: 'Vỏ ngoài · Giàn giáo', mep_finish: 'M&E · Điện/Ống', unified: '🏗 Tự do — Khu thống nhất' },
-    ar: { excavation: 'الحفر · أعمال التربة', foundation: 'الأساسات · القوالب والصب', lifting: 'الهيكل · الرفع', envelope: 'الواجهة · السقالة', mep_finish: 'التركيب والتشطيب · كهرباء/أنابيب', unified: '🏗 الوضع الحر — موقع موحد' },
-  };
-  const scenarioTitles = scenarioTitlesByLang[currentLang] || scenarioTitlesByLang.ko;
-  if (bScenario) bScenario.textContent = scenarioTitles[GAME.scenarioId] || t('s01Title');
-  if (bControls) bControls.textContent = t('blockerControls');
-  // 이름 입력 패널의 부제목도 갱신
-  const nameSub = document.querySelector('.name-input-sub');
-  const subSuffix = { ko: ' 시나리오', en: ' scenario', vi: ' kịch bản', ar: ' السيناريو' }[currentLang] || ' 시나리오';
-  const fallbackTitle = { ko: '안전 시뮬레이터', en: 'Safety Simulator', vi: 'Mô phỏng an toàn', ar: 'محاكي السلامة' }[currentLang] || '안전 시뮬레이터';
-  if (nameSub) nameSub.textContent = (scenarioTitles[GAME.scenarioId] || fallbackTitle) + subSuffix;
-
-  // PHASE_CONTROLLER.enable() 은 위 setTimeout(0) 안에서 호출됨 (deferred)
-
-  // v2.0 통합 모드 — 게임 시작 후 자유 모드 안내 토스트 (3초 후 등장 8초 노출)
-  if (GAME.unifiedMode) {
-    setTimeout(() => {
-      if (typeof showActionNotif !== 'function') return;
-      const msg = {
-        ko: '🏗 자유 모드 — NPC 14·작업 18+ 활성. H=히스토리 · L=사고도서관 · N=가까운 NPC 호출',
-        en: '🏗 Free Mode — 14 NPCs + 18+ tasks. H=history · L=lib · N=call nearest NPC',
-        vi: '🏗 Tự do — 14 NPC + 18+ task. H=lịch sử · L=thư viện · N=gọi NPC gần',
-        ar: '🏗 وضع حر — 14 عامل + 18+ مهمة. H=السجل · L=المكتبة · N=استدعاء أقرب عامل',
-      };
-      showActionNotif(msg[currentLang] || msg.ko, 8000);
-    }, 3000);
-  }
-
+  /* 루프 시작 */
   GAME.clock.start();
   _loop();
+
 })();
 
-function _loop() {
-  requestAnimationFrame(_loop);
-  if (typeof perfFrame === 'function') perfFrame();
-  const delta   = Math.min(GAME.clock.getDelta(), 0.05);
-  const elapsed = GAME.clock.elapsedTime;
+/* ─── 조명 ───────────────────────────────────────────────── */
+function _setupLights() {
+  // 태양 (그림자 포함)
+  const sun = new THREE.DirectionalLight(0xFFF5E0, 1.8);
+  sun.position.set(20, 40, 15);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.near = 0.5;
+  sun.shadow.camera.far  = 120;
+  sun.shadow.camera.left = sun.shadow.camera.bottom = -35;
+  sun.shadow.camera.right = sun.shadow.camera.top   =  35;
+  sun.shadow.bias = -0.001;
+  GAME.scene.add(sun);
 
-  if (GAME.state.gameStarted && !GAME.state.gameOver && !GAME.state.paused) {
-    if (!GAME.state.craneBoarded) updatePlayer(delta);
-    updateInteraction();
-    if (typeof PHASE_CONTROLLER !== 'undefined') PHASE_CONTROLLER.tick(elapsed);
-    updateHUD();
-    if (typeof updateUnsafe === 'function')      updateUnsafe();
-    if (typeof updateSurvey === 'function')         updateSurvey();
-    if (typeof updateShoring === 'function')        updateShoring(delta);
-    if (typeof updateRailing === 'function')        updateRailing(elapsed);
-    if (typeof updateSignalPlacement === 'function')updateSignalPlacement();
-    // foundation
-    if (typeof updateRebar === 'function')          updateRebar(delta);
-    if (typeof updateFormwork === 'function')       updateFormwork(delta);
-    if (typeof updatePump === 'function')           updatePump(delta);
-    if (typeof updatePourOrder === 'function')      updatePourOrder(delta);
-    // envelope
-    if (typeof updateScaffold === 'function')       updateScaffold(delta);
-    if (typeof updateLifeline === 'function')       updateLifeline(delta);
-    if (typeof updatePanel === 'function')          updatePanel(delta);
-    if (typeof updateEnvSignal === 'function')      updateEnvSignal(delta);
-    // rc_frame sub-steps (lifting 시나리오 안에서 동작)
-    if (typeof updateFormworkRc === 'function')     updateFormworkRc(delta);
-    if (typeof updatePourRc === 'function')         updatePourRc(delta);
-    // mep_finish
-    if (typeof updateLoto === 'function')           updateLoto(delta);
-    if (typeof updateGas === 'function')            updateGas(delta);
-    if (typeof updateVent === 'function')           updateVent(delta);
-    if (typeof updateExt === 'function')            updateExt(delta);
-    if (typeof updateAvatar === 'function')         updateAvatar();
-    if (typeof updateDelegation === 'function')     updateDelegation(delta);
-    if (typeof updatePhysics === 'function')    updatePhysics(delta);
-    if (typeof updateInspector === 'function')  updateInspector(delta);
-    if (typeof updateJuice === 'function')       updateJuice(delta);
-    if (typeof updateNpcChat === 'function')     updateNpcChat(delta);
-    if (typeof updateWeatherFX === 'function')   updateWeatherFX(delta);
-    if (typeof updateEvents === 'function')      updateEvents(delta);
-    if (typeof updateTimePressure === 'function') updateTimePressure(delta);
-    if (typeof updateInteractGlow === 'function') updateInteractGlow(delta);
-    if (typeof updateObjectiveMarker === 'function') updateObjectiveMarker(delta);
-    if (typeof updateRcLoopTaskLocs === 'function') updateRcLoopTaskLocs(delta);
-    if (typeof updateInterference === 'function') updateInterference(delta);
-    if (typeof updateTaskChips === 'function')    updateTaskChips();
-    if (typeof tickUnifiedAchievements === 'function') tickUnifiedAchievements();
-    if (typeof WEATHER !== 'undefined')         WEATHER.tick(delta);
-    if (typeof tickAllNPCs !== 'undefined')      tickAllNPCs(delta, elapsed);
-    if (typeof updateNPCLabels !== 'undefined')  updateNPCLabels();
-    if (typeof MINIMAP !== 'undefined')          MINIMAP.update();
-    // v4 행위 기반 시스템
-    if (typeof tickMarkers === 'function')       tickMarkers(delta);
-    if (typeof tickHazardZones === 'function')   tickHazardZones(delta);
-    if (typeof actTick === 'function')           actTick(delta, !!PLAYER.keys['KeyE']);
-    if (typeof tickPhaseV4 === 'function')       tickPhaseV4(delta);
-    if (typeof tickPour === 'function')          tickPour(delta);
-    if (typeof updateGuidance === 'function')    updateGuidance(delta);
-    if (typeof tickExcavator === 'function')     tickExcavator(delta);
+  // 환경광
+  GAME.scene.add(new THREE.AmbientLight(0xB0C8E0, 0.6));
+
+  // 하늘 반사 (위쪽 파란빛)
+  const sky = new THREE.HemisphereLight(0x87CEEB, 0x6B5A45, 0.4);
+  GAME.scene.add(sky);
+}
+
+/* ─── 기본 건설 현장 씬 ────────────────────────────────────── */
+function _buildScene() {
+
+  /* 바닥 (콘크리트) */
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(80, 80),
+    new THREE.MeshLambertMaterial({ color: 0x9E9E9E })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  GAME.scene.add(ground);
+  GAME.colliders.push(ground);
+
+  /* 바닥 그리드선 (시공 기준선 느낌) */
+  const grid = new THREE.GridHelper(80, 40, 0x888888, 0x888888);
+  grid.position.y = 0.01;
+  grid.material.opacity = 0.25;
+  grid.material.transparent = true;
+  GAME.scene.add(grid);
+
+  /* 현장 경계 펜스 */
+  _addFence();
+
+  /* 건축 자재 더미 */
+  _addMaterials();
+
+  /* 안전 라바콘 */
+  _addCones();
+
+  /* 현장 사무소 (간이) */
+  _addSiteOffice();
+
+}
+
+/* ─── 안전 펜스 ─────────────────────────────────────────── */
+function _addFence() {
+  const postMat = new THREE.MeshLambertMaterial({ color: 0xF97316 });
+  const barMat  = new THREE.MeshLambertMaterial({ color: 0xF97316 });
+  const postGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.2, 6);
+  const barGeo  = new THREE.BoxGeometry(2.0, 0.05, 0.04);
+
+  const positions = [];
+  const R = 18;
+  for (let x = -R; x <= R; x += 2) {
+    positions.push([x, -R], [x, R]);
+  }
+  for (let z = -R + 2; z < R; z += 2) {
+    positions.push([-R, z], [R, z]);
   }
 
-  if (typeof renderPostFX === 'function') renderPostFX();
-  else GAME.renderer.render(GAME.scene, GAME.camera);
+  positions.forEach(([x, z]) => {
+    const post = new THREE.Mesh(postGeo, postMat);
+    post.position.set(x, 0.6, z);
+    post.castShadow = true;
+    GAME.scene.add(post);
+
+    const bar = new THREE.Mesh(barGeo, barMat);
+    bar.position.set(x + 1, 0.9, z);
+    // z축 방향 펜스는 회전
+    if (Math.abs(x) === R) {
+      bar.rotation.y = Math.PI / 2;
+      bar.position.set(x, 0.9, z + 1);
+    }
+    GAME.scene.add(bar);
+  });
+}
+
+/* ─── 건축 자재 더미 ─────────────────────────────────────── */
+function _addMaterials() {
+  // 철근 더미 (빨간 박스)
+  const rebarMat = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+  [[6, 0, -8], [-8, 0, -6]].forEach(([x, y, z]) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.6, 1), rebarMat);
+    m.position.set(x, 0.3, z);
+    m.castShadow = true;
+    GAME.scene.add(m);
+    GAME.colliders.push(m);
+  });
+
+  // 콘크리트 블록 (회색 큐브)
+  const concreteMat = new THREE.MeshLambertMaterial({ color: 0x7A7A7A });
+  [[3, 0, -5], [4, 0, -5], [3, 0, -4], [-4, 0, -7]].forEach(([x, y, z]) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), concreteMat);
+    m.position.set(x, 0.5, z);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    GAME.scene.add(m);
+    GAME.colliders.push(m);
+  });
+
+  // 목재 팔레트 (주황빛 갈색 판)
+  const woodMat = new THREE.MeshLambertMaterial({ color: 0xC68642 });
+  [[-5, 0, -3], [8, 0, -4]].forEach(([x, y, z]) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(2, 0.15, 1.2), woodMat);
+    m.position.set(x, 0.075, z);
+    m.castShadow = true;
+    GAME.scene.add(m);
+  });
+}
+
+/* ─── 안전 라바콘 ────────────────────────────────────────── */
+function _addCones() {
+  const coneMat = new THREE.MeshLambertMaterial({ color: 0xFF5500 });
+  const ringMat = new THREE.MeshLambertMaterial({ color: 0xFFFFFF });
+  const coneGeo = new THREE.ConeGeometry(0.18, 0.45, 8);
+  const ringGeo = new THREE.TorusGeometry(0.16, 0.025, 6, 16);
+
+  const spots = [
+    [2,0,2], [-2,0,2], [2,0,-2], [-2,0,-2],
+    [5,0,0], [-5,0,0], [0,0,-6],
+    [8,0,6], [-8,0,6],
+  ];
+  spots.forEach(([x, y, z]) => {
+    const cone = new THREE.Mesh(coneGeo, coneMat);
+    cone.position.set(x, 0.225, z);
+    GAME.scene.add(cone);
+
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.set(x, 0.28, z);
+    ring.rotation.x = Math.PI / 2;
+    GAME.scene.add(ring);
+  });
+}
+
+/* ─── 현장 사무소 ──────────────────────────────────────────── */
+function _addSiteOffice() {
+  // 컨테이너 사무소 (파란색 박스)
+  const bodyMat = new THREE.MeshLambertMaterial({ color: 0x1565C0 });
+  const roofMat = new THREE.MeshLambertMaterial({ color: 0x0D47A1 });
+
+  const body = new THREE.Mesh(new THREE.BoxGeometry(6, 2.5, 3), bodyMat);
+  body.position.set(-10, 1.25, -10);
+  body.castShadow = true;
+  body.receiveShadow = true;
+  GAME.scene.add(body);
+  GAME.colliders.push(body);
+
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(6.2, 0.15, 3.2), roofMat);
+  roof.position.set(-10, 2.575, -10);
+  GAME.scene.add(roof);
+
+  // 문 (어두운 사각형)
+  const doorMat = new THREE.MeshLambertMaterial({ color: 0x0A2E7A });
+  const door = new THREE.Mesh(new THREE.BoxGeometry(0.9, 2.0, 0.05), doorMat);
+  door.position.set(-9.5, 1.0, -8.48);
+  GAME.scene.add(door);
+
+  // 간판 (노란 판)
+  const signMat = new THREE.MeshLambertMaterial({ color: 0xFCD34D });
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(2, 0.5, 0.05), signMat);
+  sign.position.set(-10, 2.75, -8.47);
+  GAME.scene.add(sign);
+}
+
+/* ─── 게임 루프 ─────────────────────────────────────────── */
+function _loop() {
+  requestAnimationFrame(_loop);
+  const delta = Math.min(GAME.clock.getDelta(), 0.05);
+
+  if (GAME.state.gameStarted && !GAME.state.gameOver && !GAME.state.paused) {
+    if (typeof updatePlayer  === 'function') updatePlayer(delta);
+    if (typeof updateHUD     === 'function') updateHUD();
+    _updateMinimap();
+  }
+
+  GAME.renderer.render(GAME.scene, GAME.camera);
+}
+
+/* ─── 미니맵 업데이트 ────────────────────────────────────── */
+function _updateMinimap() {
+  const canvas = document.getElementById('minimap-canvas');
+  if (!canvas || typeof PLAYER === 'undefined') return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.clientWidth;
+  const H = canvas.clientHeight;
+  if (canvas.width !== W || canvas.height !== H) {
+    canvas.width = W; canvas.height = H;
+  }
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillRect(0, 0, W, H);
+
+  // 펜스 경계 표시
+  const scale = W / 40;  // 맵 범위 ±20 → 픽셀
+  ctx.strokeStyle = 'rgba(249,115,22,0.5)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(
+    W/2 - 18 * scale, H/2 - 18 * scale,
+    36 * scale, 36 * scale
+  );
+
+  // 현장 사무소
+  ctx.fillStyle = 'rgba(21,101,192,0.6)';
+  ctx.fillRect(W/2 + (-10 - 3) * scale, H/2 + (-10 - 1.5) * scale, 6 * scale, 3 * scale);
+
+  // 플레이어 위치
+  const px = W/2 + PLAYER.worldPos.x * scale;
+  const pz = H/2 + PLAYER.worldPos.z * scale;
+  ctx.fillStyle = '#F97316';
+  ctx.beginPath();
+  ctx.arc(px, pz, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 방향 화살표
+  const yaw = PLAYER.euler ? PLAYER.euler.y : 0;
+  ctx.strokeStyle = '#F97316';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(px, pz);
+  ctx.lineTo(px - Math.sin(yaw) * 7, pz - Math.cos(yaw) * 7);
+  ctx.stroke();
 }

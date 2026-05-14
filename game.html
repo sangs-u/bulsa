@@ -3,1092 +3,152 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>BULSA</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#1A2332">
+  <title>불사(BULSA)</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="style_extensions.css">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-      });
-    }
-  </script>
+  <link rel="manifest" href="manifest.webmanifest">
 </head>
-<body>
+<body class="game">
 
-<!-- 3D Canvas -->
-<canvas id="gameCanvas"></canvas>
+  <!-- ① 3D 캔버스 -->
+  <canvas id="gameCanvas"></canvas>
 
-<!-- HUD -->
-<div id="hud">
-  <div id="hud-tl">
-    <span class="hud-logo-text">BULSA</span>
-    <span class="hud-phase" id="hud-phase-text">PHASE 1 · 점검</span>
-    <span id="hud-floors">🏗 0/5층</span>
-    <span id="hud-skill" class="hidden">🎯 매설물탐지 Lv.0</span>
+  <!-- ② 시작 블로커 -->
+  <div id="blocker">
+    <div class="blocker-title">불사 <span style="color:var(--text-dim);font-size:0.5em">不死</span></div>
+    <div id="blocker-scenario">건설 안전 시뮬레이터</div>
+    <div class="blocker-divider"></div>
+    <div id="blocker-controls">WASD 이동 · 마우스 시점 · E 상호작용 · ESC 일시정지</div>
+    <div class="blocker-hint" id="blocker-hint">클릭하여 시작</div>
   </div>
-  <div id="hud-tr">
-    <span class="hud-si-label" id="hud-si-label" data-lang-t="safetyIndex">명</span>
-    <div class="hud-si-bar-outer"><div id="hud-si-bar"></div></div>
-    <span id="hud-si-num">100</span>
-    <span id="hud-violations" class="hidden" title="작업반경 진입 위반">⚠ 0</span>
-    <span id="hud-fines" class="hidden" title="누적 과태료" style="margin-left:8px;color:#F56565;font-weight:bold">💰 0원</span>
-  </div>
-  <div id="hud-crosshair"></div>
-  <div id="hud-compass" style="position:fixed;top:8px;left:50%;transform:translateX(-50%);
-        background:rgba(10,15,22,0.62);color:#E8E8E8;padding:4px 14px;border-radius:14px;
-        font-family:monospace;font-size:13px;letter-spacing:2px;pointer-events:none;z-index:50">
-    <span id="hud-compass-text">N · · · E · · · S · · · W</span>
-  </div>
-  <div id="hud-interact"></div>
-  <div id="hud-mission"></div>
-  <div id="hud-cambtns">
-    <button id="cam-fps-btn"   onclick="toggleCamMode()" title="V키"></button>
-    <button id="cam-fixed-btn" onclick="cycleFixedCam()"  title="C키"></button>
-  </div>
-</div>
 
-<!-- Pointer Lock Blocker -->
-<div id="blocker">
-  <h2>BULSA</h2>
-  <p id="blocker-scenario">줄걸이 · 인양 작업</p>
-  <p id="blocker-controls">WASD 이동 · 마우스 시점 · E 상호작용</p>
-  <button class="start-btn" id="blocker-btn" onclick="startGame()">클릭하여 시작</button>
-</div>
+  <!-- ③ HUD -->
+  <div id="hud">
 
-<!-- Hazard Interaction Popup (instruction.js 호환용, 숨김 유지) -->
-<div id="hazard-popup" class="hidden"></div>
-
-<!-- Accident Panel -->
-<div id="accident-panel" class="hidden">
-  <div class="accident-box">
-    <div class="accident-title">
-      <span>⚠</span>
-      <span id="acc-title">사고 발생</span>
-    </div>
-    <div class="accident-section hidden" id="acc-origin-wrap">
-      <h4 id="acc-lbl-origin">트리거 원인</h4>
-      <p id="acc-origin"></p>
-    </div>
-    <div class="accident-section">
-      <h4 id="acc-lbl-desc">사고 상황</h4>
-      <p id="acc-desc"></p>
-    </div>
-    <div class="accident-section">
-      <h4 id="acc-lbl-cause">사고 원인</h4>
-      <p id="acc-cause"></p>
-    </div>
-    <div class="accident-section">
-      <h4 id="acc-lbl-law">관련 법령</h4>
-      <p class="accident-law" id="acc-law"></p>
-    </div>
-    <div class="accident-section">
-      <h4 id="acc-lbl-proc">올바른 절차</h4>
-      <ol id="acc-procedure"></ol>
-    </div>
-    <div class="accident-section hidden" id="acc-missed-wrap">
-      <h4>미이행 항목</h4>
-      <div id="acc-missed-list"></div>
-    </div>
-    <div class="accident-btns">
-      <button class="btn-retry" id="acc-btn-retry" onclick="retryGame()">다시 시도</button>
-      <button class="btn-hub" id="acc-btn-hub" onclick="goHub()">허브로</button>
-      <button class="btn-hub" id="acc-btn-lib" onclick="if(typeof toggleAccLib==='function')toggleAccLib()" style="background:rgba(120,30,30,0.8)"
-        data-lang-ko="📚 모든 사고" data-lang-en="📚 All Accidents" data-lang-vi="📚 Tất cả tai nạn" data-lang-ar="📚 كل الحوادث">📚 모든 사고</button>
-    </div>
-  </div>
-</div>
-
-<!-- Complete Panel -->
-<div id="complete-panel" class="hidden">
-  <div class="complete-box">
-    <div class="complete-title"><span>✓</span><span id="cmp-title">작업 완료</span></div>
-    <p id="cmp-msg" style="font-size:0.86rem; color:var(--muted); line-height:1.6; margin:10px 0;"></p>
-    <div id="cmp-checklist" style="margin:12px 0 16px;"></div>
-    <div class="accident-btns">
-      <button class="btn-primary" id="cmp-btn-next" onclick="goNextScenario()" style="display:none;">다음 공정 →</button>
-      <button class="btn-retry" id="cmp-btn-retry" onclick="retryGame()">다시 시도</button>
-      <button class="btn-hub"   id="cmp-btn-hub"   onclick="goHub()">허브로</button>
-    </div>
-  </div>
-</div>
-
-<!-- Building progress HUD -->
-<!-- Minimap -->
-<canvas id="minimap-canvas" style="position:absolute;bottom:18px;right:18px;border-radius:50%;pointer-events:none;z-index:50;"></canvas>
-
-<!-- Game time — above minimap -->
-<div id="hud-gametime" style="position:absolute;bottom:153px;right:18px;font-size:0.70rem;color:var(--muted,#6A8090);font-family:monospace;pointer-events:none;text-align:center;width:130px;"></div>
-
-<!-- Building progress — above gametime -->
-<div id="building-progress" style="position:absolute;bottom:170px;right:18px;font-size:0.72rem;color:var(--muted);font-family:monospace;pointer-events:none;text-align:center;width:130px;"></div>
-
-<!-- Action notification (brief, no feedback) -->
-<div id="hud-action-notif"></div>
-
-<!-- Unsafe behavior detection -->
-<div id="unsafe-flash" class="hidden"></div>
-<div id="unsafe-toast" class="hidden">🚨 작업반경 진입! 즉시 대피</div>
-
-<!-- Crane Cab Overlay -->
-<div id="crane-cab-overlay" class="hidden">
-  <div class="cab-panel">
-    <div class="cab-header">
-      <span class="cab-title">크레인 운전원에게 작업 지시</span>
-      <button class="cab-exit-btn" onclick="exitCraneCab()">[E] 돌아가기</button>
-    </div>
-    <div id="crane-operator-info" style="padding:8px 14px;background:rgba(255,200,80,0.08);font-size:12px;color:#FFCC66;"></div>
-    <div class="cab-gauges">
-      <div class="cab-gauge-block">
-        <div class="cab-gauge-lbl">정격하중</div>
-        <div class="cab-gauge-val">5,000 kg</div>
+    <!-- 命 게이지 (캐릭터 수위) -->
+    <div id="life-gauge">
+      <div class="life-body">
+        <div class="life-water" id="life-water"></div>
+        <div class="life-char">命</div>
       </div>
-      <div class="cab-gauge-block">
-        <div class="cab-gauge-lbl">인양물</div>
-        <div class="cab-gauge-val">RC 보 · 3,000 kg</div>
-      </div>
-      <div class="cab-gauge-block">
-        <div class="cab-gauge-lbl">작업반경</div>
-        <div class="cab-gauge-val">16 m</div>
-      </div>
+      <div class="life-pct" id="life-pct">100</div>
     </div>
-    <div class="cab-levers">
-      <div class="cab-lever-item">
-        <div class="cab-lever-lbl">권상</div>
-        <div class="cab-lever-track"><div class="cab-lever-knob"></div></div>
-      </div>
-      <div class="cab-lever-item">
-        <div class="cab-lever-lbl">선회</div>
-        <div class="cab-lever-track"><div class="cab-lever-knob"></div></div>
-      </div>
-      <div class="cab-lever-item">
-        <div class="cab-lever-lbl">기복</div>
-        <div class="cab-lever-track"><div class="cab-lever-knob"></div></div>
-      </div>
-    </div>
-    <button class="cab-lift-btn" onclick="evaluateLift()">📋 작업계획서 전달 → 인양 시작</button>
-  </div>
-</div>
 
-<!-- Excavation Work Plan Panel (Phase 1) -->
-<div id="excav-plan-panel" class="panel hidden">
-  <div class="panel-header">
-    <span class="panel-icon">📋</span>
-    <h2 id="excav-plan-title" data-lang-ko="토공 작업계획서" data-lang-en="Earthworks Work Plan" data-lang-vi="Kế hoạch san nền" data-lang-ar="خطة عمل الحفر">토공 작업계획서</h2>
-    <span class="panel-phase">Phase 1/6</span>
-    <button class="panel-close-btn" id="excav-plan-cancel" title="닫기">✕</button>
-  </div>
-  <div class="panel-body">
-    <p class="panel-guide" id="excav-plan-guide"
-       data-lang-ko="굴착 매개변수를 직접 결정하세요. 잘못된 지시는 사고로 이어집니다."
-       data-lang-en="Set excavation parameters yourself. Wrong orders lead to accidents."
-       data-lang-vi="Tự xác định thông số đào. Lệnh sai sẽ gây tai nạn."
-       data-lang-ar="حدد معاملات الحفر بنفسك. الأوامر الخاطئة تؤدي إلى حوادث.">굴착 매개변수를 직접 결정하세요. 잘못된 지시는 사고로 이어집니다.</p>
-    <div class="wi-form">
-      <label class="wi-row">
-        <span class="wi-label" id="excav-lbl-depth"
-              data-lang-ko="굴착 깊이 (m)" data-lang-en="Excavation Depth (m)" data-lang-vi="Độ sâu đào (m)" data-lang-ar="عمق الحفر (م)">굴착 깊이 (m)</span>
-        <input type="number" id="excav-depth" min="1" max="6" step="0.1" value="2.0">
-      </label>
-      <p class="wi-hint" id="excav-hint-depth"
-         data-lang-ko="기초 매트 매설 위해 1.8~2.5m 권장 · 5m 초과 시 흙막이 의무"
-         data-lang-en="1.8–2.5m recommended for mat foundation · shoring required above 5m"
-         data-lang-vi="Khuyến nghị 1.8–2.5m cho móng bè · bắt buộc chống vách trên 5m"
-         data-lang-ar="يوصى بـ 1.8–2.5م للأساس · الدعم إلزامي فوق 5م">기초 매트 매설 위해 1.8~2.5m 권장 · 5m 초과 시 흙막이 의무</p>
+    <!-- 미니맵 -->
+    <div id="minimap-wrap">
+      <canvas id="minimap-canvas"></canvas>
+      <span class="minimap-label">MAP</span>
+    </div>
 
-      <label class="wi-row">
-        <span class="wi-label" id="excav-lbl-slope"
-              data-lang-ko="굴착 구배 (1:N)" data-lang-en="Excavation Slope (1:N)" data-lang-vi="Độ dốc đào (1:N)" data-lang-ar="ميل الحفر (1:N)">굴착 구배 (1:N)</span>
-        <select id="excav-slope">
-          <option value="0.5">1:0.5 (경암)</option>
-          <option value="1.0">1:1.0 (풍화암)</option>
-          <option value="1.2" selected>1:1.2 (점토 · 현장 토질)</option>
-          <option value="1.5">1:1.5 (사질)</option>
-          <option value="1.8">1:1.8 (모래)</option>
-        </select>
-      </label>
-
-      <label class="wi-row">
-        <span class="wi-label" id="excav-lbl-shoring"
-              data-lang-ko="흙막이 가시설" data-lang-en="Shoring Type" data-lang-vi="Loại chống vách" data-lang-ar="نوع الدعم">흙막이 가시설</span>
-        <select id="excav-shoring">
-          <option value="none">미설치</option>
-          <option value="h_pile" selected>H-pile + 토류판</option>
-          <option value="sheet_pile">시트파일</option>
-          <option value="earth_anchor">어스앵커</option>
-        </select>
-      </label>
-
-      <label class="wi-row wi-check">
-        <input type="checkbox" id="excav-underground">
-        <span id="excav-lbl-underground"
-              data-lang-ko="매설물 도면 확인 완료 (가스·전기·통신·수도)"
-              data-lang-en="Underground utility map verified (gas·electric·telecom·water)"
-              data-lang-vi="Đã xác nhận bản đồ ngầm (gas·điện·viễn thông·nước)"
-              data-lang-ar="تم التحقق من خريطة المرافق (غاز·كهرباء·اتصالات·ماء)">매설물 도면 확인 완료 (가스·전기·통신·수도)</span>
-      </label>
-      <p class="wi-hint" id="excav-hint-underground"
-         data-lang-ko="미확인 시 산안법 §38 위반 — 과태료 5백만원"
-         data-lang-en="OSH §38 violation if unchecked — KRW 5M fine"
-         data-lang-vi="Vi phạm OSH §38 nếu chưa kiểm tra — phạt 5 triệu KRW"
-         data-lang-ar="مخالفة §38 إن لم يفحص — غرامة 5 ملايين وون">미확인 시 산안법 §38 위반 — 과태료 5백만원</p>
-    </div>
-  </div>
-  <div class="panel-footer">
-    <button class="btn-primary" id="excav-plan-sign"
-            data-lang-ko="서명·제출" data-lang-en="Sign &amp; Submit" data-lang-vi="Ký &amp; Gửi" data-lang-ar="توقيع وإرسال">서명·제출</button>
-  </div>
-</div>
-
-<!-- MEP & Finishing Work Plan Panel (Phase 1) -->
-<div id="mep-plan-panel" class="panel hidden">
-  <div class="panel-header">
-    <span class="panel-icon">📋</span>
-    <h2 id="mep-plan-title" data-lang-ko="설비·마감 작업계획서" data-lang-en="MEP & Finishing Work Plan" data-lang-vi="Kế hoạch M&E và hoàn thiện" data-lang-ar="خطة عمل التركيب والتشطيب">설비·마감 작업계획서</h2>
-    <span class="panel-phase">Phase 1/6</span>
-    <button class="panel-close-btn" id="mep-plan-cancel" title="닫기">✕</button>
-  </div>
-  <div class="panel-body">
-    <p class="panel-guide"
-       data-lang-ko="설비·마감 매개변수와 안전 절차를 결정하세요. LOTO 미체크 시 감전 사고 확률 ↑."
-       data-lang-en="Set MEP/finishing parameters. Unchecked LOTO raises electric shock risk."
-       data-lang-vi="Đặt thông số M&E. Bỏ qua LOTO làm tăng nguy cơ điện giật."
-       data-lang-ar="حدد معاملات التركيب. عدم LOTO يرفع خطر الصعق.">설비·마감 매개변수와 안전 절차를 결정하세요. LOTO 미체크 시 감전 사고 확률 ↑.</p>
-    <div class="wi-form">
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="차단기 용량 (A)" data-lang-en="Breaker Capacity (A)" data-lang-vi="Dung lượng CB (A)" data-lang-ar="سعة القاطع (A)">차단기 용량 (A)</span>
-        <select id="mep-breaker">
-          <option value="20">20A (분기)</option>
-          <option value="30">30A (콘센트)</option>
-          <option value="50" selected>50A (조명·분전반)</option>
-          <option value="100">100A (메인)</option>
-        </select>
-      </label>
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="배관 구경 (mm)" data-lang-en="Pipe Diameter (mm)" data-lang-vi="Đường kính ống (mm)" data-lang-ar="قطر الأنبوب (مم)">배관 구경 (mm)</span>
-        <select id="mep-pipe">
-          <option value="15">15mm</option>
-          <option value="20" selected>20mm</option>
-          <option value="25">25mm</option>
-          <option value="32">32mm</option>
-        </select>
-      </label>
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="마감재 종류" data-lang-en="Finish Type" data-lang-vi="Loại hoàn thiện" data-lang-ar="نوع التشطيب">마감재 종류</span>
-        <select id="mep-finish-type">
-          <option value="paint" selected>수성 페인트 (저독성)</option>
-          <option value="solvent">유성 페인트 (유기용제)</option>
-          <option value="epoxy">에폭시 (고독성)</option>
-          <option value="tile">타일 (무용제)</option>
-        </select>
-      </label>
-      <label class="wi-row wi-check">
-        <input type="checkbox" id="mep-loto">
-        <span data-lang-ko="LOTO 절차 준수 — 잠금/표지/검전" data-lang-en="Follow LOTO — lock/tag/test" data-lang-vi="Tuân thủ LOTO — khóa/dán/kiểm tra" data-lang-ar="اتباع LOTO — قفل/وسم/فحص">LOTO 절차 준수 — 잠금/표지/검전</span>
-      </label>
-      <p class="wi-hint"
-         data-lang-ko="유성·에폭시 마감재 선택 시 국소배기 의무 · LOTO 미체크 시 산안법 §310 위반"
-         data-lang-en="Solvent/epoxy finish requires local ventilation · Missing LOTO violates OSH §310"
-         data-lang-vi="Sơn dầu/epoxy bắt buộc thông gió cục bộ · Thiếu LOTO vi phạm §310"
-         data-lang-ar="الطلاء العضوي/الإيبوكسي يلزم تهوية موضعية · بدون LOTO مخالفة §310">유성·에폭시 마감재 선택 시 국소배기 의무 · LOTO 미체크 시 산안법 §310 위반</p>
-    </div>
-  </div>
-  <div class="panel-footer">
-    <button class="btn-primary" id="mep-plan-sign" data-lang-ko="서명·제출" data-lang-en="Sign &amp; Submit" data-lang-vi="Ký &amp; Gửi" data-lang-ar="توقيع وإرسال">서명·제출</button>
-  </div>
-</div>
-
-<!-- Envelope Work Plan Panel (Phase 1) -->
-<div id="env-plan-panel" class="panel hidden">
-  <div class="panel-header">
-    <span class="panel-icon">📋</span>
-    <h2 id="env-plan-title" data-lang-ko="외장 작업계획서" data-lang-en="Envelope Work Plan" data-lang-vi="Kế hoạch vỏ ngoài" data-lang-ar="خطة عمل الواجهة">외장 작업계획서</h2>
-    <span class="panel-phase">Phase 1/6</span>
-    <button class="panel-close-btn" id="env-plan-cancel" title="닫기">✕</button>
-  </div>
-  <div class="panel-body">
-    <p class="panel-guide"
-       data-lang-ko="비계 사양과 외장재를 결정하세요. 안전난간 단수 부족 시 비계 붕괴 위험."
-       data-lang-en="Set scaffold and cladding parameters. Insufficient guardrails risk collapse."
-       data-lang-vi="Đặt thông số giàn giáo và vỏ. Thiếu lan can gây sập."
-       data-lang-ar="حدد معاملات السقالة والواجهة. نقص الحاجز يسبب الانهيار.">비계 사양과 외장재를 결정하세요. 안전난간 단수 부족 시 비계 붕괴 위험.</p>
-    <div class="wi-form">
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="비계 종류" data-lang-en="Scaffold Type" data-lang-vi="Loại giàn giáo" data-lang-ar="نوع السقالة">비계 종류</span>
-        <select id="env-scaffold-type">
-          <option value="system" selected>시스템 비계 (표준)</option>
-          <option value="tubular">강관 비계</option>
-          <option value="cantilever">외팔 비계 (위험)</option>
-        </select>
-      </label>
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="비계 높이 (m)" data-lang-en="Scaffold Height (m)" data-lang-vi="Chiều cao giàn giáo (m)" data-lang-ar="ارتفاع السقالة (م)">비계 높이 (m)</span>
-        <input type="number" id="env-scaffold-height" min="5" max="25" step="0.5" value="19">
-      </label>
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="안전난간 단수" data-lang-en="Guardrail Levels" data-lang-vi="Số tầng lan can" data-lang-ar="مستويات الحاجز">안전난간 단수</span>
-        <select id="env-guardrails">
-          <option value="1">1단 (상단만) — 위험</option>
-          <option value="2">2단 (상·중)</option>
-          <option value="3" selected>3단 (상·중·발끝막이)</option>
-        </select>
-      </label>
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="외장 패널 사양" data-lang-en="Panel Type" data-lang-vi="Loại tấm vỏ" data-lang-ar="نوع الألواح">외장 패널 사양</span>
-        <select id="env-panel-type">
-          <option value="acm" selected>ACM 알루미늄 복합</option>
-          <option value="glass">유리 커튼월</option>
-          <option value="stone">석재 패널</option>
-        </select>
-      </label>
-      <p class="wi-hint"
-         data-lang-ko="안전난간 1단 선택 시 산안법 §42 위반 — 비계 붕괴 확률 ↑"
-         data-lang-en="Single-tier guardrail violates OSH §42 — high collapse risk"
-         data-lang-vi="Lan can 1 tầng vi phạm §42 — nguy cơ sập cao"
-         data-lang-ar="حاجز طبقة واحدة مخالفة §42 — خطر انهيار مرتفع">안전난간 1단 선택 시 산안법 §42 위반 — 비계 붕괴 확률 ↑</p>
-    </div>
-  </div>
-  <div class="panel-footer">
-    <button class="btn-primary" id="env-plan-sign" data-lang-ko="서명·제출" data-lang-en="Sign &amp; Submit" data-lang-vi="Ký &amp; Gửi" data-lang-ar="توقيع وإرسال">서명·제출</button>
-  </div>
-</div>
-
-<!-- Foundation Work Plan Panel (Phase 1) -->
-<div id="found-plan-panel" class="panel hidden">
-  <div class="panel-header">
-    <span class="panel-icon">📋</span>
-    <h2 id="found-plan-title" data-lang-ko="기초 작업계획서" data-lang-en="Foundation Work Plan" data-lang-vi="Kế hoạch móng" data-lang-ar="خطة عمل الأساسات">기초 작업계획서</h2>
-    <span class="panel-phase">Phase 1/6</span>
-    <button class="panel-close-btn" id="found-plan-cancel" title="닫기">✕</button>
-  </div>
-  <div class="panel-body">
-    <p class="panel-guide"
-       data-lang-ko="매트 기초 매개변수를 결정하세요. 동바리 간격이 1m 초과면 거푸집 붕괴 위험."
-       data-lang-en="Set mat foundation parameters. Shoring spacing >1m risks formwork collapse."
-       data-lang-vi="Đặt thông số móng bè. Khoảng chống >1m gây sập ván khuôn."
-       data-lang-ar="حدد معاملات الأساس. تباعد الدعم >1م يسبب انهيار القوالب.">매트 기초 매개변수를 결정하세요. 동바리 간격이 1m 초과면 거푸집 붕괴 위험.</p>
-    <div class="wi-form">
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="기초 매트 면적 (m²)" data-lang-en="Mat Area (m²)" data-lang-vi="Diện tích bè (m²)" data-lang-ar="مساحة البلاطة (م²)">기초 매트 면적 (m²)</span>
-        <input type="number" id="found-area" min="80" max="200" step="5" value="144">
-      </label>
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="철근 배근 간격 (mm)" data-lang-en="Rebar Spacing (mm)" data-lang-vi="Khoảng cách thép (mm)" data-lang-ar="تباعد الحديد (مم)">철근 배근 간격 (mm)</span>
-        <select id="found-rebar">
-          <option value="150">150mm</option>
-          <option value="200" selected>200mm</option>
-          <option value="250">250mm</option>
-          <option value="300">300mm</option>
-        </select>
-      </label>
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="콘크리트 강도 (MPa)" data-lang-en="Concrete Strength (MPa)" data-lang-vi="Cường độ bê tông (MPa)" data-lang-ar="قوة الخرسانة (MPa)">콘크리트 강도 (MPa)</span>
-        <select id="found-conc">
-          <option value="21">21 MPa</option>
-          <option value="24" selected>24 MPa</option>
-          <option value="27">27 MPa</option>
-          <option value="30">30 MPa</option>
-        </select>
-      </label>
-      <label class="wi-row">
-        <span class="wi-label" data-lang-ko="동바리 간격 (m)" data-lang-en="Shoring Spacing (m)" data-lang-vi="Khoảng chống (m)" data-lang-ar="تباعد الدعم (م)">동바리 간격 (m)</span>
-        <input type="number" id="found-shoring" min="0.6" max="1.5" step="0.1" value="0.9">
-      </label>
-      <p class="wi-hint"
-         data-lang-ko="권장 0.6~1.0m · 1.0m 초과 시 측압 집중 → 거푸집 붕괴"
-         data-lang-en="0.6–1.0m recommended · >1.0m concentrates pressure → formwork collapse"
-         data-lang-vi="Khuyến nghị 0.6–1.0m · >1.0m tập trung lực → sập ván"
-         data-lang-ar="يوصى بـ 0.6–1.0م · >1.0م يركّز الضغط → انهيار">권장 0.6~1.0m · 1.0m 초과 시 측압 집중 → 거푸집 붕괴</p>
-    </div>
-  </div>
-  <div class="panel-footer">
-    <button class="btn-primary" id="found-plan-sign" data-lang-ko="서명·제출" data-lang-en="Sign &amp; Submit" data-lang-vi="Ký &amp; Gửi" data-lang-ar="توقيع وإرسال">서명·제출</button>
-  </div>
-</div>
-
-<!-- Excavator Cab Overlay (Phase 6) -->
-<div id="excav-cab-overlay" class="hidden">
-  <div class="cab-panel">
-    <div class="cab-header">
-      <span class="cab-title">굴착기 운전원에게 작업 지시</span>
-      <button class="cab-exit-btn" onclick="exitExcavCab()">[E] 돌아가기</button>
-    </div>
-    <div class="cab-gauges">
-      <div class="cab-gauge-block">
-        <div class="cab-gauge-lbl">굴착 깊이 지시</div>
-        <div class="cab-gauge-val" id="excav-cab-depth">2.0 m</div>
-      </div>
-      <div class="cab-gauge-block">
-        <div class="cab-gauge-lbl">흙막이</div>
-        <div class="cab-gauge-val" id="excav-cab-shoring">H-pile</div>
-      </div>
-      <div class="cab-gauge-block">
-        <div class="cab-gauge-lbl">작업반경</div>
-        <div class="cab-gauge-val">6 m</div>
-      </div>
-    </div>
-    <button class="cab-lift-btn" onclick="evaluateExcavation()">📋 작업계획서 전달 → 굴착 시작</button>
-  </div>
-</div>
-
-<!-- Crane Operator Refusal Popup -->
-<div id="operator-refusal-popup" class="hidden">
-  <div class="op-refusal-box">
-    <div class="op-refusal-header">
-      <div class="op-refusal-avatar">👷</div>
-      <div class="op-refusal-meta">
-        <div class="op-refusal-name" id="op-refusal-name">크레인 운전원</div>
-        <div class="op-refusal-role" id="op-refusal-role">Crane Operator</div>
-      </div>
-      <button class="op-refusal-x" id="op-refusal-x" onclick="closeOperatorRefusal()">✕</button>
-    </div>
-    <div class="op-refusal-body">
-      <div class="op-refusal-quote" id="op-refusal-quote">"안전 점검 미완료. 작업을 거부합니다."</div>
-      <p class="op-refusal-intro" id="op-refusal-intro">아래 항목을 먼저 완료하세요:</p>
-      <ul class="op-refusal-list" id="op-refusal-list"></ul>
-    </div>
-    <div class="op-refusal-footer">
-      <button class="btn-primary" id="op-refusal-close" onclick="closeOperatorRefusal()">알겠습니다</button>
-    </div>
-  </div>
-</div>
-
-<!-- Spec Sheet Popup -->
-<div id="spec-popup" class="hidden">
-  <div class="spec-box">
-    <div class="spec-title">크레인 작업 사양서</div>
-    <table class="spec-table">
-      <tr><td>크레인 종류</td><td>타워크레인 (T-type)</td></tr>
-      <tr><td>정격하중</td><td>5,000 kg</td></tr>
-      <tr><td>현재 인양물</td><td>RC 보 (3,000 kg)</td></tr>
-      <tr><td>인양 작업반경</td><td>16 m</td></tr>
-      <tr><td>최대 슬링각도</td><td>60°</td></tr>
-      <tr><td>신호수 배치</td><td>산안규칙 제163조 (필수)</td></tr>
-      <tr><td>안전핀 체결</td><td>인양 전 반드시 확인</td></tr>
-    </table>
-    <button class="spec-close-btn" onclick="closeSpecPopup()">확인</button>
-  </div>
-</div>
-
-<!-- Red flash overlay -->
-<div id="flash-overlay"></div>
-
-<!-- Low-lives vignette — 명 임계 (≤30) 시 화면 가장자리 빨간 비네팅 -->
-<div id="hud-low-vignette"></div>
-
-<!-- Cutscene overlay -->
-<div id="cutscene-overlay" class="hidden">
-  <div class="cutscene-caption" id="cutscene-caption"></div>
-</div>
-
-<!-- Instruction popup (NPC orders) -->
-<div id="instruction-popup" class="hidden">
-  <div class="inst-box">
-    <div class="inst-header">
-      <div class="inst-avatar">👷</div>
-      <div>
-        <div class="inst-npc-name" id="inst-name"></div>
-        <div class="inst-npc-role" id="inst-role"></div>
-      </div>
-      <div class="inst-lang-badge lang-ok" id="inst-lang-badge">🇰🇷 한국어</div>
-    </div>
-    <div class="inst-speech-bubble hidden" id="inst-speech-bubble"></div>
-    <div class="inst-list" id="inst-list"></div>
-    <div style="display:flex;gap:8px;margin-top:4px;">
-      <button class="inst-close-btn" style="flex:1;" id="inst-lang-switch" onclick="toggleInstructionLang()">EN으로 지시</button>
-      <button class="inst-close-btn" style="flex:1;" id="inst-close-btn" onclick="closeInstructionPopup()">닫기</button>
-    </div>
-  </div>
-</div>
-
-<!-- TBM Panel -->
-<div id="tbm-panel" class="hidden">
-  <div class="tbm-box">
-    <div class="tbm-header">
-      <span class="tbm-badge">TBM</span>
-      <span class="tbm-title" id="tbm-title">작업 전 안전점검</span>
-      <span class="tbm-phase-label" id="tbm-phase-label">Phase 1</span>
-    </div>
-    <div class="tbm-section">
-      <div class="tbm-section-title" id="tbm-lbl-work">오늘의 작업</div>
-      <p style="font-size:0.86rem;color:var(--text);" id="tbm-work"></p>
-    </div>
-    <div class="tbm-section">
-      <div class="tbm-section-title" id="tbm-lbl-hazards">주요 위험요소</div>
-      <ul id="tbm-hazards" style="padding-left:18px;font-size:0.84rem;color:var(--muted);line-height:1.8;"></ul>
-    </div>
-    <div class="tbm-section">
-      <div class="tbm-section-title" id="tbm-lbl-checklist">필수 확인 체크리스트</div>
-      <div class="tbm-checklist" id="tbm-checklist"></div>
-      <div class="tbm-progress-bar" style="margin-top:8px;">
-        <div class="tbm-progress-fill" id="tbm-progress-fill" style="width:0%"></div>
-      </div>
-    </div>
-    <div class="tbm-section">
-      <div class="tbm-section-title" id="tbm-lbl-roles">담당자 지정</div>
-      <div class="tbm-role-assign" id="tbm-roles"></div>
-    </div>
-    <button class="tbm-start-btn" id="tbm-start-btn" disabled>작업 시작</button>
-  </div>
-</div>
-
-<!-- Work Briefing Overlay -->
-<div id="briefing-overlay" class="hidden">
-  <div class="briefing-box">
-    <div class="briefing-header">
-      <span class="briefing-badge" id="briefing-badge"></span>
-      <span class="briefing-scenario" id="briefing-scenario"></span>
-    </div>
-    <div class="briefing-divider"></div>
-    <div class="briefing-section">
-      <div class="briefing-section-label" id="briefing-lbl-ctx"></div>
-      <p class="briefing-text" id="briefing-context"></p>
-    </div>
-    <div class="briefing-section">
-      <div class="briefing-section-label" id="briefing-lbl-steps"></div>
-      <ol class="briefing-steps" id="briefing-steps"></ol>
-    </div>
-    <div class="briefing-kosha" id="briefing-kosha"></div>
-    <button class="briefing-btn" id="briefing-btn" onclick="closeBriefing()"></button>
-  </div>
-</div>
-
-<!-- Plan Panel (Phase 1) -->
-<div id="plan-panel" class="panel hidden">
-  <div class="panel-header">
-    <span class="panel-icon">📋</span>
-    <h2 id="plan-title">작업계획서 작성</h2>
-    <span class="panel-phase">Phase 1/6</span>
-    <button class="panel-close-btn" id="plan-btn-cancel" title="닫기">✕</button>
-  </div>
-  <div class="panel-body">
-    <div class="plan-section">
-      <h3 id="plan-sec-cargo">화물 정보</h3>
-      <div class="plan-row">
-        <label id="plan-lbl-name">화물명</label>
-        <input type="text" id="plan-cargo-name" value="RC보 (Reinforced Concrete Beam)" readonly>
-      </div>
-      <div class="plan-row">
-        <label id="plan-lbl-weight">중량 (ton)</label>
-        <input type="number" id="plan-weight" value="3.0" readonly>
-      </div>
-      <div class="plan-row">
-        <label id="plan-lbl-shape">형상</label>
-        <input type="text" id="plan-shape" value="직사각형 단면" readonly>
-      </div>
-    </div>
-    <div class="plan-section">
-      <h3 id="plan-sec-sling">슬링 사양 (직접 입력)</h3>
-      <div class="plan-row">
-        <label id="plan-lbl-swl">슬링 SWL (ton)</label>
-        <input type="number" id="plan-sling-swl" value="3.0" step="0.1" min="0.5" max="20">
-      </div>
-      <div class="plan-row">
-        <label id="plan-lbl-angle">슬링 각도 (°)</label>
-        <input type="number" id="plan-sling-angle" value="58" step="1" min="0" max="180">
-      </div>
-      <div class="plan-row">
-        <label id="plan-lbl-lines">슬링 가닥수</label>
-        <input type="number" id="plan-sling-lines" value="2" step="1" min="1" max="8">
-      </div>
-    </div>
-    <div class="plan-section">
-      <h3 id="plan-sec-crew">작업 인원 확인</h3>
-      <div class="plan-checklist">
-        <label><input type="checkbox" class="plan-check" data-key="crew_foreman"> <span id="plan-crew-foreman">작업반장 — 1인</span></label>
-        <label><input type="checkbox" class="plan-check" data-key="crew_crane"> <span id="plan-crew-crane">크레인 운전원 — 1인</span></label>
-        <label><input type="checkbox" class="plan-check" data-key="crew_rigger"> <span id="plan-crew-rigger">줄걸이 작업자 — 1인</span></label>
-        <label><input type="checkbox" class="plan-check" data-key="crew_signal"> <span id="plan-crew-signal">신호수 — 1인</span></label>
-        <label><input type="checkbox" class="plan-check" data-key="crew_safety"> <span id="plan-crew-safety">안전감시자 — 1인</span></label>
-      </div>
-    </div>
-    <div class="plan-section">
-      <h3 id="plan-sec-risk">위험 확인</h3>
-      <div class="plan-checklist">
-        <label><input type="checkbox" class="plan-check" data-key="risk_path"> <span id="plan-risk-path">인양 경로 장애물 확인</span></label>
-        <label><input type="checkbox" class="plan-check" data-key="risk_ground"> <span id="plan-risk-ground">지반 지지력 확인</span></label>
-        <label><input type="checkbox" class="plan-check" data-key="risk_wind"> <span id="plan-risk-wind">풍속 확인 (10m/s 이하)</span></label>
-        <label><input type="checkbox" class="plan-check" data-key="risk_emergency"> <span id="plan-risk-emergency">비상연락체계 확인</span></label>
-      </div>
-    </div>
-  </div>
-  <div class="panel-footer">
-    <span id="plan-progress-text">0 / 9 항목 완료</span>
-    <button id="plan-btn-sign" class="btn-primary" disabled>서명 및 제출</button>
-  </div>
-</div>
-
-<!-- Safety Panel (Phase 2) -->
-<div id="safety-panel" class="panel hidden">
-  <div class="panel-header">
-    <span class="panel-icon">🔢</span>
-    <h2 id="safety-title">안전성 검토</h2>
-    <span class="panel-phase">Phase 2/6</span>
-    <button class="panel-close-btn" id="safety-btn-cancel" title="닫기">✕</button>
-  </div>
-  <div class="panel-body">
-    <div class="safety-calc-row">
-      <span id="safety-lbl-weight" class="calc-label">화물 중량</span>
-      <span class="calc-value" id="sc-weight">3.0 ton</span>
-    </div>
-    <div class="safety-calc-row">
-      <span id="safety-lbl-angle" class="calc-label">인양각도 (α)</span>
-      <span class="calc-value" id="sc-angle">58°</span>
-    </div>
-    <div class="safety-calc-row">
-      <span id="safety-lbl-k" class="calc-label">각도계수 (K)</span>
-      <span class="calc-value" id="sc-k">—</span>
-    </div>
-    <div class="safety-calc-row">
-      <span id="safety-lbl-lines" class="calc-label">줄 수</span>
-      <span id="safety-lbl-lines-val" class="calc-value">2줄</span>
-    </div>
-    <div class="safety-calc-row">
-      <span id="safety-lbl-swl" class="calc-label">슬링 SWL</span>
-      <span class="calc-value" id="sc-swl">—</span>
-    </div>
-    <div class="safety-calc-row highlight">
-      <span id="safety-lbl-ts" class="calc-label">줄당 장력 (Ts)</span>
-      <span class="calc-value" id="sc-ts">—</span>
-    </div>
-    <div class="safety-calc-row highlight">
-      <span id="safety-lbl-sr" class="calc-label">사용률</span>
-      <span class="calc-value" id="sc-sr">—</span>
-    </div>
-    <div id="safety-result" class="safety-result-box hidden"></div>
-  </div>
-  <div class="panel-footer">
-    <button id="safety-btn-calc" class="btn-primary">계산 실행</button>
-    <button id="safety-btn-confirm" class="btn-primary hidden">검토 완료</button>
-  </div>
-</div>
-
-<!-- Equipment Panel (Phase 3) -->
-<div id="equipment-panel" class="panel hidden">
-  <div class="panel-header">
-    <span class="panel-icon">🏗</span>
-    <h2 id="equip-title">장비 세팅</h2>
-    <span class="panel-phase">Phase 3/6</span>
-    <button class="panel-close-btn" id="equipment-btn-cancel" title="닫기">✕</button>
-  </div>
-  <div class="panel-body">
-    <p id="equip-guide" class="equipment-guide">크레인 옆으로 이동하여 아웃트리거를 확장하세요.</p>
-    <div class="equipment-checklist">
-      <div class="eq-item" id="eq-outrigger">
-        <span class="eq-icon">⬜</span>
-        <span id="eq-outrigger-lbl">아웃트리거 4방향 확장</span>
-        <span class="eq-status">대기</span>
-      </div>
-      <div class="eq-item" id="eq-level">
-        <span class="eq-icon">⬜</span>
-        <span id="eq-level-lbl">수평 확인</span>
-        <span class="eq-status">대기</span>
-      </div>
-      <div class="eq-item" id="eq-overload">
-        <span class="eq-icon">⬜</span>
-        <span id="eq-overload-lbl">과부하 방지장치 확인</span>
-        <span class="eq-status">대기</span>
-      </div>
-    </div>
-    <div id="level-indicator" class="hidden">
-      <div class="bubble-container">
-        <div class="bubble-tolerance"></div>
-        <div class="bubble-crosshair bubble-crosshair-h"></div>
-        <div class="bubble-crosshair bubble-crosshair-v"></div>
-        <div class="bubble" id="bubble-dot"></div>
-      </div>
-      <p id="equip-bubble-guide">버블을 중앙으로 맞추세요</p>
-      <div class="bubble-controls">
-        <button class="bubble-nudge" data-dir="up">▲</button>
-        <div class="bubble-nudge-row">
-          <button class="bubble-nudge" data-dir="left">◀</button>
-          <button class="bubble-nudge" data-dir="right">▶</button>
+    <!-- 파티창 -->
+    <div id="party-bar">
+      <div class="party-member" id="party-player">
+        <div class="party-avatar" id="party-player-avatar">👷</div>
+        <div class="party-info">
+          <div class="party-name" id="party-player-name">플레이어</div>
+          <div class="party-hp-bar"><div class="party-hp-fill" id="party-player-hp" style="width:100%"></div></div>
         </div>
-        <button class="bubble-nudge" data-dir="down">▼</button>
       </div>
-      <button id="level-confirm-btn" class="btn-secondary" disabled>수평 확인 완료</button>
     </div>
-    <div id="overload-tester" class="hidden">
-      <div class="oll-display">
-        <div class="oll-row"><span id="oll-lbl-rated">정격하중</span><span class="oll-val">5.0 ton</span></div>
-        <div class="oll-row"><span id="oll-lbl-current">시험하중</span><span class="oll-val" id="oll-current">0.0 ton</span></div>
-        <div class="oll-bar"><div class="oll-bar-fill" id="oll-fill"></div></div>
-        <div class="oll-status" id="oll-status">대기</div>
-      </div>
-      <button id="oll-test-btn" class="btn-secondary">테스트 부하 인가</button>
-      <button id="oll-confirm-btn" class="btn-secondary hidden" disabled>정상 작동 확인</button>
-    </div>
-  </div>
-  <div class="panel-footer">
-    <button id="equipment-btn-confirm" class="btn-primary" disabled>세팅 완료</button>
-  </div>
-</div>
 
-<!-- Structure complete toast -->
-<div id="structure-complete-msg" class="structure-toast hidden"></div>
+  </div><!-- /#hud -->
 
-<!-- Blueprint Panel -->
-<div id="blueprint-panel" class="panel hidden" style="
-  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-  width:min(1100px,96vw); max-height:94vh; background:#F0EDE6;
-  border-radius:10px; box-shadow:0 8px 40px rgba(0,0,0,0.45);
-  z-index:8000; overflow:hidden;
-  font-family:'Pretendard',-apple-system,sans-serif;">
-  <!-- 헤더 -->
-  <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;
-    background:#3A3228;color:#F5EDD0;border-radius:10px 10px 0 0;">
-    <span id="bp-title" style="font-weight:700;font-size:1rem;flex:1;">📐 작업 도면</span>
-    <span id="bp-meta-rev"   style="font-size:10px;opacity:0.7;font-family:monospace;"></span>
-    <span id="bp-meta-date"  style="font-size:10px;opacity:0.7;font-family:monospace;margin-left:8px;"></span>
-    <span id="bp-meta-scale" style="font-size:10px;opacity:0.7;font-family:monospace;margin-left:8px;"></span>
-    <button id="bp-close-btn" onclick="closeBlueprintPanel()" style="
-      background:none;border:none;color:#F5EDD0;font-size:18px;
-      cursor:pointer;padding:0 4px;line-height:1;">닫기</button>
-  </div>
-  <!-- 탭 바 -->
-  <div style="display:flex;border-bottom:2px solid #3A3228;background:#E8E2D5;">
-    <button id="bp-tab-plan" onclick="switchBlueprintTab('plan')" class="bp-tab active">평면도</button>
-    <button id="bp-tab-elev" onclick="switchBlueprintTab('elev')" class="bp-tab">입면도</button>
-    <button id="bp-tab-rig"  onclick="switchBlueprintTab('rig')"  class="bp-tab">줄걸이 도면</button>
-    <button id="bp-tab-site" onclick="switchBlueprintTab('site')" class="bp-tab" style="display:none">🗺 부지 통합</button>
-    <span id="bp-meta-kosha" style="margin-left:auto;padding:6px 14px;font-size:9px;
-      color:#6B5C48;font-family:monospace;align-self:center;"></span>
-  </div>
-  <!-- 캔버스 -->
-  <canvas id="bp-canvas" width="1060" height="620"
-    style="width:100%;height:auto;display:block;"></canvas>
-</div>
+  <!-- ④ 상호작용 프롬프트 -->
+  <div id="interact-prompt">[E] 상호작용</div>
 
-<style>
-/* Blueprint panel — display:flex only when visible, none when hidden.
-   ID+class specificity (110) beats .panel.hidden (20) and #blueprint-panel (100). */
-#blueprint-panel { display: flex; flex-direction: column; }
-#blueprint-panel.hidden { display: none; }
+  <!-- ⑤ 액션 알림 토스트 -->
+  <div id="action-notif"></div>
 
-.bp-tab {
-  padding:7px 18px; background:none; border:none; cursor:pointer;
-  font-size:13px; font-weight:600; color:#6B5C48;
-  border-bottom:3px solid transparent; transition:all 0.15s;
-  font-family:'Pretendard',-apple-system,sans-serif;
-}
-.bp-tab:hover { color:#3A3228; background:rgba(0,0,0,0.05); }
-.bp-tab.active { color:#3A3228; border-bottom-color:#3A3228; }
-</style>
+  <!-- ⑥ 플래시 오버레이 (사고 연출) -->
+  <div id="flash-overlay"></div>
 
-<!-- GLB loading indicator -->
-<div id="glb-loading" class="hidden" style="position:fixed;bottom:20px;right:20px;padding:8px 14px;background:rgba(0,0,0,0.7);color:#fff;border-radius:8px;font-size:13px;z-index:999;">캐릭터 로딩 중…</div>
-
-<!-- Signboard inventory bar -->
-<div id="signboard-bar" class="hidden"></div>
-<button class="inv-toggle-btn" id="inv-toggle-btn" onclick="toggleSignboardMode()" title="안전표지 설치">
-  🪧 표지 설치
-</button>
-
-<!-- Certificate overlay -->
-<div id="certificate-overlay" class="hidden">
-  <div id="certificate"></div>
-  <div class="cert-btns" style="margin-top:12px;">
-    <button class="cert-print-btn" onclick="window.print()">🖨 인쇄 / PDF 저장</button>
-    <button class="cert-hub-btn" onclick="goHub()">허브로</button>
-  </div>
-</div>
-
-<!-- Player name input (shown before game start) -->
-<div id="name-input-overlay">
-  <div class="name-input-title">BULSA</div>
-  <p class="name-input-sub">줄걸이 · 인양 작업 시나리오</p>
-  <input type="text" id="player-name-input" placeholder="이름을 입력하세요" maxlength="20"
-    onkeydown="if(event.key==='Enter') submitPlayerName()">
-  <button class="name-submit-btn" onclick="submitPlayerName()">시작</button>
-</div>
-
-<!-- Mobile joystick -->
-<div id="joystick-wrap">
+  <!-- ⑦ 모바일 컨트롤 -->
   <div id="joystick-base">
     <div id="joystick-knob"></div>
   </div>
-</div>
-<!-- Mobile look area (right side swipe) -->
-<div id="mobile-look"></div>
+  <div id="mobile-look"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/SSAOShader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/SSAOPass.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/yuka@0.7.8/build/yuka.min.js"></script>
-<script src="vendor/cannon.min.js"></script>
-<script src="core/physics.js"></script>
-<script src="core/inspector.js"></script>
-<script src="core/juice.js"></script>
-<script src="core/tutorial.js"></script>
-<script src="core/npc_chat.js"></script>
-<script src="core/pause_menu.js"></script>
-<script src="core/achievements.js"></script>
-<script src="core/bgm.js"></script>
-<script src="core/sfx_ext.js"></script>
-<script src="core/loading.js"></script>
-<script src="core/intro.js"></script>
-<script src="core/stats.js"></script>
-<script src="core/perf.js"></script>
-<script src="core/crash.js"></script>
-<script src="core/seo.js"></script>
-<script src="core/pickup.js"></script>
-<script src="core/weather_fx.js"></script>
-<script src="core/events.js"></script>
-<script src="core/interact_glow.js"></script>
-<script src="core/objective_marker.js"></script>
-<script src="core/scene_decor.js"></script>
-<script src="i18n/strings.js"></script>
-<script src="blueprints/lifting-plan.js"></script>
-<script src="blueprints/unified-plan.js"></script>
-<script src="blueprints/viewer.js"></script>
-<script src="scenarios/lifting/blueprints/structure-builder.js"></script>
-<script src="scenarios/lifting/blueprints/blueprint-manager.js"></script>
-<script src="scenarios/manifest.js"></script>
-<script src="scenarios/lifting/data.js"></script>
-<script src="scenarios/lifting/calc.js"></script>
-<script src="scenarios/lifting/scene.js"></script>
-<script src="scenarios/lifting/hazards.js"></script>
-<script src="scenarios/excavation/data.js"></script>
-<script src="scenarios/excavation/scene.js"></script>
-<script src="scenarios/excavation/hazards.js"></script>
-<script src="scenarios/excavation/actions.js"></script>
-<script src="core/minigame.js"></script>
-<script src="scenarios/excavation/survey_minigame.js"></script>
-<script src="scenarios/excavation/shoring_minigame.js"></script>
-<script src="scenarios/excavation/railing_minigame.js"></script>
-<script src="scenarios/excavation/signal_minigame.js"></script>
-<script src="scenarios/foundation/data.js"></script>
-<script src="scenarios/foundation/scene.js"></script>
-<script src="scenarios/foundation/hazards.js"></script>
-<script src="scenarios/foundation/actions.js"></script>
-<script src="scenarios/foundation/rebar_minigame.js"></script>
-<script src="scenarios/envelope/data.js"></script>
-<script src="scenarios/envelope/scene.js"></script>
-<script src="scenarios/envelope/hazards.js"></script>
-<script src="scenarios/envelope/actions.js"></script>
-<script src="scenarios/envelope/scaffold_minigame.js"></script>
-<script src="scenarios/mep_finish/data.js"></script>
-<script src="scenarios/mep_finish/scene.js"></script>
-<script src="scenarios/mep_finish/hazards.js"></script>
-<script src="scenarios/mep_finish/actions.js"></script>
-<script src="scenarios/mep_finish/mep_minigame.js"></script>
-<script src="core/hud.js"></script>
-<script src="core/accident.js"></script>
-<script src="core/unsafe.js"></script>
-<script src="core/avatar.js"></script>
-<script src="core/skill.js"></script>
-<script src="core/inventory.js"></script>
-<script src="scenarios/lifting/actions.js"></script>
-<script src="scenarios/lifting/formwork_minigame.js"></script>
-<script src="scenarios/lifting/pour_minigame.js"></script>
-<script src="scenarios/lifting/rc_loop.js"></script>
-<script src="core/interaction.js"></script>
-<script src="core/player.js"></script>
-<!-- engine.js 먼저: const GAME 선언 필요. tasks.js 등은 GAME 참조하므로 뒤. -->
-<script src="core/engine.js"></script>
-<script src="core/tasks.js"></script>
-<script src="core/interference.js"></script>
-<script src="core/task_chips.js"></script>
-<!-- v3 페이즈 컨트롤러 — engine.js 의 post-init 가 setTimeout(0) 로 호출 -->
-<script src="core/phase_controller.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
-<script src="core/assets.js"></script>
-<script src="core/character.js"></script>
-<script src="core/tex_loader.js"></script>
-<script src="core/motion.js"></script>
-<!-- v4 행위 기반 시스템 — material→carry→hazard_zone→act→marker 순서 필수 -->
-<script src="core/material.js"></script>
-<script src="core/carry.js"></script>
-<script src="core/hazard_zone.js"></script>
-<script src="core/act.js"></script>
-<script src="core/marker.js"></script>
-<script src="core/anim_gen.js"></script>
-<script src="core/phase_v4.js"></script>
-<script src="core/pour.js"></script>
-<script src="core/guidance.js"></script>
-<script src="core/excavator.js"></script>
-<script src="core/instruction_history.js"></script>
-<script src="core/debug_console.js"></script>
-<script src="core/accident_labels.js"></script>
-<script src="core/accident_library.js"></script>
-<script src="core/unified_achievements.js"></script>
-<script src="core/timepressure.js"></script>
-<script src="core/sound.js"></script>
-<script src="core/minimap.js"></script>
-<script src="core/weather.js"></script>
-<script src="core/save.js"></script>
-<script src="core/npc.js"></script>
-<script src="core/instruction.js"></script>
-<script src="core/npc_quickcall.js"></script>
-<script src="core/signboard.js"></script>
-<script src="core/tbm.js"></script>
-<script src="core/ending.js"></script>
-<script src="core/building.js"></script>
-<script src="core/structure.js"></script>
-<script src="core/postfx.js"></script>
+  <!-- ======================================================
+       스크립트 로딩 순서 (의존성 순)
+       ====================================================== -->
+  <script src="https://unpkg.com/three@0.167.1/build/three.min.js"></script>
+  <script src="vendor/cannon.min.js"></script>
+  <script src="i18n/strings.js"></script>
+  <script src="core/engine.js"></script>
+  <script src="core/player.js"></script>
+  <script src="core/hud.js"></script>
+  <script src="core/accident.js"></script>
+  <script src="core/sound.js"></script>
+  <script src="core/bgm.js"></script>
+  <script src="core/ending.js"></script>
 
-<script>
-  // ── Pointer-lock safety patch ─────────────────────────────
-  // Chrome 122+ returns a Promise; silence rejections in automated/iframe contexts.
-  (function() {
-    const _rpl = HTMLElement.prototype.requestPointerLock;
-    if (!_rpl) return;
-    HTMLElement.prototype.requestPointerLock = function() {
-      try {
-        const r = _rpl.call(this);
-        if (r && typeof r.catch === 'function') r.catch(function() {});
-      } catch (e) {}
-    };
-  })();
+  <script>
+    /* ─── URL 파라미터 → 언어·이름·외형 ─────────────── */
+    (function applyUrlParams() {
+      const p = new URLSearchParams(location.search);
+      const lang = p.get('lang') || 'ko';
+      const name = p.get('name') || (lang === 'ko' ? '신입' : 'Rookie');
+      const look = Number(p.get('look') || 0);
 
-  // ── Player name flow ──────────────────────────────────────
-  function submitPlayerName() {
-    const input = document.getElementById('player-name-input');
-    const name  = (input ? input.value.trim() : '') || (currentLang === 'en' ? 'Player' : '수강자');
-    GAME.state.playerName = name;
-    document.getElementById('name-input-overlay').classList.add('hidden');
-    document.getElementById('blocker').style.display = 'flex';
-  }
+      /* 언어 적용 */
+      if (typeof setLang === 'function') setLang(lang);
 
-  // ── Game start (after pointer lock / mobile tap) ─────────
-  function startGame() {
-    document.getElementById('blocker').style.display = 'none';
-    GAME.state.gameStarted = true;
-    GAME.state.phase = 1;
-    // ── 시나리오별 전용 시스템 초기화 ──
-    // lifting 시나리오 전용: NPC + 건물 단계 + 도면 + TBM + signboard
-    const isLifting = GAME.scenarioId === 'lifting';
-    if (isLifting) {
-      initNPCs();
-      initInstructions();
-      initBuilding();
-      if (typeof initStructure === 'function') initStructure();
-      initSignboard();
-      initEnding();
-      initTBM();
-      if (typeof BLUEPRINT_MANAGER !== 'undefined') {
-        BLUEPRINT_MANAGER.init().then(() => BLUEPRINT_MANAGER.setActive('warehouse'));
+      /* 이름 HUD 반영 */
+      const pName = document.getElementById('party-player-name');
+      if (pName) pName.textContent = name;
+      GAME.state.playerName = name;
+
+      /* 외형 아이콘 */
+      const avatars = ['👷','👷‍♀️','🧑‍🔧','👩‍🔧'];
+      const av = document.getElementById('party-player-avatar');
+      if (av) av.textContent = avatars[look] || avatars[0];
+
+      /* 블로커 텍스트 국제화 */
+      const hints = {
+        ko: '클릭하여 시작', en: 'Click to Start',
+        vi: 'Nhấn để bắt đầu', ar: 'انقر للبدء',
+      };
+      const controls = {
+        ko: 'WASD 이동 · 마우스 시점 · E 상호작용 · ESC 일시정지',
+        en: 'WASD Move · Mouse Look · E Interact · ESC Pause',
+        vi: 'WASD Di chuyển · Chuột Nhìn · E Tương tác · ESC Dừng',
+        ar: 'WASD للتحرك · الماوس للنظر · E للتفاعل · ESC إيقاف',
+      };
+      const bloHint = document.getElementById('blocker-hint');
+      const bloCon  = document.getElementById('blocker-controls');
+      if (bloHint) bloHint.textContent = hints[lang]    || hints.ko;
+      if (bloCon)  bloCon.textContent  = controls[lang] || controls.ko;
+    })();
+
+    /* ─── 블로커 클릭 → 게임 시작 ───────────────────── */
+    document.getElementById('blocker').addEventListener('click', function () {
+      if (GAME.state.gameStarted) return;
+      GAME.state.gameStarted = true;
+      this.classList.add('hidden');
+      setTimeout(() => { this.style.display = 'none'; }, 500);
+      const canvas = document.getElementById('gameCanvas');
+      if (canvas) canvas.requestPointerLock();
+    });
+
+    /* ─── ESC 일시정지 ───────────────────────────────── */
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Escape' && GAME.state.gameStarted && !GAME.state.gameOver) {
+        GAME.state.paused = !GAME.state.paused;
+        if (GAME.state.paused) document.exitPointerLock();
       }
-    } else {
-      // 비-lifting: 분위기 NPC 2~3명 + ending(컷씬·수료증) 활성. 건물.js·TBM 제외
-      initNPCs();
-      initEnding();
-      // HUD 양중 전용 표시 숨김
-      const f = document.getElementById('hud-floors'); if (f) f.classList.add('hidden');
-      const b = document.getElementById('building-progress'); if (b) b.style.display = 'none';
-    }
-    if (typeof initTimePressure === 'function') initTimePressure();
-    updateHUD();
-    _openBriefing();
-    // 튜토리얼은 브리핑 닫힌 후로 지연 (4초)
-    if (typeof showTutorialIfFirst === 'function') setTimeout(showTutorialIfFirst, 4500);
-    if (typeof playScenarioIntro === 'function') playScenarioIntro();
-    if (typeof startBGM === 'function') startBGM(GAME.scenarioId);
-    if (typeof applyDifficulty === 'function') {
-      let d = 'normal'; try { d = localStorage.getItem('bulsa_difficulty') || 'normal'; } catch (e) {}
-      applyDifficulty(d);
-    }
-  }
+    });
 
-  // ── Work briefing — 시나리오별 ──────────────────────────────
-  function _openBriefing() {
-    const ov = document.getElementById('briefing-overlay');
-    if (!ov) return;
-    const sid = GAME.scenarioId;
-    const briefings = {
-      excavation: {
-        title: '토공사 · 굴착 작업',
-        context: '오늘 작업은 부지 굴착 + 흙막이 가시설 설치입니다. 매설물 사전조사 → 작업계획서 작성 → 안전난간·신호수 배치 후 굴착을 시작합니다.',
-        steps: ['📋 작업계획서 작성 — 깊이/구배/흙막이 종류 결정', '📡 매설물 사전조사 + 흙막이 점검 + 안전난간 설치', '🦺 신호수 배치 후 굴착 실행'],
-        kosha: 'KOSHA GUIDE C-39-2011 · 산안법 시행규칙 별표 3-39',
-      },
-      foundation: {
-        title: '기초공사 · 매트 타설',
-        context: '매트 기초 콘크리트 타설을 위한 거푸집·동바리·철근·펌프카 준비. 모든 자재 점검 후 타설 순서를 작업반과 합의하세요.',
-        steps: ['📋 작업계획서 — 매트 면적 / 강도 / 배근간격 결정', '🛠 철근 보호캡·거푸집 결속·펌프카 아웃트리거 점검', '🪣 타설 순서 합의 후 콘크리트 타설'],
-        kosha: 'KOSHA GUIDE C-67-2018 · 산안법 시행규칙 별표 3-25,26',
-      },
-      lifting: {
-        title: '골조 양중 · 줄걸이·인양',
-        context: '현장 감독관 지시에 따라 금일, RC 보(3,000 kg)를 타워크레인으로 5층까지 인양합니다. 현장을 직접 이동하며 필요한 조치를 수행하세요.',
-        steps: ['🔧 슬링 점검·안전핀 체결·사양서 확인·각도 측정', '🦺 신호수 위치 지정·위험구역 근로자 대피 지시', '🏗 모든 조치 후 크레인 운전석 탑승 → 인양 시작'],
-        kosha: 'KOSHA GUIDE G-133-2020 · 산안규칙 제163~167조',
-      },
-      envelope: {
-        title: '외장공사 · 비계·창호',
-        context: '5층 골조 완성 → 시스템 비계 설치 → 외벽 패널·창호 인양 및 결속. 추락방지망과 안전대 부착설비가 핵심입니다.',
-        steps: ['📋 작업계획서 — 비계 종류/높이/안전난간 단수 결정', '🪜 비계 조립검사 + 안전대 부착설비 + 외장재 결속 점검', '🦺 신호수 배치 후 외장 시공'],
-        kosha: 'KOSHA GUIDE G-110-2020 · 산안법 시행규칙 별표 3-20',
-      },
-      mep_finish: {
-        title: '설비·마감 · 전기·배관',
-        context: '전기 배선·배관 설치 및 내부 마감. LOTO(잠금/표지) 절차로 활선을 차단한 후 작업하며, 용제 사용 시 국소배기를 반드시 가동합니다.',
-        steps: ['📋 작업계획서 — 차단기 용량·배관 경로·LOTO 절차 결정', '🔒 LOTO 적용 + 가스 누설 점검 + 환기 가동', '🧯 소화기 배치 확인 → 시공 시작'],
-        kosha: 'KOSHA GUIDE G-82-2018 · 산안법 시행규칙 별표 3-15',
-      },
-    };
-    const b = briefings[sid] || briefings.lifting;
-    document.getElementById('briefing-badge').textContent    = t('briefingBadge');
-    document.getElementById('briefing-scenario').textContent = b.title;
-    document.getElementById('briefing-lbl-ctx').textContent  = t('briefingLabelContext');
-    document.getElementById('briefing-context').textContent  = b.context;
-    document.getElementById('briefing-lbl-steps').textContent = t('briefingLabelSteps');
-    const ol = document.getElementById('briefing-steps');
-    ol.innerHTML = '';
-    b.steps.forEach(s => { const li = document.createElement('li'); li.textContent = s; ol.appendChild(li); });
-    document.getElementById('briefing-kosha').textContent = b.kosha;
-    document.getElementById('briefing-btn').textContent   = t('briefingBtn');
-    ov.classList.remove('hidden');
-  }
-
-  function closeBriefing() {
-    document.getElementById('briefing-overlay').classList.add('hidden');
-    if (window.matchMedia('(pointer: fine)').matches) {
-      GAME.renderer.domElement.requestPointerLock();
-    }
-    _updateCamBtns();
-  }
-
-  // ── Camera mode (delegated to player.js) ─────────────────
-  function toggleCamMode() { if (typeof _toggleCamFpsTps === 'function') _toggleCamFpsTps(); }
-  function cycleFixedCam()  { if (typeof _cycleFixedCam  === 'function') _cycleFixedCam();  }
-  function _updateCamBtns() {
-    const b1 = document.getElementById('cam-fps-btn');
-    const b2 = document.getElementById('cam-fixed-btn');
-    if (!b1 || !b2 || typeof PLAYER === 'undefined') return;
-    const modeLabels = { fps: t('camFps'), tps: t('camTps'), fixed: t('camFixed') };
-    b1.textContent = modeLabels[PLAYER.camMode] || t('camFps');
-    b2.textContent = PLAYER.camMode === 'fixed'
-      ? `고정 ${PLAYER.fixedCamIdx + 1}/${PLAYER._fixedCamCount || 4}`
-      : t('camFixed');
-    b1.classList.toggle('cam-active', PLAYER.camMode !== 'fps');
-    b2.classList.toggle('cam-active', PLAYER.camMode === 'fixed');
-  }
-
-  function retryGame() { window.location.reload(); }
-  function goHub()     { window.location.href = 'index.html'; }
-  function goNextScenario() {
-    if (GAME && GAME.nextScenarioId) {
-      window.location.href = location.pathname + '?s=' + GAME.nextScenarioId;
-    }
-  }
-
-  // Late init — after all scripts loaded
-  window.addEventListener('load', () => {
-    if (typeof MINIMAP !== 'undefined') MINIMAP.init();
-    if (typeof WEATHER !== 'undefined' && GAME._sun) WEATHER.init(GAME._sun);
-  });
-</script>
-
+    /* ─── showActionNotif 전역 함수 ──────────────────── */
+    (function initNotif() {
+      const el = document.getElementById('action-notif');
+      let timer = null;
+      window.showActionNotif = function(msg, duration) {
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(timer);
+        timer = setTimeout(() => el.classList.remove('show'), duration || 3000);
+      };
+    })();
+  </script>
 </body>
 </html>
