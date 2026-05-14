@@ -43,10 +43,87 @@
       <div>
         <span class="name-label" id="look-label">외형 선택</span>
         <div class="look-grid" id="look-grid">
-          <button class="look-opt selected" data-look="0">👷</button>
-          <button class="look-opt" data-look="1">👷‍♀️</button>
-          <button class="look-opt" data-look="2">🧑‍🔧</button>
-          <button class="look-opt" data-look="3">👩‍🔧</button>
+
+          <!-- 0: 주황 안전모 -->
+          <button class="look-opt selected" data-look="0" aria-label="외형 A">
+            <svg viewBox="0 0 60 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="30" cy="16" rx="23" ry="7" fill="#F97316"/>
+              <rect x="10" y="19" width="40" height="4" rx="2" fill="#ea6800"/>
+              <ellipse cx="30" cy="36" rx="17" ry="19" fill="#FBBF80"/>
+              <circle cx="23" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="25" cy="31.5" r="1" fill="#fff"/>
+              <circle cx="37" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="39" cy="31.5" r="1" fill="#fff"/>
+              <path d="M24 43 Q30 47 36 43" stroke="#c97b50" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <rect x="17" y="54" width="26" height="22" rx="5" fill="#F97316"/>
+              <rect x="22" y="54" width="16" height="4" rx="2" fill="#fff" opacity=".3"/>
+              <rect x="7"  y="55" width="9"  height="18" rx="4" fill="#FBBF80"/>
+              <rect x="44" y="55" width="9"  height="18" rx="4" fill="#FBBF80"/>
+              <rect x="18" y="75" width="10" height="13" rx="3" fill="#374151"/>
+              <rect x="32" y="75" width="10" height="13" rx="3" fill="#374151"/>
+              <rect x="17" y="85" width="12" height="5"  rx="2" fill="#1e2936"/>
+              <rect x="31" y="85" width="12" height="5"  rx="2" fill="#1e2936"/>
+            </svg>
+          </button>
+
+          <!-- 1: 노란 안전모 -->
+          <button class="look-opt" data-look="1" aria-label="외형 B">
+            <svg viewBox="0 0 60 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="30" cy="16" rx="23" ry="7" fill="#FCD34D"/>
+              <rect x="10" y="19" width="40" height="4" rx="2" fill="#e0b800"/>
+              <ellipse cx="30" cy="36" rx="17" ry="19" fill="#f5c07a"/>
+              <circle cx="23" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="25" cy="31.5" r="1" fill="#fff"/>
+              <circle cx="37" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="39" cy="31.5" r="1" fill="#fff"/>
+              <path d="M24 43 Q30 47 36 43" stroke="#b8793a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <rect x="17" y="54" width="26" height="22" rx="5" fill="#3B82F6"/>
+              <rect x="22" y="54" width="16" height="4" rx="2" fill="#fff" opacity=".3"/>
+              <rect x="7"  y="55" width="9"  height="18" rx="4" fill="#f5c07a"/>
+              <rect x="44" y="55" width="9"  height="18" rx="4" fill="#f5c07a"/>
+              <rect x="18" y="75" width="10" height="13" rx="3" fill="#1e3a5f"/>
+              <rect x="32" y="75" width="10" height="13" rx="3" fill="#1e3a5f"/>
+              <rect x="17" y="85" width="12" height="5"  rx="2" fill="#111c2e"/>
+              <rect x="31" y="85" width="12" height="5"  rx="2" fill="#111c2e"/>
+            </svg>
+          </button>
+
+          <!-- 2: 흰 안전모 -->
+          <button class="look-opt" data-look="2" aria-label="외형 C">
+            <svg viewBox="0 0 60 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="30" cy="16" rx="23" ry="7" fill="#e8e8e8"/>
+              <rect x="10" y="19" width="40" height="4" rx="2" fill="#c0c0c0"/>
+              <ellipse cx="30" cy="36" rx="17" ry="19" fill="#c8976a"/>
+              <circle cx="23" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="25" cy="31.5" r="1" fill="#fff"/>
+              <circle cx="37" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="39" cy="31.5" r="1" fill="#fff"/>
+              <path d="M24 43 Q30 47 36 43" stroke="#8a5e35" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <rect x="17" y="54" width="26" height="22" rx="5" fill="#22C55E"/>
+              <rect x="22" y="54" width="16" height="4" rx="2" fill="#fff" opacity=".3"/>
+              <rect x="7"  y="55" width="9"  height="18" rx="4" fill="#c8976a"/>
+              <rect x="44" y="55" width="9"  height="18" rx="4" fill="#c8976a"/>
+              <rect x="18" y="75" width="10" height="13" rx="3" fill="#14532d"/>
+              <rect x="32" y="75" width="10" height="13" rx="3" fill="#14532d"/>
+              <rect x="17" y="85" width="12" height="5"  rx="2" fill="#0a2e14"/>
+              <rect x="31" y="85" width="12" height="5"  rx="2" fill="#0a2e14"/>
+            </svg>
+          </button>
+
+          <!-- 3: 빨간 안전모 -->
+          <button class="look-opt" data-look="3" aria-label="외형 D">
+            <svg viewBox="0 0 60 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="30" cy="16" rx="23" ry="7" fill="#EF4444"/>
+              <rect x="10" y="19" width="40" height="4" rx="2" fill="#c02020"/>
+              <ellipse cx="30" cy="36" rx="17" ry="19" fill="#a87850"/>
+              <circle cx="23" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="25" cy="31.5" r="1" fill="#fff"/>
+              <circle cx="37" cy="33" r="3.2" fill="#1a1a1a"/><circle cx="39" cy="31.5" r="1" fill="#fff"/>
+              <path d="M24 43 Q30 47 36 43" stroke="#6e4420" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+              <rect x="17" y="54" width="26" height="22" rx="5" fill="#6B21A8"/>
+              <rect x="22" y="54" width="16" height="4" rx="2" fill="#fff" opacity=".3"/>
+              <rect x="7"  y="55" width="9"  height="18" rx="4" fill="#a87850"/>
+              <rect x="44" y="55" width="9"  height="18" rx="4" fill="#a87850"/>
+              <rect x="18" y="75" width="10" height="13" rx="3" fill="#3b0764"/>
+              <rect x="32" y="75" width="10" height="13" rx="3" fill="#3b0764"/>
+              <rect x="17" y="85" width="12" height="5"  rx="2" fill="#1e0033"/>
+              <rect x="31" y="85" width="12" height="5"  rx="2" fill="#1e0033"/>
+            </svg>
+          </button>
+
         </div>
       </div>
 
