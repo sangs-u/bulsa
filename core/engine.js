@@ -96,7 +96,7 @@ function _buildScene(engine, canvas) {
   cam.lowerBetaLimit       = 0.2;
   cam.wheelDeltaPercentage = 0.01;
   cam.minZ = 0.1;
-  cam.attachControl(canvas, true);
+  cam.attachControl(false); // false = preventDefault 호출 (모바일 터치 정상 처리)
   GAME.camera = cam;
 
   return scene;
