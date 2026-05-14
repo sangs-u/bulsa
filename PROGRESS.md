@@ -112,7 +112,9 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 
 ## 발견된 버그 & 이슈
 
-없음 (v0 시작 전)
+### 모바일 미해결 (2026-05-14)
+- **한국어 선택 시 3D 화면 안 나옴** — SW 캐시 문제로 추정. SW v5 + JS 캐시 제외 + 스크립트 버전 파라미터 적용했으나 미확인. 다음 세션에서 모바일 캐시 직접 삭제 후 재테스트 필요.
+- **카메라 회전 불가 (모바일)** — `attachControl(false)` + `#joy-look` z-index 60으로 수정했으나 미확인. joy-look이 dialog보다 위에 있는지 실기기 확인 필요.
 
 ---
 
@@ -131,4 +133,5 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 | 2025-05 | 설계 | 전체 설계 확정 + 문서 작성 | - |
 | 2026-05-14 | Batch 1 | index.html 전면 재작성 (딥 네이비×라임 색상, Nunito, 로딩→언어→캐릭터 3단계, localStorage 저장) | 대기 중 |
 | 2026-05-14 | Batch 2 | Three.js → Babylon.js 전환: engine.js + player.js + game.html 전면 재작성, 현장사무소 씬, NPC 대화 4개국어 | ✅ |
-| 2026-05-14 | Batch 3 | 命 게이지 시스템: life.js + hud.js + engine.js 물 수위 메시(clip plane) + game.html HUD 확장 | 대기 중 |
+| 2026-05-14 | Batch 3 | 命 게이지 시스템: life.js + hud.js + engine.js 물 수위 메시(clip plane) + game.html HUD 확장 | ✅ 데스크톱 확인 |
+| 2026-05-14 | 모바일 버그픽스 | waterFill disableDepthWrite + attachControl(false) + SW 캐시 제외 | ⚠️ 미확인 (다음 세션 재테스트) |
