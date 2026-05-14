@@ -86,8 +86,10 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 - [x] core/player.js 재작성 (Babylon.js 기반, WASD + 모바일 조이스틱)
 
 ### Batch 3 — 命 게이지 & HUD
-- [ ] core/life.js 신규 (命 게이지, 수위 시각화)
-- [ ] core/hud.js 재작성 (미니맵 + 命게이지 + 파티창)
+- [x] core/life.js 신규 (命 게이지, safetyIndex 관리, Z/X 테스트키)
+- [x] core/hud.js 재작성 (안전지수 수치 + 파티창 수위바)
+- [x] engine.js 물 수위 메시 (플레이어 몸 안 clip plane 수위 시각화)
+- [x] game.html danger-flash / safety-badge / party-panel 추가
 
 ### Batch 4 — NPC & 현장
 - [ ] core/npc.js 재작성 (등급, 피로도, 언어장벽)
@@ -128,4 +130,5 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 |------|------|------|-----------|
 | 2025-05 | 설계 | 전체 설계 확정 + 문서 작성 | - |
 | 2026-05-14 | Batch 1 | index.html 전면 재작성 (딥 네이비×라임 색상, Nunito, 로딩→언어→캐릭터 3단계, localStorage 저장) | 대기 중 |
-| 2026-05-14 | Batch 2 | Three.js → Babylon.js 전환: engine.js + player.js + game.html 전면 재작성, 현장사무소 씬, NPC 대화 4개국어 | 대기 중 |
+| 2026-05-14 | Batch 2 | Three.js → Babylon.js 전환: engine.js + player.js + game.html 전면 재작성, 현장사무소 씬, NPC 대화 4개국어 | ✅ |
+| 2026-05-14 | Batch 3 | 命 게이지 시스템: life.js + hud.js + engine.js 물 수위 메시(clip plane) + game.html HUD 확장 | 대기 중 |
