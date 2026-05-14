@@ -311,12 +311,107 @@
       padding: 2px 7px; border-radius: 5px;
     }
 
+    /* ── 위험 플래시 오버레이 ──────────────────────────────── */
+    #danger-flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(232,90,58,0);
+      pointer-events: none;
+      z-index: 100;
+    }
+    #danger-flash.active {
+      animation: flashPulse .8s ease-out forwards;
+    }
+    @keyframes flashPulse {
+      0%   { background: rgba(232,90,58,.52); }
+      100% { background: rgba(232,90,58,0);   }
+    }
+
+    /* ── 안전지수 배지 (좌상단) ─────────────────────────────── */
+    #safety-badge {
+      position: absolute;
+      top: 60px;
+      left: 16px;
+      background: rgba(13,27,42,.78);
+      border: 1px solid var(--bdr);
+      border-radius: 8px;
+      padding: 4px 12px;
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .safety-label {
+      font-size: .62rem;
+      font-weight: 800;
+      color: var(--dim);
+      letter-spacing: .05em;
+    }
+    #safety-val {
+      font-size: .9rem;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      color: var(--acc);
+      min-width: 2.2ch;
+      text-align: right;
+    }
+
+    /* ── 파티창 (우상단) ─────────────────────────────────────── */
+    #party-panel {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      gap: 10px;
+      background: rgba(13,27,42,.72);
+      border: 1px solid var(--bdr);
+      border-radius: 12px;
+      padding: 8px 12px;
+      backdrop-filter: blur(6px);
+    }
+    .party-member {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+    .party-av {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .68rem;
+      font-weight: 900;
+    }
+    .party-life-wrap {
+      width: 5px;
+      height: 36px;
+      background: rgba(255,255,255,.1);
+      border-radius: 3px;
+      overflow: hidden;
+      position: relative;
+    }
+    .party-life-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 0%;
+      border-radius: 3px;
+      transition: height .25s ease, background .3s ease;
+    }
+
     /* 반응형 */
     @media (max-width: 520px) {
       .team-grid  { grid-template-columns: repeat(2, 1fr); }
       .bp-grid    { width: 80px; height: 56px; }
       #dialog     { padding: 16px 14px 22px; gap: 12px; }
       .dlg-avatar { width: 46px; height: 46px; font-size: 1.15rem; }
+      #party-panel { gap: 7px; padding: 6px 9px; }
+      .party-av   { width: 22px; height: 22px; font-size: .6rem; }
     }
   </style>
 </head>
@@ -325,8 +420,13 @@
 <!-- ① 3D 캔버스 (Babylon.js 렌더 타겟) -->
 <canvas id="renderCanvas"></canvas>
 
-<!-- ② HUD -->
+<!-- ② 위험 플래시 -->
+<div id="danger-flash"></div>
+
+<!-- ③ HUD -->
 <div id="hud">
+
+  <!-- 좌상단: 플레이어 배지 -->
   <div id="hud-player">
     <div class="hud-avatar" id="hud-av">新</div>
     <div>
@@ -334,13 +434,40 @@
       <div class="hud-role">신입 현장인부</div>
     </div>
   </div>
+
+  <!-- 좌상단: 安全지수 (플레이어 배지 아래) -->
+  <div id="safety-badge">
+    <span class="safety-label">命</span>
+    <span id="safety-val">100</span>
+  </div>
+
+  <!-- 우상단: 파티창 -->
+  <div id="party-panel">
+    <div class="party-member">
+      <div class="party-av" style="color:#F97316">김</div>
+      <div class="party-life-wrap"><div class="party-life-bar" id="party-life-0"></div></div>
+    </div>
+    <div class="party-member">
+      <div class="party-av" style="color:#FCD34D">이</div>
+      <div class="party-life-wrap"><div class="party-life-bar" id="party-life-1"></div></div>
+    </div>
+    <div class="party-member">
+      <div class="party-av" style="color:#C8D8E8">박</div>
+      <div class="party-life-wrap"><div class="party-life-bar" id="party-life-2"></div></div>
+    </div>
+    <div class="party-member">
+      <div class="party-av" style="color:#8DC63F">응</div>
+      <div class="party-life-wrap"><div class="party-life-bar" id="party-life-3"></div></div>
+    </div>
+  </div>
+
 </div>
 
-<!-- ③ 모바일 조이스틱 -->
+<!-- ④ 모바일 조이스틱 -->
 <div id="joy-base"><div id="joy-nub"></div></div>
 <div id="joy-look"></div>
 
-<!-- ④ NPC 대화창 -->
+<!-- ⑤ NPC 대화창 -->
 <div id="dialog" class="hidden">
 
   <!-- 좌: NPC 초상화 -->
@@ -367,6 +494,8 @@
 <script src="i18n/strings.js"></script>
 <script src="core/engine.js"></script>
 <script src="core/player.js"></script>
+<script src="core/life.js"></script>
+<script src="core/hud.js"></script>
 
 <script>
 /* ─── HUD 초기화 ─────────────────────────────────────────── */

@@ -11,7 +11,8 @@ const GAME = {
   shadowGen: null,
   player:    null,
   npcBoss:   null,
-  walls:     [],   // 벽·천장 메시 (카메라 오클루전 페이드 대상)
+  waterMesh: null,  // 命 게이지 수위 시각화 메시
+  walls:     [],    // 벽·천장 메시 (카메라 오클루전 페이드 대상)
   state: {
     gameStarted:  false,
     gameOver:     false,
@@ -233,7 +234,43 @@ function _buildOfficeScene(scene) {
   player.receiveShadows = true;
   sg.addShadowCaster(player);
   player.material     = pbr('playerMat', 0.55, 0.78, 0.24, 0.55, 0.1);
+  // 반투명 외피 — 내부 물 수위가 비쳐 보이도록
+  player.material.alpha              = 0.62;
+  player.material.transparencyMode   = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+  player.material.backFaceCulling    = false;
   GAME.player = player;
+
+  // ── 物 수위 메시 (命 게이지 시각화) ─────────────────────
+  const waterFill = M.CreateCapsule('playerWater',
+    { radius: 0.28, height: 1.58, tessellation: 14 }, scene);
+  waterFill.parent     = player;          // 플레이어 위치 자동 추적
+  waterFill.position   = BABYLON.Vector3.Zero();
+  waterFill.isPickable = false;
+
+  const waterMat = new BABYLON.PBRMaterial('waterFillMat', scene);
+  waterMat.albedoColor   = new BABYLON.Color3(0.08, 0.42, 0.92);
+  waterMat.emissiveColor = new BABYLON.Color3(0.00, 0.22, 0.60);
+  waterMat.roughness     = 0.05;
+  waterMat.metallic      = 0;
+  waterMat.alpha         = 0;
+  waterMat.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+  waterFill.material = waterMat;
+  GAME.waterMesh = waterFill;
+
+  // 클립 플레인으로 수위 높이 제어
+  waterFill.onBeforeRenderObservable.add(() => {
+    const lw = GAME.state.lifeWater;
+    if (lw < 2) { waterMat.alpha = 0; return; }
+
+    const wpos    = player.getAbsolutePosition();
+    const bottomY = wpos.y - 0.85;                          // 캡슐 하단
+    const clipY   = bottomY + 1.7 * Math.min(lw, 100) / 100; // 수위선
+    scene.clipPlane = new BABYLON.Plane(0, 1, 0, -clipY);   // y > clipY 클립
+    waterMat.alpha  = Math.min(lw, 100) / 100 * 0.82;
+  });
+  waterFill.onAfterRenderObservable.add(() => {
+    scene.clipPlane = null;
+  });
 
   // ── 발주처 NPC 캡슐 (블루) ────────────────────────────────
   const npc = M.CreateCapsule('npcBoss',
