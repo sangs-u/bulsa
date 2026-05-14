@@ -1,26 +1,23 @@
 {
   "name": "bulsa",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "불사(BULSA) — 건설 안전 시뮬레이터",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test",
-    "qa": "node qa/visual-test.js",
-    "check": "node qa/syntax-check.js"
+    "check": "node qa/syntax-check.js",
+    "serve": "node qa/static-server.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sangs-u/bulsa.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/sangs-u/bulsa/issues"
-  },
-  "homepage": "https://github.com/sangs-u/bulsa#readme",
   "dependencies": {
+    "@babylonjs/core": "^7.0.0",
+    "@babylonjs/loaders": "^7.0.0"
+  },
+  "devDependencies": {
     "@playwright/test": "^1.59.1",
     "playwright": "^1.59.1"
   }

@@ -3,152 +3,608 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>불사(BULSA)</title>
-  <link rel="stylesheet" href="style.css">
+  <title>불사(BULSA) — 건설 안전 시뮬레이터</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.webmanifest">
+  <style>
+    :root {
+      --bg-p: #0D1B2A;
+      --bg-s: #162840;
+      --bg-t: #2A4A6B;
+      --acc:  #8DC63F;
+      --dng:  #E85A3A;
+      --txt:  #C8D8E8;
+      --dim:  #3A6B9A;
+      --bdr:  #2A4A6B;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg-p);
+      font-family: 'Nunito', 'Noto Sans KR', sans-serif;
+      color: var(--txt);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    /* ── 캔버스 ─────────────────────────────────────────── */
+    #renderCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+    }
+
+    /* ── HUD 레이어 ─────────────────────────────────────── */
+    #hud {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #hud-player {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(13,27,42,.75);
+      border: 1px solid var(--bdr);
+      border-radius: 12px;
+      padding: 8px 14px 8px 10px;
+      backdrop-filter: blur(6px);
+    }
+    .hud-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(141,198,63,.2);
+      border: 1.5px solid var(--acc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      font-weight: 900;
+      color: var(--acc);
+    }
+    .hud-name {
+      font-size: .82rem;
+      font-weight: 800;
+      color: var(--txt);
+    }
+    .hud-role {
+      font-size: .62rem;
+      color: var(--dim);
+    }
+
+    /* ── 모바일 조이스틱 ─────────────────────────────────── */
+    #joy-base {
+      display: none;
+      position: fixed;
+      bottom: 120px;
+      left: 40px;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: rgba(42,74,107,.45);
+      border: 2px solid rgba(141,198,63,.35);
+      z-index: 20;
+      pointer-events: auto;
+    }
+    #joy-nub {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(141,198,63,.7);
+      border: 2px solid var(--acc);
+    }
+    #joy-look {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 55%;
+      height: 50%;
+      z-index: 19;
+      pointer-events: auto;
+    }
+
+    /* ── 대화창 ──────────────────────────────────────────── */
+    #dialog {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      background: linear-gradient(to bottom, rgba(13,27,42,0) 0%, rgba(13,27,42,.96) 14%);
+      padding: 20px 20px 28px;
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      transition: opacity .35s ease, transform .35s ease;
+      pointer-events: auto;
+    }
+    #dialog.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(24px);
+    }
+
+    /* 초상화 열 */
+    .dlg-portrait-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .dlg-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 900;
+      border: 2px solid;
+      flex-shrink: 0;
+    }
+    .dlg-npc-name {
+      font-size: .72rem;
+      font-weight: 800;
+      color: var(--txt);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .dlg-npc-role {
+      font-size: .6rem;
+      color: var(--dim);
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* 텍스트 열 */
+    .dlg-content-col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    #dlg-text {
+      font-size: clamp(.88rem, 2.8vw, 1rem);
+      font-weight: 600;
+      color: var(--txt);
+      line-height: 1.65;
+      min-height: 2.8em;
+      white-space: pre-wrap;
+    }
+    #dlg-extra { /* 도면/팀 카드 영역 */ }
+    #dlg-choices {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+    .dlg-btn {
+      padding: 10px 22px;
+      border-radius: 10px;
+      border: 1.5px solid var(--bdr);
+      background: rgba(255,255,255,.06);
+      color: var(--txt);
+      font-size: .88rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .18s ease;
+    }
+    .dlg-btn:hover {
+      border-color: var(--acc);
+      background: rgba(141,198,63,.12);
+      color: var(--acc);
+    }
+    .dlg-btn.accent {
+      background: var(--acc);
+      border-color: var(--acc);
+      color: #0D1B2A;
+      box-shadow: 0 4px 18px rgba(141,198,63,.32);
+    }
+    .dlg-btn.accent:hover {
+      background: #9ed647;
+      transform: translateY(-2px);
+      box-shadow: 0 7px 24px rgba(141,198,63,.45);
+      color: #0D1B2A;
+    }
+
+    /* 도면 */
+    .blueprint {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      background: rgba(13,27,42,.85);
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .bp-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: 1.4fr 1fr;
+      gap: 3px;
+      width: 110px;
+      height: 72px;
+    }
+    .bp-room {
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .5rem;
+      font-weight: 700;
+    }
+    .bp-room.main  { background: rgba(141,198,63,.12); border: 1px solid rgba(141,198,63,.4); color: rgba(141,198,63,.85); }
+    .bp-room.sub   { background: rgba(58,107,154,.12); border: 1px solid rgba(58,107,154,.5); color: rgba(58,107,154,.9); }
+    .bp-room.base  { grid-column: 1/-1; background: rgba(232,90,58,.1); border: 1px solid rgba(232,90,58,.35); color: rgba(232,90,58,.8); }
+    .bp-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .bp-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--txt);
+    }
+    .bp-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* 팀 카드 */
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .team-card {
+      background: rgba(22,40,64,.9);
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 9px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .tc-av {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .95rem;
+      font-weight: 900;
+      border: 1.5px solid currentColor;
+    }
+    .tc-name { font-size: .68rem; font-weight: 800; color: var(--txt); text-align: center; }
+    .tc-role { font-size: .58rem; color: var(--dim); text-align: center; line-height: 1.3; }
+    .tc-tag  {
+      font-size: .58rem; font-weight: 800;
+      padding: 2px 7px; border-radius: 5px;
+    }
+
+    /* 반응형 */
+    @media (max-width: 520px) {
+      .team-grid  { grid-template-columns: repeat(2, 1fr); }
+      .bp-grid    { width: 80px; height: 56px; }
+      #dialog     { padding: 16px 14px 22px; gap: 12px; }
+      .dlg-avatar { width: 46px; height: 46px; font-size: 1.15rem; }
+    }
+  </style>
 </head>
-<body class="game">
+<body>
 
-  <!-- ① 3D 캔버스 -->
-  <canvas id="gameCanvas"></canvas>
+<!-- ① 3D 캔버스 (Babylon.js 렌더 타겟) -->
+<canvas id="renderCanvas"></canvas>
 
-  <!-- ② 시작 블로커 -->
-  <div id="blocker">
-    <div class="blocker-title">불사 <span style="color:var(--text-dim);font-size:0.5em">不死</span></div>
-    <div id="blocker-scenario">건설 안전 시뮬레이터</div>
-    <div class="blocker-divider"></div>
-    <div id="blocker-controls">WASD 이동 · 마우스 시점 · E 상호작용 · ESC 일시정지</div>
-    <div class="blocker-hint" id="blocker-hint">클릭하여 시작</div>
+<!-- ② HUD -->
+<div id="hud">
+  <div id="hud-player">
+    <div class="hud-avatar" id="hud-av">新</div>
+    <div>
+      <div class="hud-name"  id="hud-name">로딩 중...</div>
+      <div class="hud-role">신입 현장인부</div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 모바일 조이스틱 -->
+<div id="joy-base"><div id="joy-nub"></div></div>
+<div id="joy-look"></div>
+
+<!-- ④ NPC 대화창 -->
+<div id="dialog" class="hidden">
+
+  <!-- 좌: NPC 초상화 -->
+  <div class="dlg-portrait-col">
+    <div class="dlg-avatar" id="dlg-avatar">박</div>
+    <div class="dlg-npc-name" id="dlg-npc-name">박 부장</div>
+    <div class="dlg-npc-role" id="dlg-npc-role">발주처 대표</div>
   </div>
 
-  <!-- ③ HUD -->
-  <div id="hud">
-
-    <!-- 命 게이지 (캐릭터 수위) -->
-    <div id="life-gauge">
-      <div class="life-body">
-        <div class="life-water" id="life-water"></div>
-        <div class="life-char">命</div>
-      </div>
-      <div class="life-pct" id="life-pct">100</div>
-    </div>
-
-    <!-- 미니맵 -->
-    <div id="minimap-wrap">
-      <canvas id="minimap-canvas"></canvas>
-      <span class="minimap-label">MAP</span>
-    </div>
-
-    <!-- 파티창 -->
-    <div id="party-bar">
-      <div class="party-member" id="party-player">
-        <div class="party-avatar" id="party-player-avatar">👷</div>
-        <div class="party-info">
-          <div class="party-name" id="party-player-name">플레이어</div>
-          <div class="party-hp-bar"><div class="party-hp-fill" id="party-player-hp" style="width:100%"></div></div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /#hud -->
-
-  <!-- ④ 상호작용 프롬프트 -->
-  <div id="interact-prompt">[E] 상호작용</div>
-
-  <!-- ⑤ 액션 알림 토스트 -->
-  <div id="action-notif"></div>
-
-  <!-- ⑥ 플래시 오버레이 (사고 연출) -->
-  <div id="flash-overlay"></div>
-
-  <!-- ⑦ 모바일 컨트롤 -->
-  <div id="joystick-base">
-    <div id="joystick-knob"></div>
+  <!-- 우: 텍스트 + 선택지 -->
+  <div class="dlg-content-col">
+    <div id="dlg-text"></div>
+    <div id="dlg-extra"></div>
+    <div id="dlg-choices"></div>
   </div>
-  <div id="mobile-look"></div>
 
-  <!-- ======================================================
-       스크립트 로딩 순서 (의존성 순)
-       ====================================================== -->
-  <script src="https://unpkg.com/three@0.167.1/build/three.min.js"></script>
-  <script src="vendor/cannon.min.js"></script>
-  <script src="i18n/strings.js"></script>
-  <script src="core/engine.js"></script>
-  <script src="core/player.js"></script>
-  <script src="core/hud.js"></script>
-  <script src="core/accident.js"></script>
-  <script src="core/sound.js"></script>
-  <script src="core/bgm.js"></script>
-  <script src="core/ending.js"></script>
+</div>
 
-  <script>
-    /* ─── URL 파라미터 → 언어·이름·외형 ─────────────── */
-    (function applyUrlParams() {
-      const p = new URLSearchParams(location.search);
-      const lang = p.get('lang') || 'ko';
-      const name = p.get('name') || (lang === 'ko' ? '신입' : 'Rookie');
-      const look = Number(p.get('look') || 0);
+<!-- ======================================================
+     스크립트 로딩 순서
+     ====================================================== -->
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<script src="i18n/strings.js"></script>
+<script src="core/engine.js"></script>
+<script src="core/player.js"></script>
 
-      /* 언어 적용 */
-      if (typeof setLang === 'function') setLang(lang);
+<script>
+/* ─── HUD 초기화 ─────────────────────────────────────────── */
+(function applyHud() {
+  const name  = GAME.state.playerName || '신입';
+  const look  = GAME.state.look;
+  const avColors = ['#F97316','#FCD34D','#E8E8E8','#8DC63F'];
+  const avEl  = document.getElementById('hud-av');
+  const nameEl = document.getElementById('hud-name');
 
-      /* 이름 HUD 반영 */
-      const pName = document.getElementById('party-player-name');
-      if (pName) pName.textContent = name;
-      GAME.state.playerName = name;
+  nameEl.textContent = name;
+  avEl.textContent   = name[0] || '新';
+  avEl.style.borderColor  = avColors[look] || avColors[0];
+  avEl.style.color        = avColors[look] || avColors[0];
+  avEl.style.background   = (avColors[look] || '#F97316') + '22';
+})();
 
-      /* 외형 아이콘 */
-      const avatars = ['👷','👷‍♀️','🧑‍🔧','👩‍🔧'];
-      const av = document.getElementById('party-player-avatar');
-      if (av) av.textContent = avatars[look] || avatars[0];
+/* ─── 모바일 조이스틱 표시 ───────────────────────────────── */
+if ('ontouchstart' in window) {
+  document.getElementById('joy-base').style.display = 'block';
+  document.getElementById('joy-look').style.display = 'block';
+}
 
-      /* 블로커 텍스트 국제화 */
-      const hints = {
-        ko: '클릭하여 시작', en: 'Click to Start',
-        vi: 'Nhấn để bắt đầu', ar: 'انقر للبدء',
-      };
-      const controls = {
-        ko: 'WASD 이동 · 마우스 시점 · E 상호작용 · ESC 일시정지',
-        en: 'WASD Move · Mouse Look · E Interact · ESC Pause',
-        vi: 'WASD Di chuyển · Chuột Nhìn · E Tương tác · ESC Dừng',
-        ar: 'WASD للتحرك · الماوس للنظر · E للتفاعل · ESC إيقاف',
-      };
-      const bloHint = document.getElementById('blocker-hint');
-      const bloCon  = document.getElementById('blocker-controls');
-      if (bloHint) bloHint.textContent = hints[lang]    || hints.ko;
-      if (bloCon)  bloCon.textContent  = controls[lang] || controls.ko;
-    })();
+/* ─── 대화 시스템 ────────────────────────────────────────── */
+const DLANG = GAME.state.lang || 'ko';
 
-    /* ─── 블로커 클릭 → 게임 시작 ───────────────────── */
-    document.getElementById('blocker').addEventListener('click', function () {
-      if (GAME.state.gameStarted) return;
-      GAME.state.gameStarted = true;
-      this.classList.add('hidden');
-      setTimeout(() => { this.style.display = 'none'; }, 500);
-      const canvas = document.getElementById('gameCanvas');
-      if (canvas) canvas.requestPointerLock();
-    });
+const FLOWS = {
+  ko: [
+    {
+      npc: '박 부장', role: '발주처 대표',
+      color: '#3A9AE8',
+      text: '"안녕하세요. 이 부지에 5층 건물을 올려주세요.\n예산 5억 원, 공기는 90일입니다."',
+      choices: [{ text: '도면을 보겠습니다', next: 1 }],
+    },
+    {
+      npc: '박 부장', role: '발주처 대표',
+      color: '#3A9AE8',
+      text: '"부지 면적 200㎡, 지하 1층·지상 5층 규모입니다.\n인근이 주거지역이니 소음 민원에 주의해 주세요."',
+      extra: 'blueprint',
+      choices: [{ text: '확인했습니다', next: 2 }],
+    },
+    {
+      npc: '브리핑', role: '현장 정보',
+      color: '#8DC63F',
+      text: '함께할 팀원들을 소개합니다.\n각 팀원의 숙련도와 특성을 파악하세요.',
+      extra: 'team',
+      choices: [{ text: '튜토리얼 시작!', next: 'start', accent: true }],
+    },
+  ],
+  en: [
+    {
+      npc: 'Director Park', role: 'Client',
+      color: '#3A9AE8',
+      text: '"Hello. Please build a 5-story building on this site.\nBudget: ₩500M, deadline: 90 days."',
+      choices: [{ text: 'See blueprint', next: 1 }],
+    },
+    {
+      npc: 'Director Park', role: 'Client',
+      color: '#3A9AE8',
+      text: '"Site area: 200m², B1F + 5F above ground.\nNearby residential area — please mind noise complaints."',
+      extra: 'blueprint',
+      choices: [{ text: 'Understood', next: 2 }],
+    },
+    {
+      npc: 'Briefing', role: 'Site Info',
+      color: '#8DC63F',
+      text: "Meet your team members.\nLearn each member's skills and traits.",
+      extra: 'team',
+      choices: [{ text: 'Start Tutorial!', next: 'start', accent: true }],
+    },
+  ],
+  vi: [
+    {
+      npc: 'Giám đốc Park', role: 'Chủ đầu tư',
+      color: '#3A9AE8',
+      text: '"Xin chào. Hãy xây tòa nhà 5 tầng trên lô đất này.\nNgân sách: 500 triệu KRW, tiến độ: 90 ngày."',
+      choices: [{ text: 'Xem bản vẽ', next: 1 }],
+    },
+    {
+      npc: 'Giám đốc Park', role: 'Chủ đầu tư',
+      color: '#3A9AE8',
+      text: '"Diện tích 200m², tầng hầm 1 + 5 tầng trên mặt đất.\nKhu dân cư gần đây — chú ý tiếng ồn."',
+      extra: 'blueprint',
+      choices: [{ text: 'Đã hiểu', next: 2 }],
+    },
+    {
+      npc: 'Thông báo', role: 'Thông tin hiện trường',
+      color: '#8DC63F',
+      text: 'Giới thiệu các thành viên trong nhóm của bạn.',
+      extra: 'team',
+      choices: [{ text: 'Bắt đầu hướng dẫn!', next: 'start', accent: true }],
+    },
+  ],
+  ar: [
+    {
+      npc: 'المدير بارك', role: 'صاحب العمل',
+      color: '#3A9AE8',
+      text: '"مرحباً. من فضلك ابنِ مبنى من 5 طوابق على هذا الموقع.\nالميزانية: 500 مليون وون، المدة: 90 يوماً."',
+      choices: [{ text: 'عرض المخطط', next: 1 }],
+    },
+    {
+      npc: 'المدير بارك', role: 'صاحب العمل',
+      color: '#3A9AE8',
+      text: '"مساحة الموقع 200م²، طابق سفلي + 5 طوابق علوية.\nالمنطقة المجاورة سكنية — انتبه للضوضاء."',
+      extra: 'blueprint',
+      choices: [{ text: 'تم الفهم', next: 2 }],
+    },
+    {
+      npc: 'الإحاطة', role: 'معلومات الموقع',
+      color: '#8DC63F',
+      text: 'تعرّف على أعضاء فريقك.',
+      extra: 'team',
+      choices: [{ text: 'ابدأ التدريب!', next: 'start', accent: true }],
+    },
+  ],
+};
 
-    /* ─── ESC 일시정지 ───────────────────────────────── */
-    document.addEventListener('keydown', e => {
-      if (e.code === 'Escape' && GAME.state.gameStarted && !GAME.state.gameOver) {
-        GAME.state.paused = !GAME.state.paused;
-        if (GAME.state.paused) document.exitPointerLock();
-      }
-    });
+const TEAM_DATA = {
+  ko: [
+    { av: '김', color: '#F97316', name: '김철수', role: '숙련공\n10년차',  tag: '안정',   tagBg: 'rgba(141,198,63,.15)',  tagColor: '#8DC63F' },
+    { av: '이', color: '#FCD34D', name: '이영수', role: '반숙련공\n3년차', tag: '보통',   tagBg: 'rgba(252,211,77,.15)',  tagColor: '#FCD34D' },
+    { av: '박', color: '#C8D8E8', name: '박신입', role: '신입\n1년차',    tag: '주의',   tagBg: 'rgba(232,90,58,.15)',   tagColor: '#E85A3A' },
+    { av: '응', color: '#8DC63F', name: '응우옌', role: '외국인\n근로자',  tag: '언어',   tagBg: 'rgba(58,107,154,.15)',  tagColor: '#3A6B9A' },
+  ],
+  en: [
+    { av: 'K', color: '#F97316', name: 'Kim Chulsoo', role: 'Expert\n10yr',      tag: 'Stable', tagBg: 'rgba(141,198,63,.15)', tagColor: '#8DC63F' },
+    { av: 'L', color: '#FCD34D', name: 'Lee Youngsoo', role: 'Semi-exp\n3yr',   tag: 'Mid',    tagBg: 'rgba(252,211,77,.15)', tagColor: '#FCD34D' },
+    { av: 'P', color: '#C8D8E8', name: 'Park Rookie',  role: 'Newbie\n1yr',     tag: 'Caution',tagBg: 'rgba(232,90,58,.15)',  tagColor: '#E85A3A' },
+    { av: 'N', color: '#8DC63F', name: 'Nguyen',        role: 'Foreign\nWorker', tag: 'Lang',   tagBg: 'rgba(58,107,154,.15)', tagColor: '#3A6B9A' },
+  ],
+};
 
-    /* ─── showActionNotif 전역 함수 ──────────────────── */
-    (function initNotif() {
-      const el = document.getElementById('action-notif');
-      let timer = null;
-      window.showActionNotif = function(msg, duration) {
-        if (!el) return;
-        el.textContent = msg;
-        el.classList.add('show');
-        clearTimeout(timer);
-        timer = setTimeout(() => el.classList.remove('show'), duration || 3000);
-      };
-    })();
-  </script>
+const dlgEl    = document.getElementById('dialog');
+const avEl     = document.getElementById('dlg-avatar');
+const nameEl   = document.getElementById('dlg-npc-name');
+const roleEl   = document.getElementById('dlg-npc-role');
+const textEl   = document.getElementById('dlg-text');
+const extraEl  = document.getElementById('dlg-extra');
+const choicesEl = document.getElementById('dlg-choices');
+
+let twTimer = null;
+
+function typewrite(el, str, cb, speed) {
+  clearInterval(twTimer);
+  el.textContent = '';
+  let i = 0;
+  twTimer = setInterval(() => {
+    el.textContent += str[i++];
+    if (i >= str.length) { clearInterval(twTimer); if (cb) cb(); }
+  }, speed || 28);
+}
+
+function _hex2rgba(hex, a) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function _getBlueprintHTML() {
+  const lang = DLANG;
+  const labels = {
+    ko: { main: '사무/주거', stair: '계단', base: '지하주차', sz: '200㎡', fl: '지하1+지상5층', noise: '소음 주의' },
+    en: { main: 'Office/Res', stair: 'Stair', base: 'Parking B1', sz: '200m²', fl: 'B1+5F', noise: 'Noise Zone' },
+    vi: { main: 'Văn phòng', stair: 'Cầu thang', base: 'Đỗ xe B1', sz: '200m²', fl: 'T.hầm+5T', noise: 'Khu ồn' },
+    ar: { main: 'مكتب/سكن', stair: 'سلّم', base: 'موقف B1', sz: '200م²', fl: 'ب1+5طوابق', noise: 'منطقة ضوضاء' },
+  };
+  const L = labels[lang] || labels.ko;
+  return `<div class="blueprint">
+    <div class="bp-grid">
+      <div class="bp-room main">${L.main}</div>
+      <div class="bp-room sub">${L.stair}</div>
+      <div class="bp-room base">${L.base}</div>
+    </div>
+    <div class="bp-meta">
+      <div class="bp-row"><span class="bp-dot" style="background:#8DC63F"></span>${L.sz}</div>
+      <div class="bp-row"><span class="bp-dot" style="background:#3A6B9A"></span>${L.fl}</div>
+      <div class="bp-row"><span class="bp-dot" style="background:#E85A3A"></span>${L.noise}</div>
+    </div>
+  </div>`;
+}
+
+function _getTeamHTML() {
+  const members = (TEAM_DATA[DLANG] || TEAM_DATA.ko);
+  return `<div class="team-grid">${members.map(m => `
+    <div class="team-card">
+      <div class="tc-av" style="color:${m.color};border-color:${m.color};background:${_hex2rgba(m.color,.12)}">${m.av}</div>
+      <div class="tc-name">${m.name}</div>
+      <div class="tc-role">${m.role}</div>
+      <div class="tc-tag" style="background:${m.tagBg};color:${m.tagColor}">${m.tag}</div>
+    </div>`).join('')}</div>`;
+}
+
+function showStep(idx) {
+  if (idx === 'start') { _endDialog(); return; }
+  const flow = FLOWS[DLANG] || FLOWS.ko;
+  if (idx >= flow.length) { _endDialog(); return; }
+  const step = flow[idx];
+
+  // 초상화
+  avEl.textContent = step.npc[0];
+  avEl.style.borderColor = step.color;
+  avEl.style.background  = _hex2rgba(step.color, 0.14);
+  avEl.style.color       = step.color;
+  nameEl.textContent = step.npc;
+  roleEl.textContent = step.role;
+
+  // 텍스트 타이프라이터
+  typewrite(textEl, step.text, null, 26);
+
+  // 추가 콘텐츠
+  extraEl.innerHTML = step.extra === 'blueprint' ? _getBlueprintHTML()
+                    : step.extra === 'team'      ? _getTeamHTML()
+                    : '';
+
+  // 선택지 버튼
+  choicesEl.innerHTML = '';
+  step.choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className   = 'dlg-btn' + (c.accent ? ' accent' : '');
+    btn.textContent = c.text;
+    btn.onclick     = () => showStep(c.next);
+    choicesEl.appendChild(btn);
+  });
+}
+
+function _endDialog() {
+  dlgEl.classList.add('hidden');
+  if (typeof unlockPlayer === 'function') unlockPlayer();
+}
+
+// 씬 준비 후 대화 시작
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    dlgEl.classList.remove('hidden');
+    showStep(0);
+  }, 800);
+});
+</script>
 </body>
 </html>

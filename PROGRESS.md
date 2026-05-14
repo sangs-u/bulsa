@@ -82,9 +82,8 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 - [x] style.css 작성 (전역 스타일, 게임 UI 느낌)
 - [x] core/engine.js 재작성 (v0 기준 클린 버전)
 
-### Batch 2 — 플레이어 & 입력
-- [ ] core/input.js 신규 (PC/모바일 통합 입력)
-- [ ] core/player.js 재작성 (3인칭 기본, 장비 탑승 시 1인칭)
+### Batch 2 — 플레이어 & 입력 (Three.js → Babylon.js 전환 포함)
+- [x] core/player.js 재작성 (Babylon.js 기반, WASD + 모바일 조이스틱)
 
 ### Batch 3 — 命 게이지 & HUD
 - [ ] core/life.js 신규 (命 게이지, 수위 시각화)
@@ -103,9 +102,9 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 - [ ] core/economy.js 신규 (수입/지출, 과태료)
 
 ### Batch 7 — 온보딩 & 마무리
-- [ ] 온보딩 흐름 구현
-- [ ] 현장사무소 씬
-- [ ] 발주처 NPC 대화 시스템
+- [x] 현장사무소 씬 (Batch 1&2에서 구현 완료)
+- [x] 발주처 NPC 대화 시스템 (game.html 인라인, 4개국어)
+- [ ] 온보딩 씬 전환 연출 (index → game 컷씬)
 
 ---
 
@@ -129,3 +128,4 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 |------|------|------|-----------|
 | 2025-05 | 설계 | 전체 설계 확정 + 문서 작성 | - |
 | 2026-05-14 | Batch 1 | index.html 전면 재작성 (딥 네이비×라임 색상, Nunito, 로딩→언어→캐릭터 3단계, localStorage 저장) | 대기 중 |
+| 2026-05-14 | Batch 2 | Three.js → Babylon.js 전환: engine.js + player.js + game.html 전면 재작성, 현장사무소 씬, NPC 대화 4개국어 | 대기 중 |
