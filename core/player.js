@@ -157,7 +157,4 @@ function _updatePlayer() {
 function unlockPlayer() {
   PLAYER.locked = false;
   GAME.state.dialogActive = false;
-  if (!PLAYER.isMobile) {
-    GAME.camera.attachControl(GAME.canvas, true);
-  }
 }

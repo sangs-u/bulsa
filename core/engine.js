@@ -45,13 +45,9 @@ const GAME = {
 
   _buildOfficeScene(scene);
 
-  // 렌더 루프 — 대화 중 카메라 자동 회전
+  // 렌더 루프
   engine.runRenderLoop(() => {
-    if (GAME.state.paused) return;
-    if (GAME.state.dialogActive && GAME.camera) {
-      GAME.camera.alpha += 0.003;
-    }
-    scene.render();
+    if (!GAME.state.paused) scene.render();
   });
 
   window.addEventListener('resize', () => engine.resize());
@@ -90,12 +86,15 @@ function _buildScene(engine, canvas) {
     scene
   );
   cam.lowerRadiusLimit     = 2;
-  cam.upperRadiusLimit     = 18;
-  cam.upperBetaLimit       = Math.PI / 2.05;
-  cam.lowerBetaLimit       = 0.3;
+  cam.upperRadiusLimit     = 14;
+  cam.upperBetaLimit       = Math.PI / 2.1;
+  cam.lowerBetaLimit       = 0.25;
   cam.wheelDeltaPercentage = 0.01;
   cam.minZ = 0.1;
   GAME.camera = cam;
+
+  // 시작부터 카메라 드래그/줌 활성화 (대화 중에도 자유롭게 회전)
+  cam.attachControl(canvas, true);
 
   return scene;
 }
@@ -113,19 +112,19 @@ function _buildOfficeScene(scene) {
     return m;
   }
 
-  // ── 바닥 ──────────────────────────────────────────────────
-  const floor = M.CreateBox('floor', { width: 12, height: 0.18, depth: 10 }, scene);
+  // ── 바닥 (32 × 26) ────────────────────────────────────────
+  const floor = M.CreateBox('floor', { width: 32, height: 0.18, depth: 26 }, scene);
   floor.position.y     = -0.09;
   floor.receiveShadows = true;
   floor.material       = pbr('floorMat', 0.50, 0.46, 0.40, 0.92);
 
-  // ── 벽 4면 ────────────────────────────────────────────────
+  // ── 벽 4면 (벽 x: ±16, z: ±13, 천장 높이 5.5) ─────────────
   const wallMat = pbr('wallMat', 0.70, 0.68, 0.62, 0.95);
   [
-    { name: 'wN', w: 12,   h: 3.3, d: 0.18, px: 0,  py: 1.56, pz: -5   },
-    { name: 'wS', w: 12,   h: 3.3, d: 0.18, px: 0,  py: 1.56, pz:  5   },
-    { name: 'wW', w: 0.18, h: 3.3, d: 10,   px: -6, py: 1.56, pz:  0   },
-    { name: 'wE', w: 0.18, h: 3.3, d: 10,   px:  6, py: 1.56, pz:  0   },
+    { name: 'wN', w: 32,   h: 5.5, d: 0.22, px: 0,   py: 2.66, pz: -13  },
+    { name: 'wS', w: 32,   h: 5.5, d: 0.22, px: 0,   py: 2.66, pz:  13  },
+    { name: 'wW', w: 0.22, h: 5.5, d: 26,   px: -16, py: 2.66, pz:  0   },
+    { name: 'wE', w: 0.22, h: 5.5, d: 26,   px:  16, py: 2.66, pz:  0   },
   ].forEach(({ name, w, h, d, px, py, pz }) => {
     const wall = M.CreateBox(name, { width: w, height: h, depth: d }, scene);
     wall.position    = new BABYLON.Vector3(px, py, pz);
@@ -134,8 +133,8 @@ function _buildOfficeScene(scene) {
   });
 
   // ── 천장 ──────────────────────────────────────────────────
-  const ceil = M.CreateBox('ceiling', { width: 12, height: 0.15, depth: 10 }, scene);
-  ceil.position.y = 3.22;
+  const ceil = M.CreateBox('ceiling', { width: 32, height: 0.15, depth: 26 }, scene);
+  ceil.position.y = 5.42;
   ceil.material   = pbr('ceilMat', 0.82, 0.80, 0.76, 0.98);
 
   // ── 책상 ──────────────────────────────────────────────────
@@ -158,17 +157,22 @@ function _buildOfficeScene(scene) {
   paper.material = pbr('paperMat', 0.92, 0.88, 0.80, 0.98);
   sg.addShadowCaster(paper);
 
-  // ── 따뜻한 실내 조명 ──────────────────────────────────────
-  const b1 = new BABYLON.PointLight('bulb1', new BABYLON.Vector3(-1, 3.0, 0), scene);
-  b1.intensity = 65;
+  // ── 따뜻한 실내 조명 (넓은 방 기준) ─────────────────────────
+  const b1 = new BABYLON.PointLight('bulb1', new BABYLON.Vector3(-2, 5.0, -2), scene);
+  b1.intensity = 180;
   b1.diffuse   = new BABYLON.Color3(1.0, 0.82, 0.55);
   b1.specular  = new BABYLON.Color3(0.7, 0.55, 0.35);
-  b1.range     = 12;
+  b1.range     = 28;
 
-  const b2 = new BABYLON.PointLight('bulb2', new BABYLON.Vector3(3, 2.8, 2), scene);
-  b2.intensity = 38;
+  const b2 = new BABYLON.PointLight('bulb2', new BABYLON.Vector3(6, 4.8, 4), scene);
+  b2.intensity = 100;
   b2.diffuse   = new BABYLON.Color3(1.0, 0.88, 0.65);
-  b2.range     = 9;
+  b2.range     = 22;
+
+  const b3 = new BABYLON.PointLight('bulb3', new BABYLON.Vector3(-8, 4.8, 5), scene);
+  b3.intensity = 80;
+  b3.diffuse   = new BABYLON.Color3(0.95, 0.85, 0.65);
+  b3.range     = 18;
 
   // ── 플레이어 캡슐 (라임) ──────────────────────────────────
   const player = M.CreateCapsule('player',
@@ -189,6 +193,6 @@ function _buildOfficeScene(scene) {
   GAME.npcBoss  = npc;
 
   // 카메라 초기 타겟 — 플레이어·NPC 중간
-  GAME.camera.setTarget(new BABYLON.Vector3(-0.8, 1.0, -0.3));
-  GAME.camera.radius = 7;
+  GAME.camera.setTarget(new BABYLON.Vector3(-0.8, 1.2, -0.5));
+  GAME.camera.radius = 9;
 }
