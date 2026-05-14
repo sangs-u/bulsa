@@ -234,39 +234,38 @@ function _buildOfficeScene(scene) {
   player.receiveShadows = true;
   sg.addShadowCaster(player);
   player.material     = pbr('playerMat', 0.55, 0.78, 0.24, 0.55, 0.1);
-  // 반투명 외피 — 내부 물 수위가 비쳐 보이도록
-  player.material.alpha              = 0.62;
-  player.material.transparencyMode   = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
-  player.material.backFaceCulling    = false;
+  // 반투명 외피 — 내부 물 수위가 비쳐 보이도록 (2 = ALPHABLEND)
+  player.material.alpha            = 0.72;
+  player.material.transparencyMode = 2;
   GAME.player = player;
 
   // ── 物 수위 메시 (命 게이지 시각화) ─────────────────────
   const waterFill = M.CreateCapsule('playerWater',
     { radius: 0.28, height: 1.58, tessellation: 14 }, scene);
-  waterFill.parent     = player;          // 플레이어 위치 자동 추적
-  waterFill.position   = BABYLON.Vector3.Zero();
-  waterFill.isPickable = false;
+  waterFill.parent       = player;
+  waterFill.position     = BABYLON.Vector3.Zero();
+  waterFill.isPickable   = false;
+  waterFill.isVisible    = false;          // 수위 0일 때 완전히 숨김
 
   const waterMat = new BABYLON.PBRMaterial('waterFillMat', scene);
-  waterMat.albedoColor   = new BABYLON.Color3(0.08, 0.42, 0.92);
-  waterMat.emissiveColor = new BABYLON.Color3(0.00, 0.22, 0.60);
-  waterMat.roughness     = 0.05;
-  waterMat.metallic      = 0;
-  waterMat.alpha         = 0;
-  waterMat.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+  waterMat.albedoColor      = new BABYLON.Color3(0.08, 0.42, 0.92);
+  waterMat.emissiveColor    = new BABYLON.Color3(0.00, 0.22, 0.60);
+  waterMat.roughness        = 0.05;
+  waterMat.metallic         = 0;
+  waterMat.alpha            = 0.82;
+  waterMat.transparencyMode = 2;
+  waterMat.disableDepthWrite = true;       // 깊이 버퍼 쓰기 금지 — 플레이어 가림 방지
+  waterFill.renderingGroupId = 1;          // 플레이어(group 0) 다음에 렌더
   waterFill.material = waterMat;
   GAME.waterMesh = waterFill;
 
-  // 클립 플레인으로 수위 높이 제어
+  // 클립 플레인으로 수위 높이 제어 (수위 있을 때만 실행)
   waterFill.onBeforeRenderObservable.add(() => {
-    const lw = GAME.state.lifeWater;
-    if (lw < 2) { waterMat.alpha = 0; return; }
-
+    const lw      = GAME.state.lifeWater;
     const wpos    = player.getAbsolutePosition();
-    const bottomY = wpos.y - 0.85;                          // 캡슐 하단
-    const clipY   = bottomY + 1.7 * Math.min(lw, 100) / 100; // 수위선
-    scene.clipPlane = new BABYLON.Plane(0, 1, 0, -clipY);   // y > clipY 클립
-    waterMat.alpha  = Math.min(lw, 100) / 100 * 0.82;
+    const bottomY = wpos.y - 0.85;
+    const clipY   = bottomY + 1.7 * Math.min(lw, 100) / 100;
+    scene.clipPlane = new BABYLON.Plane(0, 1, 0, -clipY);
   });
   waterFill.onAfterRenderObservable.add(() => {
     scene.clipPlane = null;

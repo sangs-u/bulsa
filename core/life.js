@@ -25,6 +25,11 @@ function _tickLife() {
   const target = 100 - GAME.state.safetyIndex;
   GAME.state.lifeWater += (target - GAME.state.lifeWater) * 0.04;
 
+  // 수위 메시 표시 여부 (수위 2% 이상일 때만 렌더링)
+  if (GAME.waterMesh) {
+    GAME.waterMesh.isVisible = GAME.state.lifeWater >= 2;
+  }
+
   HUD.update();
 }
 
