@@ -22,16 +22,19 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Network-first: 네트워크 우선, 오프라인 시 캐시 fallback. JS 자동 업데이트.
+// Network-first: JS 파일·쿼리스트링 URL은 캐시 제외 (코드 업데이트 즉시 반영)
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
 
+  // JS 파일이나 ?쿼리가 있는 URL은 캐시 저장 안 함 (항상 네트워크)
+  const skipCache = url.pathname.endsWith('.js') || url.search;
+
   e.respondWith(
     fetch(req).then(res => {
-      if (res && res.status === 200) {
+      if (res && res.status === 200 && !skipCache) {
         const clone = res.clone();
         caches.open(CACHE).then(c => c.put(req, clone).catch(() => {}));
       }
