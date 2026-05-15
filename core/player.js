@@ -137,12 +137,12 @@ function _updatePlayer() {
 
   PLAYER.mesh.position.addInPlace(move);
 
-  // 방 경계 클램핑 (벽 통과 방지, 캡슐 반지름 0.35 여유)
+  // 방 경계 클램핑 — 벽(x±10, z±8)에서 1.2유닛 여유를 두어 투명화 방지
   const p = PLAYER.mesh.position;
-  if (p.x < -9.65) p.x = -9.65;
-  if (p.x >  9.65) p.x =  9.65;
-  if (p.z < -7.65) p.z = -7.65;
-  if (p.z >  7.65) p.z =  7.65;
+  if (p.x < -8.8) p.x = -8.8;
+  if (p.x >  8.8) p.x =  8.8;
+  if (p.z < -6.8) p.z = -6.8;
+  if (p.z >  6.8) p.z =  6.8;
 
   // 이동 방향으로 캐릭터 회전
   if (len > 0.001) {
