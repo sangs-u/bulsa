@@ -119,6 +119,7 @@
       height: 55%;
       z-index: 60; /* dialog(50)보다 위 */
       pointer-events: auto;
+      touch-action: none;
     }
 
     /* ── 대화창 ──────────────────────────────────────────── */
@@ -210,6 +211,8 @@
       cursor: pointer;
       font-family: inherit;
       transition: all .18s ease;
+      touch-action: manipulation;
+      pointer-events: auto;
     }
     .dlg-btn:hover {
       border-color: var(--acc);
@@ -450,6 +453,7 @@
 
 <!-- ① 3D 캔버스 (Babylon.js 렌더 타겟) -->
 <canvas id="renderCanvas"></canvas>
+<div id="_dbg" style="position:fixed;top:4px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#8DC63F;font-size:11px;font-family:monospace;padding:3px 8px;border-radius:4px;z-index:9998;pointer-events:none">로딩 중...</div>
 
 <!-- ② 위험 플래시 -->
 <div id="danger-flash"></div>
@@ -553,7 +557,7 @@
 /* ─── 모바일 조이스틱 표시 ───────────────────────────────── */
 if ('ontouchstart' in window) {
   document.getElementById('joy-base').style.display = 'block';
-  document.getElementById('joy-look').style.display = 'block';
+  // joy-look은 대화 종료 후 _endDialog()에서 표시
 }
 
 /* ─── 대화 시스템 ────────────────────────────────────────── */
@@ -754,7 +758,8 @@ function showStep(idx) {
     const btn = document.createElement('button');
     btn.className   = 'dlg-btn' + (c.accent ? ' accent' : '');
     btn.textContent = c.text;
-    btn.onclick     = () => showStep(c.next);
+    btn.addEventListener('click', () => showStep(c.next));
+    btn.addEventListener('touchstart', e => { e.preventDefault(); showStep(c.next); }, { passive: false });
     choicesEl.appendChild(btn);
   });
 }
@@ -762,6 +767,9 @@ function showStep(idx) {
 function _endDialog() {
   dlgEl.classList.add('hidden');
   if (typeof unlockPlayer === 'function') unlockPlayer();
+  if ('ontouchstart' in window) {
+    document.getElementById('joy-look').style.display = 'block';
+  }
 }
 
 // 씬 준비 후 대화 시작

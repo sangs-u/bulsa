@@ -1,7 +1,7 @@
 // Service Worker — 오프라인 플레이 (PWA).
 // 처음 방문 후 핵심 자산을 캐시 → 네트워크 없어도 게임 동작.
 
-const CACHE = 'bulsa-v5';   // 캐시 키 갱신 시 자동 무효화
+const CACHE = 'bulsa-v6';   // 캐시 키 갱신 시 자동 무효화
 const PRECACHE = [
   './',
   './game.html',
@@ -30,7 +30,7 @@ self.addEventListener('fetch', e => {
   if (url.origin !== location.origin) return;
 
   // JS 파일이나 ?쿼리가 있는 URL은 캐시 저장 안 함 (항상 네트워크)
-  const skipCache = url.pathname.endsWith('.js') || url.search;
+  const skipCache = url.pathname.endsWith('.js') || url.pathname.endsWith('.html') || url.search;
 
   e.respondWith(
     fetch(req).then(res => {

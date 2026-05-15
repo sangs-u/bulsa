@@ -10,9 +10,8 @@ const PLAYER = {
   joy:      { x: 0, y: 0 },
 };
 
-/* ─── 초기화 ─────────────────────────────────────────────── */
-(function initPlayer() {
-  // engine.js가 먼저 동기 실행되므로 GAME.player는 이미 세팅됨
+/* ─── 초기화 (game:ready 이후 — GAME.scene 보장) ─────────── */
+window.addEventListener('game:ready', function() {
   PLAYER.mesh = GAME.player;
 
   if (PLAYER.isMobile) {
@@ -22,7 +21,7 @@ const PLAYER = {
   }
 
   GAME.scene.onBeforeRenderObservable.add(_updatePlayer);
-})();
+});
 
 /* ─── 키보드 ─────────────────────────────────────────────── */
 function _initKeyboard() {
@@ -97,8 +96,8 @@ function _initMobileJoystick() {
       const dx = t.clientX - lpx;
       const dy = t.clientY - lpy;
       lpx = t.clientX; lpy = t.clientY;
-      GAME.camera.alpha -= dx * 0.008;
-      GAME.camera.beta  -= dy * 0.006;
+      GAME.camera.inertialAlphaOffset -= dx * 0.004;
+      GAME.camera.inertialBetaOffset  -= dy * 0.003;
     }, { passive: false });
     lookArea.addEventListener('touchend', () => { lactive = false; });
   }

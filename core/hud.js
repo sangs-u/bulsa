@@ -7,12 +7,12 @@ const HUD = {
   _initialized: false,
 };
 
-(function initHUD() {
+window.addEventListener('game:ready', function() {
   HUD._safetyEl  = document.getElementById('safety-val');
   HUD._partyBars = [0, 1, 2, 3].map(i => document.getElementById('party-life-' + i));
   HUD._initialized = true;
   HUD.update();
-})();
+});
 
 HUD.update = function () {
   if (!HUD._initialized) return;

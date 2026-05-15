@@ -112,9 +112,16 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 
 ## 발견된 버그 & 이슈
 
-### 모바일 미해결 (2026-05-14)
-- **한국어 선택 시 3D 화면 안 나옴** — SW 캐시 문제로 추정. SW v5 + JS 캐시 제외 + 스크립트 버전 파라미터 적용했으나 미확인. 다음 세션에서 모바일 캐시 직접 삭제 후 재테스트 필요.
-- **카메라 회전 불가 (모바일)** — `attachControl(false)` + `#joy-look` z-index 60으로 수정했으나 미확인. joy-look이 dialog보다 위에 있는지 실기기 확인 필요.
+### 모바일 버그 수정 현황 (2026-05-15, 세션 종료 직전)
+
+#### 수정 완료 (미확인)
+- **3D 화면 안 나옴 (근본 원인)** — Babylon.js 초기화를 `window.load` 이후로 지연 (CSS 레이아웃 완료 보장). engine.js `parseState` IIFE 분리, player/life/hud는 `game:ready` 커스텀 이벤트로 초기화.
+- **SW 캐시 stale game.html** — sw.js에서 `.html` 파일도 캐시 제외 추가, SW 버전 v5→v6 갱신.
+- **대화 버튼 클릭 불가** — dialog 중 joy-look(z-60) 숨김, _endDialog 후 표시. 버튼에 touchstart 리스너 추가 + touch-action:manipulation.
+- **카메라 회전** — 모바일에서 `cam.attachControl` 제거 (joy-look 충돌 방지), `inertialAlphaOffset` 방식으로 변경.
+
+#### 다음 세션 확인 필요
+- 위 수정사항 실기기 전체 테스트 (3D 화면 표시 / 대화 버튼 / 카메라 회전 / 조이스틱 이동)
 
 ---
 
@@ -134,4 +141,5 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 | 2026-05-14 | Batch 1 | index.html 전면 재작성 (딥 네이비×라임 색상, Nunito, 로딩→언어→캐릭터 3단계, localStorage 저장) | 대기 중 |
 | 2026-05-14 | Batch 2 | Three.js → Babylon.js 전환: engine.js + player.js + game.html 전면 재작성, 현장사무소 씬, NPC 대화 4개국어 | ✅ |
 | 2026-05-14 | Batch 3 | 命 게이지 시스템: life.js + hud.js + engine.js 물 수위 메시(clip plane) + game.html HUD 확장 | ✅ 데스크톱 확인 |
-| 2026-05-14 | 모바일 버그픽스 | waterFill disableDepthWrite + attachControl(false) + SW 캐시 제외 | ⚠️ 미확인 (다음 세션 재테스트) |
+| 2026-05-14 | 모바일 버그픽스 1 | waterFill disableDepthWrite + attachControl(false) + SW 캐시 제외 | ⚠️ 미확인 |
+| 2026-05-15 | 모바일 버그픽스 2 | window.load 지연 초기화 + game:ready 이벤트 체계 + sw.js v6 + 버튼 touchstart + 모바일 attachControl 제거 | ⚠️ 미확인 (다음 세션 실기기 확인 필수) |

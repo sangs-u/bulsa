@@ -26,37 +26,63 @@ const GAME = {
   },
 };
 
-/* ─── 엔진 초기화 ─────────────────────────────────────────── */
-(function initEngine() {
+/* ─── URL 파라미터 파싱 (동기 — applyHud가 바로 읽음) ─────── */
+(function parseState() {
   const p = new URLSearchParams(window.location.search);
   GAME.state.playerName = p.get('name') || localStorage.getItem('bulsa_name') || '신입';
   GAME.state.lang       = p.get('lang') || localStorage.getItem('bulsa_lang') || 'ko';
   GAME.state.look       = Number(p.get('look') ?? localStorage.getItem('bulsa_look') ?? 0);
+})();
 
+/* ─── Babylon.js 초기화 (load 이후 — CSS 레이아웃 완료 보장) ── */
+window.addEventListener('load', function _babylonInit() {
   const canvas = document.getElementById('renderCanvas');
   GAME.canvas  = canvas;
 
-  const engine = new BABYLON.Engine(canvas, true, {
-    preserveDrawingBuffer: true,
-    stencil: true,
-    adaptToDeviceRatio: true,
-  });
-  GAME.engine = engine;
+  try {
+    if (typeof BABYLON === 'undefined') throw new Error('Babylon.js 로드 실패 (CDN 오류)');
 
-  const scene = _buildScene(engine, canvas);
-  GAME.scene  = scene;
+    const engine = new BABYLON.Engine(canvas, true, {
+      preserveDrawingBuffer: true,
+      stencil: true,
+      adaptToDeviceRatio: true,
+    });
+    GAME.engine = engine;
 
-  _buildOfficeScene(scene);
+    const scene = _buildScene(engine, canvas);
+    GAME.scene  = scene;
 
-  // 렌더 루프 — 벽 투명화 포함
-  engine.runRenderLoop(() => {
-    if (GAME.state.paused) return;
-    _updateWallOcclusion();
-    scene.render();
-  });
+    _buildOfficeScene(scene);
 
-  window.addEventListener('resize', () => engine.resize());
-})();
+    engine.runRenderLoop(() => {
+      if (GAME.state.paused) return;
+      _updateWallOcclusion();
+      scene.render();
+    });
+
+    window.addEventListener('resize', () => engine.resize());
+
+    // 다른 모듈에 엔진 준비 완료 알림
+    window.dispatchEvent(new Event('game:ready'));
+
+    requestAnimationFrame(() => {
+      const dbg = document.getElementById('_dbg');
+      if (dbg) dbg.textContent = `${canvas.width}×${canvas.height} / css ${canvas.clientWidth}×${canvas.clientHeight}`;
+    });
+
+  } catch (err) {
+    _showEngineError(err);
+  }
+});
+
+function _showEngineError(err) {
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0D1B2A;color:#E85A3A;font-family:monospace;padding:24px;z-index:9999;text-align:center;';
+  div.innerHTML = '<div style="font-size:2rem;margin-bottom:16px">⚠ 엔진 오류</div>'
+    + '<div style="font-size:.85rem;color:#C8D8E8;max-width:400px;word-break:break-all">' + err.message + '</div>'
+    + '<div style="margin-top:20px;font-size:.75rem;color:#3A6B9A">lang=' + (new URLSearchParams(location.search).get('lang') || '?') + ' · UA: ' + navigator.userAgent.slice(0,60) + '</div>';
+  document.body.appendChild(div);
+}
 
 /* ─── 씬 기본 세팅 ────────────────────────────────────────── */
 function _buildScene(engine, canvas) {
@@ -96,7 +122,10 @@ function _buildScene(engine, canvas) {
   cam.lowerBetaLimit       = 0.2;
   cam.wheelDeltaPercentage = 0.01;
   cam.minZ = 0.1;
-  cam.attachControl(false); // false = preventDefault 호출 (모바일 터치 정상 처리)
+  // 데스크톱만 Babylon 기본 입력. 모바일은 joy-look이 직접 제어
+  if (!('ontouchstart' in window)) {
+    cam.attachControl(false);
+  }
   GAME.camera = cam;
 
   return scene;

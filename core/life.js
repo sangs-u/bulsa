@@ -6,10 +6,10 @@ const LIFE = {
   _tick: 0,
 };
 
-(function initLife() {
+window.addEventListener('game:ready', function() {
   _bindTestKeys();
   GAME.scene.onBeforeRenderObservable.add(_tickLife);
-})();
+});
 
 function _tickLife() {
   if (GAME.state.paused) return;
