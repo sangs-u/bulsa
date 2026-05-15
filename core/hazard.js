@@ -81,17 +81,8 @@ function _tickHazard(dt) {
 window.addEventListener('game:ready', function() {
   const scene = GAME.scene;
 
-  // ── 현장사무소 위험구역 (데모) ──────────────────────────
-  // ① 출입구 앞: 주의(황색) — 현장으로 나가기 직전 경계
-  // ② 소화기 미점검 구역: 위험(적색) — 시스템 체험용
-  [
-    { id: 0, x:  0.0, z: 5.0, r: 2.0, level: 1 },
-    { id: 1, x:  7.5, z: 5.5, r: 1.4, level: 2 },
-  ].forEach(def => {
-    const zone = new HazardZone(def.id, def.x, def.z, def.r, def.level);
-    _buildZone(zone, scene);
-    HAZARD_ZONES.push(zone);
-  });
+  // 사무소는 안전구역 — 위험구역 없음
+  // 건설 현장 씬에서 HAZARD_ZONES.push(new HazardZone(...)) 로 추가 예정
 
   let last = performance.now();
   scene.onBeforeRenderObservable.add(() => {
