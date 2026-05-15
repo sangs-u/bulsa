@@ -232,6 +232,54 @@
       color: #0D1B2A;
     }
 
+    /* ── NPC 인터랙션 프롬프트 ─────────────────────────────── */
+    #interact-prompt {
+      display: none;
+      position: fixed;
+      bottom: 38%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 55;
+      align-items: center;
+      gap: 10px;
+      background: rgba(13,27,42,.88);
+      border: 1.5px solid var(--acc);
+      border-radius: 14px;
+      padding: 10px 22px 10px 14px;
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      user-select: none;
+      animation: promptPop .22s ease;
+    }
+    @keyframes promptPop {
+      from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .ip-key {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1.5px solid var(--acc);
+      background: rgba(141,198,63,.18);
+      color: var(--acc);
+      font-size: .95rem;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .ip-label {
+      font-size: .88rem;
+      font-weight: 800;
+      color: var(--txt);
+    }
+    /* 모바일: 키 힌트 숨기고 전체가 탭 타겟 */
+    @media (pointer: coarse) {
+      #interact-prompt { bottom: 42%; padding: 12px 26px; }
+      .ip-key { display: none; }
+    }
+
     /* 도면 */
     .blueprint {
       display: flex;
@@ -508,7 +556,13 @@
 <div id="joy-base"><div id="joy-nub"></div></div>
 <div id="joy-look"></div>
 
-<!-- ⑤ NPC 대화창 -->
+<!-- ⑤ NPC 말 걸기 프롬프트 (근접 시 표시) -->
+<div id="interact-prompt">
+  <span class="ip-key" id="ip-key">E</span>
+  <span class="ip-label" id="ip-label">말 걸기</span>
+</div>
+
+<!-- ⑥ NPC 대화창 -->
 <div id="dialog" class="hidden">
 
   <!-- 좌: NPC 초상화 -->
@@ -779,12 +833,34 @@ function _endDialog() {
   }
 }
 
-// 씬 준비 후 대화 시작
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    dlgEl.classList.remove('hidden');
-    showStep(0);
-  }, 800);
+/* ─── 대화 시작 (근접 인터랙션 트리거) ──────────────────── */
+function _startDialog() {
+  if (GAME.state.dialogActive) return;
+  if (typeof lockPlayer === 'function') lockPlayer();
+  document.getElementById('interact-prompt').style.display = 'none';
+  dlgEl.classList.remove('hidden');
+  showStep(0);
+}
+
+// 인터랙션 프롬프트: 클릭 / 탭
+const ipEl = document.getElementById('interact-prompt');
+ipEl.addEventListener('click', _startDialog);
+ipEl.addEventListener('touchstart', e => { e.stopPropagation(); _startDialog(); }, { passive: true });
+
+// E키 (데스크톱)
+window.addEventListener('keydown', e => {
+  if ((e.key === 'e' || e.key === 'E') && ipEl.style.display !== 'none') {
+    _startDialog();
+  }
+});
+
+// 언어별 프롬프트 문구 적용
+window.addEventListener('game:ready', () => {
+  const labels = {
+    ko: '말 걸기', en: 'Talk', vi: 'Nói chuyện', ar: 'تحدث'
+  };
+  const el = document.getElementById('ip-label');
+  if (el) el.textContent = labels[DLANG] || labels.ko;
 });
 </script>
 </body>

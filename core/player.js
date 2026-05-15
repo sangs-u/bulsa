@@ -4,7 +4,7 @@
 const PLAYER = {
   speed:    0.055,
   mesh:     null,
-  locked:   true,   // 대화 중 이동 잠금 (engine.js가 false로 해제)
+  locked:   false,  // 시작부터 자유 이동, 대화 중에만 잠금
   isMobile: ('ontouchstart' in window),
   keys:     { w: false, a: false, s: false, d: false },
   joy:      { x: 0, y: 0 },
@@ -150,6 +150,12 @@ function _updatePlayer() {
   // 카메라 타겟 부드럽게 추적
   const targetPos = PLAYER.mesh.position.add(new BABYLON.Vector3(0, 0.85, 0));
   GAME.camera.target = BABYLON.Vector3.Lerp(GAME.camera.target, targetPos, 0.12);
+}
+
+/* ─── 이동 잠금 (대화 시작 시 호출) ─────────────────────── */
+function lockPlayer() {
+  PLAYER.locked = true;
+  GAME.state.dialogActive = true;
 }
 
 /* ─── 이동 잠금 해제 (대화 종료 시 호출) ────────────────── */
