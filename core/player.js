@@ -81,9 +81,10 @@ function _initMobileJoystick() {
   base.addEventListener('touchend',    stop);
   base.addEventListener('touchcancel', stop);
 
-  // 우측 스와이프 → 카메라 회전
+  // 우측 스와이프 → 카메라 회전. 대화 전에도 표시.
   const lookArea = document.getElementById('joy-look');
   if (lookArea) {
+    lookArea.style.display = 'block';
     let lpx = 0, lpy = 0, lactive = false;
     lookArea.addEventListener('touchstart', e => {
       e.preventDefault();
@@ -135,6 +136,13 @@ function _updatePlayer() {
   move.scaleInPlace(PLAYER.speed);
 
   PLAYER.mesh.position.addInPlace(move);
+
+  // 방 경계 클램핑 (벽 통과 방지, 캡슐 반지름 0.35 여유)
+  const p = PLAYER.mesh.position;
+  if (p.x < -9.65) p.x = -9.65;
+  if (p.x >  9.65) p.x =  9.65;
+  if (p.z < -7.65) p.z = -7.65;
+  if (p.z >  7.65) p.z =  7.65;
 
   // 이동 방향으로 캐릭터 회전
   if (len > 0.001) {

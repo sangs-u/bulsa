@@ -254,10 +254,7 @@ function _buildOfficeScene(scene) {
   const door = box('door', 0.06, 2.54, 1.56, -0.82, 1.27, 7.2, doorMat, true);
   door.rotation.y = Math.PI * 0.08;
 
-  // ── 형광등 천장 등기구 ─────────────────────────────────────
-  const fixMat = pbr('fixMat', 0.95, 0.95, 0.92, 0.30);
-  [{ px: -4, pz: -3 }, { px: 4, pz: -3 }, { px: -4, pz: 3 }, { px: 4, pz: 3 }]
-    .forEach(({ px, pz }, i) => box('fix'+i, 0.14, 0.08, 1.4, px, 4.38, pz, fixMat));
+  // 천장 등기구는 생략 (시야 방해) — PointLight로만 조명 처리
 
   // ── 조명 ──────────────────────────────────────────────────
   const mainL = new BABYLON.PointLight('main', new BABYLON.Vector3(0, 4.0, -2), scene);
@@ -306,11 +303,12 @@ function _buildOfficeScene(scene) {
   box('bossChairArm2', 0.06, 0.14, 0.50,  0.28, 0.70, -5.3, chairMat);
   box('bossChairPole', 0.07, 0.48, 0.07, 0, 0.28, -5.3, pbr('poleMat',0.60,0.60,0.60,0.3,0.7));
 
-  // 방문자 의자 2개 (책상 앞)
+  // 방문자 의자 2개 (책상 앞, 책상 쪽을 바라보도록)
+  // 등받이를 남쪽(z=-3.98)에 배치 → 착석자가 북쪽(책상 방향)을 바라봄
   const vChairMat = pbr('vChairMat', 0.55, 0.42, 0.30, 0.75);
   [-0.8, 0.8].forEach((cx, i) => {
-    box('vSeat'+i,  0.52, 0.06, 0.50, cx, 0.48, -4.2, vChairMat, true);
-    box('vBack'+i,  0.52, 0.55, 0.06, cx, 0.78, -4.42, vChairMat, true);
+    box('vSeat'+i,  0.52, 0.06, 0.50, cx, 0.48, -4.2,  vChairMat, true);
+    box('vBack'+i,  0.52, 0.55, 0.06, cx, 0.78, -3.98, vChairMat, true);  // 등받이 남쪽
     box('vLeg1_'+i, 0.05, 0.48, 0.05, cx-0.22, 0.24, -3.96, vChairMat);
     box('vLeg2_'+i, 0.05, 0.48, 0.05, cx+0.22, 0.24, -3.96, vChairMat);
     box('vLeg3_'+i, 0.05, 0.48, 0.05, cx-0.22, 0.24, -4.44, vChairMat);

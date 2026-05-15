@@ -838,6 +838,9 @@ function _startDialog() {
   if (GAME.state.dialogActive) return;
   if (typeof lockPlayer === 'function') lockPlayer();
   document.getElementById('interact-prompt').style.display = 'none';
+  // 대화 중 카메라 회전 영역 숨김
+  const jl = document.getElementById('joy-look');
+  if (jl) jl.style.display = 'none';
   dlgEl.classList.remove('hidden');
   showStep(0);
 }
