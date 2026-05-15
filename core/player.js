@@ -137,12 +137,21 @@ function _updatePlayer() {
 
   PLAYER.mesh.position.addInPlace(move);
 
-  // 방 경계 클램핑 — 벽(x±10, z±8)에서 1.2유닛 여유를 두어 투명화 방지
   const p = PLAYER.mesh.position;
-  if (p.x < -8.8) p.x = -8.8;
-  if (p.x >  8.8) p.x =  8.8;
-  if (p.z < -6.8) p.z = -6.8;
-  if (p.z >  6.8) p.z =  6.8;
+  if (GAME.currentScene === 'office') {
+    if (p.x < -8.8) p.x = -8.8;
+    if (p.x >  8.8) p.x =  8.8;
+    if (p.z < -6.8) p.z = -6.8;
+    // 출입구(x±0.78 이내)는 z 클램핑 해제
+    if (Math.abs(p.x) >= 0.78 && p.z > 6.8) p.z = 6.8;
+    if (p.z > 8.8 && typeof exitToSite === 'function') exitToSite();
+  } else {
+    // 현장: 광범위 소프트 경계
+    if (p.x < -38) p.x = -38;
+    if (p.x >  38) p.x =  38;
+    if (p.z < -18) p.z = -18;
+    if (p.z >  45) p.z =  45;
+  }
 
   // 이동 방향으로 캐릭터 회전
   if (len > 0.001) {

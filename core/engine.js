@@ -12,7 +12,11 @@ const GAME = {
   player:    null,
   npcBoss:   null,
   waterMesh: null,  // 命 게이지 수위 시각화 메시
-  walls:     [],    // 벽·천장 메시 (카메라 오클루전 페이드 대상)
+  walls:        [],    // 벽·천장 메시 (카메라 오클루전 페이드 대상)
+  officeMeshes: [],
+  officeLights: [],
+  siteMeshes:   [],
+  currentScene: 'office',
   state: {
     gameStarted:  false,
     gameOver:     false,
@@ -52,7 +56,11 @@ window.addEventListener('load', function _babylonInit() {
     const scene = _buildScene(engine, canvas);
     GAME.scene  = scene;
 
+    const _preMeshIds  = new Set(scene.meshes.map(m => m.uniqueId));
+    const _preLightIds = new Set(scene.lights.map(l => l.uniqueId));
     _buildOfficeScene(scene);
+    GAME.officeMeshes = scene.meshes.filter(m => !_preMeshIds.has(m.uniqueId) && m !== GAME.player && m !== GAME.waterMesh);
+    GAME.officeLights = scene.lights.filter(l => !_preLightIds.has(l.uniqueId));
 
     // 모바일: Babylon PointerEvent 처리 완전 비활성화
     // (카메라 회전은 player.js의 inertialAlphaOffset으로 직접 제어)
@@ -161,6 +169,7 @@ function _updateWallOcclusion() {
 
 /* ─── NPC 근접 감지 (매 프레임) ──────────────────────────── */
 function _checkNpcProximity() {
+  if (GAME.currentScene !== 'office') return;
   if (!GAME.player || !GAME.npcBoss || GAME.state.dialogActive) return;
   const d = BABYLON.Vector3.Distance(GAME.player.position, GAME.npcBoss.position);
   const prompt = document.getElementById('interact-prompt');
@@ -436,4 +445,168 @@ function _buildOfficeScene(scene) {
   GAME.camera.alpha  = -Math.PI / 2;
   GAME.camera.beta   = Math.PI / 3.2;
   GAME.camera.radius = 12;
+}
+
+/* ─── 씬 전환: 사무소 → 건설 현장 ──────────────────────── */
+function exitToSite() {
+  if (GAME.currentScene !== 'office') return;
+  GAME.currentScene = 'transitioning';
+  if (typeof PLAYER !== 'undefined') PLAYER.locked = true;
+
+  const fade = document.getElementById('scene-fade');
+  if (fade) fade.classList.add('in');
+
+  setTimeout(() => {
+    _disposeOffice();
+    _buildSiteScene(GAME.scene);
+    GAME.currentScene = 'site';
+
+    GAME.player.position = new BABYLON.Vector3(0, 0.85, 9);
+
+    // NPC 팀원 현장으로 이동
+    const sitePos = [[-4,0.85,14],[4,0.85,16],[0,0.85,20],[2,0.85,11]];
+    if (typeof NPCS !== 'undefined') {
+      NPCS.forEach((npc, i) => {
+        if (npc.mesh && sitePos[i]) {
+          npc.mesh.position = new BABYLON.Vector3(sitePos[i][0], sitePos[i][1], sitePos[i][2]);
+        }
+      });
+    }
+
+    if (typeof initSiteHazards === 'function') initSiteHazards();
+
+    setTimeout(() => {
+      if (fade) fade.classList.remove('in');
+      if (typeof PLAYER !== 'undefined') PLAYER.locked = false;
+    }, 450);
+  }, 450);
+}
+
+function _disposeOffice() {
+  GAME.officeMeshes.forEach(m => { try { m.dispose(); } catch(e) {} });
+  GAME.officeLights.forEach(l => { try { l.dispose(); } catch(e) {} });
+  GAME.officeMeshes = [];
+  GAME.officeLights = [];
+  GAME.walls = [];
+  GAME.npcBoss = null;
+  const ip = document.getElementById('interact-prompt');
+  if (ip) ip.style.display = 'none';
+}
+
+/* ─── 건설 현장 씬 ───────────────────────────────────────── */
+function _buildSiteScene(scene) {
+  const M  = BABYLON.MeshBuilder;
+  const sg = GAME.shadowGen;
+  GAME.siteMeshes = [];
+  const _tr = m => { GAME.siteMeshes.push(m); return m; };
+
+  function pbr(name, r, g, b, rough, metal) {
+    const m = new BABYLON.PBRMaterial('site_' + name, scene);
+    m.albedoColor = new BABYLON.Color3(r, g, b);
+    m.roughness   = rough ?? 0.85;
+    m.metallic    = metal ?? 0;
+    return m;
+  }
+  function box(name, w, h, d, px, py, pz, mat, sh) {
+    const mesh = M.CreateBox('s_' + name, { width: w, height: h, depth: d }, scene);
+    mesh.position = new BABYLON.Vector3(px, py, pz);
+    mesh.material = mat;
+    mesh.receiveShadows = true;
+    if (sh) sg.addShadowCaster(mesh);
+    return _tr(mesh);
+  }
+
+  // ── 하늘 & 조명 ──────────────────────────────────────────
+  scene.clearColor = new BABYLON.Color4(0.53, 0.81, 0.98, 1);
+  const hemi = scene.getLightByName('hemi');
+  if (hemi) { hemi.intensity = 0.55; hemi.diffuse = new BABYLON.Color3(0.82, 0.90, 1.0); }
+  const sun  = scene.getLightByName('sun');
+  if (sun)  { sun.intensity = 1.3; }
+
+  // ── 지면 (흙/자갈) ───────────────────────────────────────
+  const gnd = M.CreateGround('siteGround', { width: 100, height: 100 }, scene);
+  gnd.material = pbr('gnd', 0.55, 0.47, 0.36, 0.96, 0.01);
+  gnd.receiveShadows = true;
+  _tr(gnd);
+
+  // ── 현장사무소 외벽 ──────────────────────────────────────
+  box('bldg',  20, 5, 16, 0, 2.5, 0,    pbr('bldg', 0.72, 0.68, 0.60, 0.90, 0.02), true);
+  box('roof',  21, 0.35, 17, 0, 5.18, 0, pbr('roof', 0.48, 0.44, 0.38, 0.88), false);
+  box('doorO', 1.6, 2.4, 0.2, 0, 1.2, 8.1, pbr('door', 0.28, 0.20, 0.14, 0.65), true);
+
+  // ── 오렌지 안전 펜스 (공사 부지 x:-12~12, z:10~34) ──────
+  const pstMat  = pbr('fpost', 0.94, 0.42, 0.06, 0.72);
+  const railMat = pbr('frail', 0.94, 0.42, 0.06, 0.80);
+
+  // 포스트 — 북쪽은 중앙 4m 출입구 비움
+  [-12,-8,-4,4,8,12].forEach(x => {
+    const c = M.CreateCylinder('fpN'+x, {height:1.2,diameter:0.12,tessellation:8}, scene);
+    c.position = new BABYLON.Vector3(x, 0.6, 9.5);
+    c.material = pstMat; c.receiveShadows = true; _tr(c);
+  });
+  [-12,-8,-4,0,4,8,12].forEach(x => {
+    const c = M.CreateCylinder('fpS'+x, {height:1.2,diameter:0.12,tessellation:8}, scene);
+    c.position = new BABYLON.Vector3(x, 0.6, 34.5);
+    c.material = pstMat; c.receiveShadows = true; _tr(c);
+  });
+  [10,14,18,22,26,30,34].forEach(z => {
+    [-12.5,12.5].forEach((x, side) => {
+      const c = M.CreateCylinder('fpLR'+z+'_'+side, {height:1.2,diameter:0.12,tessellation:8}, scene);
+      c.position = new BABYLON.Vector3(x, 0.6, z);
+      c.material = pstMat; c.receiveShadows = true; _tr(c);
+    });
+  });
+
+  // 레일
+  box('rNW', 9,0.07,0.07, -7.5,0.85,9.5, railMat, false);
+  box('rNW2',9,0.07,0.07, -7.5,0.42,9.5, railMat, false);
+  box('rNE', 9,0.07,0.07,  7.5,0.85,9.5, railMat, false);
+  box('rNE2',9,0.07,0.07,  7.5,0.42,9.5, railMat, false);
+  box('rS', 25,0.07,0.07, 0,0.85,34.5, railMat, false);
+  box('rS2',25,0.07,0.07, 0,0.42,34.5, railMat, false);
+  [[-12.5,0.85],[-12.5,0.42],[12.5,0.85],[12.5,0.42]].forEach(([x,y],i) =>
+    box('rSide'+i, 0.07,0.07,25, x,y,22, railMat, false));
+
+  // ── 부지 내 지면 (굴착 예정 어두운 흙) ───────────────────
+  const siteInner = M.CreateGround('siteInner', {width:24,height:24}, scene);
+  siteInner.position = new BABYLON.Vector3(0, 0.01, 22);
+  siteInner.material = pbr('inner', 0.40, 0.33, 0.22, 0.98);
+  siteInner.receiveShadows = true;
+  _tr(siteInner);
+
+  // 부지 경계 백선
+  const wl = pbr('wl', 0.90, 0.86, 0.78, 0.98);
+  box('wlN',24.2,0.025,0.14, 0,0.015,10, wl, false);
+  box('wlS',24.2,0.025,0.14, 0,0.015,34, wl, false);
+  box('wlW',0.14,0.025,24.2,-12,0.015,22, wl, false);
+  box('wlE',0.14,0.025,24.2, 12,0.015,22, wl, false);
+
+  // ── 자재 야적장 ──────────────────────────────────────────
+  const pile = pbr('pile', 0.55, 0.50, 0.42, 0.96);
+  box('pile1', 3.0,0.7,1.5, 10,0.35,-4, pile, true);
+  box('pile2', 2.5,1.1,1.2, 10.2,0.55,-3.4, pile, true);
+
+  // ── 안전 가설창고 (라임 작은 박스) ───────────────────────
+  box('hut', 2.2,2.6,2.2, -10,1.3,-5, pbr('hut',0.10,0.40,0.15,0.80), true);
+
+  // ── 타워크레인 기초 ───────────────────────────────────────
+  const cb = M.CreateCylinder('s_craneBase',
+    {height:0.7, diameter:1.5, tessellation:8}, scene);
+  cb.position = new BABYLON.Vector3(0, 0.35, 22);
+  cb.material = pbr('crb', 0.40, 0.38, 0.36, 0.82, 0.08);
+  cb.receiveShadows = true; sg.addShadowCaster(cb); _tr(cb);
+
+  // 타워 기둥
+  const ct = M.CreateCylinder('s_craneTower',
+    {height:8, diameter:0.30, tessellation:8}, scene);
+  ct.position = new BABYLON.Vector3(0, 4.35, 22);
+  ct.material = pbr('crt', 0.92, 0.74, 0.04, 0.65, 0.1);
+  ct.receiveShadows = true; sg.addShadowCaster(ct); _tr(ct);
+
+  // ── 카메라 ───────────────────────────────────────────────
+  GAME.camera.setTarget(new BABYLON.Vector3(0, 1.2, 12));
+  GAME.camera.alpha  = -Math.PI / 2;
+  GAME.camera.beta   = Math.PI / 3;
+  GAME.camera.radius = 20;
+  GAME.camera.upperRadiusLimit = 60;
 }

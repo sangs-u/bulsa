@@ -393,6 +393,21 @@
     .test-btn.minus { color: #E85A3A; border-color: #E85A3A44; }
     .test-btn.plus  { color: #8DC63F; border-color: #8DC63F44; }
 
+    /* ── 씬 전환 페이드 ─────────────────────────────────────── */
+    #scene-fade {
+      position: fixed;
+      inset: 0;
+      background: #0D1B2A;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .42s ease;
+      z-index: 200;
+    }
+    #scene-fade.in {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     /* ── 위험 플래시 오버레이 ──────────────────────────────── */
     #danger-flash {
       position: fixed;
@@ -503,7 +518,8 @@
 <canvas id="renderCanvas"></canvas>
 <div id="_dbg" style="position:fixed;top:4px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#8DC63F;font-size:11px;font-family:monospace;padding:3px 8px;border-radius:4px;z-index:9998;pointer-events:none">로딩 중...</div>
 
-<!-- ② 위험 플래시 -->
+<!-- ② 씬 페이드 / 위험 플래시 -->
+<div id="scene-fade"></div>
 <div id="danger-flash"></div>
 
 <!-- ③ HUD -->
@@ -587,11 +603,11 @@
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 <script src="i18n/strings.js?v=20260514"></script>
-<script src="core/engine.js?v=20260514"></script>
-<script src="core/player.js?v=20260514"></script>
+<script src="core/engine.js?v=20260515b"></script>
+<script src="core/player.js?v=20260515b"></script>
 <script src="core/life.js?v=20260514"></script>
 <script src="core/npc.js?v=20260515"></script>
-<script src="core/hazard.js?v=20260515"></script>
+<script src="core/hazard.js?v=20260515b"></script>
 <script src="core/hud.js?v=20260514"></script>
 
 <script>

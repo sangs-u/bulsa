@@ -77,12 +77,24 @@ function _tickHazard(dt) {
   if (maxDps > 0) lifeDamage(maxDps * dt);
 }
 
+/* ─── 건설 현장 위험구역 초기화 (exitToSite에서 호출) ────── */
+function initSiteHazards() {
+  const scene = GAME.scene;
+  // 타워크레인 양중 반경 (중앙) — 위험
+  HAZARD_ZONES.push(new HazardZone('crane', 0, 22, 6, 2));
+  // 부지 동/서 단부 — 주의
+  HAZARD_ZONES.push(new HazardZone('edgeE',  12, 22, 3.5, 1));
+  HAZARD_ZONES.push(new HazardZone('edgeW', -12, 22, 3.5, 1));
+  // 남쪽 단부 — 주의
+  HAZARD_ZONES.push(new HazardZone('edgeS', 0, 34, 4, 1));
+  HAZARD_ZONES.forEach(z => _buildZone(z, scene));
+}
+
 /* ─── 초기화 (game:ready 이후) ───────────────────────────── */
 window.addEventListener('game:ready', function() {
   const scene = GAME.scene;
 
   // 사무소는 안전구역 — 위험구역 없음
-  // 건설 현장 씬에서 HAZARD_ZONES.push(new HazardZone(...)) 로 추가 예정
 
   let last = performance.now();
   scene.onBeforeRenderObservable.add(() => {
