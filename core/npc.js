@@ -2,10 +2,10 @@
 
 /* ─── 팀원 정의 ──────────────────────────────────────────── */
 const NPC_DEFS = [
-  { id: 0, name: '김철수', grade: 'expert',  skill: 0.85, languageGap: 0.0, pos: [-6,  0.85, -2] },
-  { id: 1, name: '이영수', grade: 'semi',    skill: 0.65, languageGap: 0.0, pos: [ 5,  0.85, -2] },
-  { id: 2, name: '박신입', grade: 'newbie',  skill: 0.40, languageGap: 0.0, pos: [ 1,  0.85,  3] },
-  { id: 3, name: '응우옌', grade: 'foreign', skill: 0.55, languageGap: 0.4, pos: [-5,  0.85,  3] },
+  { id: 0, name: '김철수', grade: 'expert',  skill: 0.85, languageGap: 0.0, pos: [-4.5, 0.85,  0.5] },
+  { id: 1, name: '이영수', grade: 'semi',    skill: 0.65, languageGap: 0.0, pos: [ 4.5, 0.85,  0.5] },
+  { id: 2, name: '박신입', grade: 'newbie',  skill: 0.40, languageGap: 0.0, pos: [-1.5, 0.85,  3.5] },
+  { id: 3, name: '응우옌', grade: 'foreign', skill: 0.55, languageGap: 0.4, pos: [ 1.5, 0.85,  3.5] },
 ];
 
 // HUD 파티바 색상과 일치
@@ -78,6 +78,17 @@ window.addEventListener('game:ready', function() {
     mat.roughness   = 0.65;
     mat.metallic    = 0.05;
     mesh.material   = mat;
+
+    // 머리 위 마커 (색깔 작은 구체 — 한눈에 NPC 식별)
+    const marker = BABYLON.MeshBuilder.CreateSphere('npcMarker_' + def.id,
+      { diameter: 0.22, segments: 8 }, GAME.scene);
+    marker.parent   = mesh;
+    marker.position = new BABYLON.Vector3(0, 1.05, 0);
+    marker.isPickable = false;
+    const mMat = new BABYLON.StandardMaterial('npcMarkerMat_' + def.id, GAME.scene);
+    mMat.diffuseColor  = new BABYLON.Color3(r, g, b);
+    mMat.emissiveColor = new BABYLON.Color3(r * 0.7, g * 0.7, b * 0.7);
+    marker.material = mMat;
 
     const npc = new NPC(def, mesh);
     NPCS.push(npc);
