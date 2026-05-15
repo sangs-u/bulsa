@@ -501,7 +501,6 @@
     }
     .survey-card:hover  { border-color: var(--acc); background: rgba(141,198,63,.08); }
     .survey-card.sel    { border-color: var(--acc); background: rgba(141,198,63,.15); }
-    .sc-icon  { font-size: 1.3rem; margin-bottom: 5px; }
     .sc-title { font-size: .84rem; font-weight: 800; color: var(--txt); margin-bottom: 4px; }
     .sc-desc  { font-size: .68rem; color: var(--dim); line-height: 1.4; }
     .sc-badge {
@@ -1145,10 +1144,10 @@ function _svExtraHTML(type) {
     case 'soil_result':    return _svSoilResultHTML();
     case 'utility_choice': return _svUtilityChoiceHTML();
     case 'utility_result': return _svUtilityResultHTML();
-    case 'utility_doc_btn':return `<div style="margin-top:4px"><button class="dlg-btn" id="sv-util-doc-btn" style="pointer-events:auto">📋 상세 보고서 열기</button></div>`;
+    case 'utility_doc_btn':return `<div style="margin-top:4px"><button class="dlg-btn" id="sv-util-doc-btn" style="pointer-events:auto">상세 보고서 열기</button></div>`;
     case 'method_choice':  return _svMethodChoiceHTML();
     case 'safety_choice':  return _svSafetyChoiceHTML();
-    case 'workplan_btn':   return `<div style="margin-top:4px"><button class="dlg-btn" id="sv-wp-btn" style="pointer-events:auto">📄 작업계획서 보기</button></div>`;
+    case 'workplan_btn':   return `<div style="margin-top:4px"><button class="dlg-btn" id="sv-wp-btn" style="pointer-events:auto">작업계획서 보기</button></div>`;
     default: return '';
   }
 }
@@ -1221,13 +1220,11 @@ function _svCardClick(type, val) {
 function _svSoilChoiceHTML() {
   return `<div class="survey-cards">
     <div class="survey-card" data-sv="quick">
-      <div class="sc-icon">🔍</div>
       <div class="sc-title">간이조사</div>
       <div class="sc-desc">육안 관찰 + 표면 샘플링<br>빠르고 무료</div>
       <div class="sc-badge" style="background:rgba(141,198,63,.15);color:#8DC63F">무료 · 정확도 낮음</div>
     </div>
     <div class="survey-card" data-sv="standard">
-      <div class="sc-icon">🏗</div>
       <div class="sc-title">표준관입시험</div>
       <div class="sc-desc">SPT (N값 측정)<br>지반 강도 정밀 분석</div>
       <div class="sc-badge" style="background:rgba(58,154,232,.15);color:#3A9AE8">비용 발생 · 정확도 높음</div>
@@ -1257,13 +1254,11 @@ function _svSoilResultHTML() {
 function _svUtilityChoiceHTML() {
   return `<div class="survey-cards">
     <div class="survey-card" data-sv="gpr">
-      <div class="sc-icon">📡</div>
       <div class="sc-title">지표투과레이더 (GPR)</div>
       <div class="sc-desc">전자파로 지하 구조물 탐지<br>비파괴 · 정밀 탐사</div>
       <div class="sc-badge" style="background:rgba(58,154,232,.15);color:#3A9AE8">비용 발생 · 안전</div>
     </div>
     <div class="survey-card" data-sv="trial">
-      <div class="sc-icon">⛏</div>
       <div class="sc-title">시험굴착</div>
       <div class="sc-desc">직접 굴착하여 매설물 확인<br>정확하지만 파손 위험</div>
       <div class="sc-badge" style="background:rgba(232,90,58,.15);color:#E85A3A">저비용 · 파손 위험</div>
@@ -1288,13 +1283,11 @@ function _svMethodChoiceHTML() {
   const slopeRec = soil !== 'sand';
   return `<div class="survey-cards">
     <div class="survey-card${slopeRec ? ' sel' : ''}" data-sv="slope">
-      <div class="sc-icon">⛰</div>
       <div class="sc-title">사면개착</div>
       <div class="sc-desc">경사면을 주며 굴착<br>별도 가설 불필요</div>
       <div class="sc-badge" style="background:rgba(141,198,63,.15);color:#8DC63F">${slopeRec ? '토질 기반 추천' : '적용 가능'}</div>
     </div>
     <div class="survey-card${!slopeRec ? ' sel' : ''}" data-sv="retaining">
-      <div class="sc-icon">🏗</div>
       <div class="sc-title">흙막이 공법</div>
       <div class="sc-desc">수직 굴착 + 가시설 설치<br>공간 제약 시 적합</div>
       <div class="sc-badge" style="background:rgba(58,107,154,.15);color:#3A6B9A">${!slopeRec ? '토질 기반 추천' : '적용 가능'}</div>
