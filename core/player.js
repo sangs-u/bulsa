@@ -142,9 +142,8 @@ function _updatePlayer() {
     if (p.x < -8.8) p.x = -8.8;
     if (p.x >  8.8) p.x =  8.8;
     if (p.z < -6.8) p.z = -6.8;
-    // 출입구(x±0.78 이내)는 z 클램핑 해제
-    if (Math.abs(p.x) >= 0.78 && p.z > 6.8) p.z = 6.8;
-    if (p.z > 8.8 && typeof exitToSite === 'function') exitToSite();
+    // 남쪽은 완전 개방 — z>8.5 통과 시 씬 전환
+    if (p.z > 8.5 && typeof exitToSite === 'function') exitToSite();
   } else {
     // 현장: 광범위 소프트 경계
     if (p.x < -38) p.x = -38;
