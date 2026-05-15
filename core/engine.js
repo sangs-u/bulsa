@@ -682,6 +682,103 @@ function _buildSiteScene(scene) {
   ext.position = new BABYLON.Vector3(-1.2, 0.49, 8.4);
   ext.material = pbr('oex', 0.80, 0.07, 0.06, 0.65); _tr(ext);
 
+  // ── 굴착 예정 구역 (12×12m, 중심 0,0,22) ────────────────
+  const exGrnd = BABYLON.MeshBuilder.CreateGround('s_exArea', {width:12, height:12}, scene);
+  exGrnd.position = new BABYLON.Vector3(0, 0.012, 22);
+  const exGrndM = new BABYLON.StandardMaterial('s_exAreaMat', scene);
+  exGrndM.diffuseColor = new BABYLON.Color3(0.42, 0.30, 0.18);
+  exGrndM.alpha = 0.95;
+  exGrnd.material = exGrndM;
+  exGrnd.isPickable = false;
+  GAME.siteMeshes.push(exGrnd);
+  const exCorners = [
+    new BABYLON.Vector3(-6, 0.04, 16),
+    new BABYLON.Vector3( 6, 0.04, 16),
+    new BABYLON.Vector3( 6, 0.04, 28),
+    new BABYLON.Vector3(-6, 0.04, 28),
+    new BABYLON.Vector3(-6, 0.04, 16),
+  ];
+  const exLine = BABYLON.MeshBuilder.CreateDashedLines('s_exEdge',
+    { points: exCorners, dashSize: 0.4, gapSize: 0.25, dashNb: 80 }, scene);
+  exLine.color = new BABYLON.Color3(0.95, 0.85, 0.10);
+  exLine.isPickable = false;
+  GAME.siteMeshes.push(exLine);
+
+  // ── 자재 더미 ─────────────────────────────────────────────
+  GAME.materialPiles = [];
+  // 난간 파이프 더미 (x=8, z=12)
+  const railPile = BABYLON.MeshBuilder.CreateBox('s_railPile', {width:1.8, height:0.45, depth:0.6}, scene);
+  railPile.position = new BABYLON.Vector3(8, 0.225, 12);
+  const railPileM = new BABYLON.PBRMaterial('s_railPileM', scene);
+  railPileM.albedoColor = new BABYLON.Color3(0.55, 0.56, 0.58);
+  railPileM.metallic = 0.62;
+  railPileM.roughness = 0.55;
+  railPile.material = railPileM;
+  railPile.metadata = { kind: 'pile', type: 'guardrail' };
+  GAME.siteMeshes.push(railPile);
+  GAME.materialPiles.push({ id:'pile_rail', type:'guardrail', x:8, z:12, mesh:railPile, count:8 });
+
+  // 라바콘 더미 (x=-8, z=12)
+  const conePileBase = BABYLON.MeshBuilder.CreateBox('s_conePileBase', {width:1.6, height:0.05, depth:1.0}, scene);
+  conePileBase.position = new BABYLON.Vector3(-8, 0.025, 12);
+  const conePileBaseM = new BABYLON.StandardMaterial('s_conePileBaseM', scene);
+  conePileBaseM.diffuseColor = new BABYLON.Color3(0.40, 0.40, 0.40);
+  conePileBase.material = conePileBaseM;
+  GAME.siteMeshes.push(conePileBase);
+  const coneOrangeM = new BABYLON.PBRMaterial('s_coneOrangeM', scene);
+  coneOrangeM.albedoColor = new BABYLON.Color3(0.95, 0.45, 0.10);
+  coneOrangeM.metallic = 0.0; coneOrangeM.roughness = 0.78;
+  [[-0.4,-0.3],[0.4,-0.3],[-0.4,0.3],[0.4,0.3]].forEach(([dx,dz], i) => {
+    const c = BABYLON.MeshBuilder.CreateCylinder('s_conePileC'+i,
+      {diameterTop:0.05, diameterBottom:0.32, height:0.5, tessellation:12}, scene);
+    c.position = new BABYLON.Vector3(-8+dx, 0.30, 12+dz);
+    c.material = coneOrangeM;
+    GAME.siteMeshes.push(c);
+  });
+  const conePileProxy = BABYLON.MeshBuilder.CreateBox('s_conePile', {width:1.6, height:0.6, depth:1.0}, scene);
+  conePileProxy.position = new BABYLON.Vector3(-8, 0.30, 12);
+  conePileProxy.isVisible = false;
+  conePileProxy.metadata = { kind: 'pile', type: 'cone' };
+  GAME.siteMeshes.push(conePileProxy);
+  GAME.materialPiles.push({ id:'pile_cone', type:'cone', x:-8, z:12, mesh:conePileProxy, count:4 });
+
+  // ── 스냅 존 ghost (난간 4 + 라바콘 4) ────────────────────
+  GAME.carryZones = [];
+  const _zoneGhostM = (id) => {
+    const m = new BABYLON.StandardMaterial('s_zoneMat_'+id, scene);
+    m.diffuseColor  = new BABYLON.Color3(0.45, 0.55, 0.70);
+    m.emissiveColor = new BABYLON.Color3(0.18, 0.24, 0.36);
+    m.alpha = 0.35;
+    return m;
+  };
+  [
+    { id:'rail_N', x: 0, z: 16, type:'guardrail', rotY: 0 },
+    { id:'rail_S', x: 0, z: 28, type:'guardrail', rotY: 0 },
+    { id:'rail_E', x: 6, z: 22, type:'guardrail', rotY: Math.PI/2 },
+    { id:'rail_W', x:-6, z: 22, type:'guardrail', rotY: Math.PI/2 },
+  ].forEach(def => {
+    const g = BABYLON.MeshBuilder.CreateBox('s_zone_'+def.id, {width:1.6, height:0.04, depth:0.4}, scene);
+    g.position = new BABYLON.Vector3(def.x, 0.025, def.z);
+    g.rotation.y = def.rotY;
+    g.material = _zoneGhostM(def.id);
+    g.isPickable = false;
+    GAME.siteMeshes.push(g);
+    GAME.carryZones.push({ id:def.id, x:def.x, z:def.z, rotY:def.rotY, radius:1.6, type:'guardrail', occupied:false, ghostMesh:g, finalMesh:null });
+  });
+  [
+    { id:'cone_NW', x:-7, z:15 },
+    { id:'cone_NE', x: 7, z:15 },
+    { id:'cone_SW', x:-7, z:29 },
+    { id:'cone_SE', x: 7, z:29 },
+  ].forEach(def => {
+    const g = BABYLON.MeshBuilder.CreateCylinder('s_zone_'+def.id, {diameter:0.7, height:0.04, tessellation:20}, scene);
+    g.position = new BABYLON.Vector3(def.x, 0.025, def.z);
+    g.material = _zoneGhostM(def.id);
+    g.isPickable = false;
+    GAME.siteMeshes.push(g);
+    GAME.carryZones.push({ id:def.id, x:def.x, z:def.z, rotY:0, radius:1.2, type:'cone', occupied:false, ghostMesh:g, finalMesh:null });
+  });
+
   // 카메라
   GAME.camera.setTarget(new BABYLON.Vector3(0, 1.2, 15));
   GAME.camera.alpha  = -Math.PI / 2;
@@ -703,6 +800,10 @@ function enterOffice() {
     // 사이트 정리
     GAME.siteMeshes.forEach(m => { try { m.dispose(); } catch(e) {} });
     GAME.siteMeshes = [];
+    if (GAME.carryZones)    GAME.carryZones.length    = 0;
+    if (GAME.materialPiles) GAME.materialPiles.length = 0;
+    GAME.heldItem = null;
+    if (typeof PLAYER !== 'undefined') PLAYER.speed = 0.055;
     if (typeof HAZARD_ZONES !== 'undefined') HAZARD_ZONES.length = 0;
 
     // 잔상 방지: 기존 플레이어·워터 메시 명시적 폐기

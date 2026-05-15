@@ -29,6 +29,8 @@ class NPC {
     this.health          = 100;             // 0~100
     this.tbmDone         = false;
     this.mesh            = mesh;
+    this.task      = null;
+    this.moveSpeed = 0.04;
   }
 
   // DESIGN.md: mistakeRate = (fatigue/100×0.3) + ((1-skill)×0.2) + languageGap×0.4
@@ -44,6 +46,81 @@ class NPC {
     // 피로 누적: 1분당 0.8 포인트
     this.fatigue = Math.min(100, this.fatigue + dt * 0.8 / 60);
     _updatePartyBar(this.id, this.health, this.fatigue);
+    this._taskTick();
+  }
+
+  _taskTick() {
+    if (!this.task) return;
+    const t = this.task;
+
+    if (t.phase === 'goBriefing') {
+      const diff = t.target.subtract(this.mesh.position);
+      diff.y = 0;
+      const dist = diff.length();
+      if (dist < 0.3) {
+        const look = GAME.player.position.subtract(this.mesh.position);
+        this.mesh.rotation.y = Math.atan2(look.x, look.z);
+        this.task = null;
+        return;
+      }
+      diff.scaleInPlace(this.moveSpeed / dist);
+      this.mesh.position.addInPlace(diff);
+      this.mesh.rotation.y = Math.atan2(diff.x, diff.z);
+      return;
+    }
+
+    const target = (t.phase === 'goPile')
+      ? new BABYLON.Vector3(t.pile.x, this.mesh.position.y, t.pile.z)
+      : new BABYLON.Vector3(t.zone.x, this.mesh.position.y, t.zone.z);
+    const diff = target.subtract(this.mesh.position);
+    diff.y = 0;
+    const dist = diff.length();
+    if (dist < 0.4) {
+      if (t.phase === 'goPile') {
+        const m = t.pile.type === 'guardrail'
+          ? BABYLON.MeshBuilder.CreateBox('npcHeld_'+this.id, {width:1.6, height:0.06, depth:0.06}, GAME.scene)
+          : BABYLON.MeshBuilder.CreateCylinder('npcHeld_'+this.id,
+              {diameterTop:0.05, diameterBottom:0.32, height:0.5, tessellation:12}, GAME.scene);
+        m.parent = this.mesh;
+        m.position = new BABYLON.Vector3(0, 0.95, 0.35);
+        if (t.pile.type === 'guardrail') m.rotation.z = Math.PI/2;
+        const hm = new BABYLON.PBRMaterial('npcHM_'+this.id, GAME.scene);
+        hm.albedoColor = t.pile.type === 'guardrail'
+          ? new BABYLON.Color3(0.55,0.56,0.58)
+          : new BABYLON.Color3(0.95,0.45,0.10);
+        m.material = hm;
+        t.heldMesh = m;
+        t.pile.count -= 1;
+        t.phase = 'goZone';
+      } else {
+        if (t.heldMesh) t.heldMesh.dispose();
+        if (typeof _carrySpawnFinalMesh === 'function') _carrySpawnFinalMesh(t.zone);
+        t.zone.occupied = true;
+        if (t.zone.ghostMesh) t.zone.ghostMesh.isVisible = false;
+        if (typeof _carryOnZoneFilled === 'function') _carryOnZoneFilled(t.zone);
+        this.task = null;
+      }
+      return;
+    }
+    diff.scaleInPlace(this.moveSpeed / dist);
+    this.mesh.position.addInPlace(diff);
+    this.mesh.rotation.y = Math.atan2(diff.x, diff.z);
+  }
+
+  goAndPlace(pile, zone) {
+    if (this.task) return;
+    this.task = { phase: 'goPile', pile, zone, heldMesh: null };
+  }
+
+  moveToBriefingSpot(idx) {
+    if (!GAME.player) return;
+    const center = GAME.player.position.clone();
+    const angles = [-Math.PI*0.35, -Math.PI*0.12, Math.PI*0.12, Math.PI*0.35];
+    const R = 2.2;
+    const a = angles[idx] || 0;
+    const tx = center.x + Math.sin(a) * R;
+    const tz = center.z - Math.cos(a) * R;
+    this.task = { phase:'goBriefing', target: new BABYLON.Vector3(tx, this.mesh.position.y, tz) };
   }
 
   setMeshVariant(role) { /* reserved for GLB swap when final chibi model arrives */ }

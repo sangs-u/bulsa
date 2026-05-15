@@ -280,6 +280,64 @@
       .ip-key { display: none; }
     }
 
+    #ctx-action-btn {
+      position: fixed;
+      bottom: 26%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 65;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: rgba(13,27,42,.88);
+      border: 1.5px solid #8DC63F;
+      border-radius: 14px;
+      padding: 10px 22px 10px 14px;
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      user-select: none;
+    }
+    #ctx-action-btn.show { display: flex; }
+    @media (pointer: coarse) {
+      #ctx-action-btn { bottom: 28%; padding: 12px 26px; }
+      #ctx-action-btn .ip-key { display: none; }
+    }
+    #carry-hud {
+      position: absolute;
+      top: 100px;
+      left: 16px;
+      background: rgba(13,27,42,.78);
+      border: 1px solid #8DC63F;
+      border-radius: 8px;
+      padding: 6px 12px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(6px);
+      z-index: 55;
+    }
+    .carry-icon { width:16px; height:16px; border-radius:3px; background:#8DC63F; flex-shrink:0; }
+    .carry-label { font-size:.58rem; color:var(--dim); letter-spacing:.06em; }
+    .carry-name  { font-size:.82rem; font-weight:800; color:var(--acc); }
+    #install-checklist {
+      position: absolute;
+      top: 100px;
+      right: 16px;
+      background: rgba(13,27,42,.78);
+      border: 1px solid var(--bdr);
+      border-radius: 10px;
+      padding: 9px 12px;
+      min-width: 130px;
+      display: none;
+      backdrop-filter: blur(6px);
+      z-index: 55;
+    }
+    .cl-title { font-size:.65rem; color:var(--dim); letter-spacing:.06em; margin-bottom:5px; font-weight:800; }
+    .cl-row   { display:flex; align-items:center; gap:8px; padding:2px 0; }
+    .cl-icon  { color:#8DC63F; font-size:.8rem; }
+    .cl-label { font-size:.76rem; color:var(--txt); flex:1; }
+    .cl-count { font-size:.76rem; font-weight:800; color:var(--acc); font-variant-numeric:tabular-nums; }
+
     /* 도면 */
     .blueprint {
       display: flex;
@@ -652,6 +710,29 @@
     </div>
   </div>
 
+  <!-- 자재 운반 표시 -->
+  <div id="carry-hud">
+    <span class="carry-icon"></span>
+    <div>
+      <div class="carry-label">운반 중</div>
+      <div class="carry-name" id="carry-name">난간 파이프</div>
+    </div>
+  </div>
+  <!-- 설치 체크리스트 -->
+  <div id="install-checklist">
+    <div class="cl-title">설치 작업</div>
+    <div class="cl-row">
+      <span class="cl-icon">▮</span>
+      <span class="cl-label">난간</span>
+      <span class="cl-count"><span id="cl-rail">0</span>/4</span>
+    </div>
+    <div class="cl-row">
+      <span class="cl-icon" style="color:#F97316">▲</span>
+      <span class="cl-label">라바콘</span>
+      <span class="cl-count"><span id="cl-cone">0</span>/4</span>
+    </div>
+  </div>
+
 </div>
 
 <!-- ④ 모바일 조이스틱 -->
@@ -662,6 +743,12 @@
 <div id="interact-prompt">
   <span class="ip-key" id="ip-key">E</span>
   <span class="ip-label" id="ip-label">말 걸기</span>
+</div>
+
+<!-- 컨텍스트 액션 버튼 -->
+<div id="ctx-action-btn">
+  <span class="ip-key">E</span>
+  <span class="ip-label" id="ctx-action-label">집기</span>
 </div>
 
 <!-- ⑦ 작업계획서·보고서 오버레이 -->
@@ -702,6 +789,7 @@
 <script src="core/hud.js?v=20260514"></script>
 <script src="core/phase.js?v=20260515a"></script>
 <script src="core/survey.js?v=20260515a"></script>
+<script src="core/carry.js?v=20260515b"></script>
 
 <script>
 /* ─── HUD 초기화 ─────────────────────────────────────────── */
@@ -1135,6 +1223,7 @@ function _endSurveyDialog() {
   if (typeof unlockPlayer === 'function') unlockPlayer();
   const jl = document.getElementById('joy-look');
   if (jl && 'ontouchstart' in window) setTimeout(() => { jl.style.display = 'block'; }, 400);
+  setTimeout(() => { if (typeof _startTBM === 'function') _startTBM(); }, 800);
 }
 
 /* ─── Extra HTML 생성 ──────────────────────────────────── */
@@ -1380,6 +1469,83 @@ function _showDocOverlay(html) {
   const btn = paper.querySelector('.doc-close-btn');
   if (btn) btn.addEventListener('click', () => overlay.classList.remove('show'));
 }
+
+/* ─── TBM (Tool Box Meeting) ──────────────────────────────── */
+const TBM_LINES = [
+  '"모두 모이세요. 착공 전 TBM을 진행합니다.\n오늘 작업: 굴착 단부 안전시설 설치입니다."',
+  '"굴착 구역 4면에 난간, 모서리 4곳에 라바콘으로 작업 반경을 표시합니다.\n자재는 사무소 양옆 더미에 있습니다."',
+  '"안전 수칙: 자재는 천천히, 양손으로. E키로 집고, 설치 위치에서 E키로 놓습니다.\n동료에게 위임할 수도 있습니다. 자, 시작합니다."',
+];
+let _tbmIdx = 0;
+
+function _startTBM() {
+  if (PHASE.flags.tbmDone) return;
+  PHASE.current = 'tbm';
+  if (typeof lockPlayer === 'function') lockPlayer();
+  const ip = document.getElementById('interact-prompt');
+  const ctx = document.getElementById('ctx-action-btn');
+  if (ip)  ip.style.display = 'none';
+  if (ctx) ctx.classList.remove('show');
+
+  if (typeof NPCS !== 'undefined') {
+    NPCS.forEach((npc, i) => { if (npc.moveToBriefingSpot) npc.moveToBriefingSpot(i); });
+  }
+
+  setTimeout(() => {
+    _tbmIdx = 0;
+    dlgEl.classList.remove('hidden');
+    _showTBMLine(0);
+  }, 900);
+}
+
+function _showTBMLine(idx) {
+  if (idx >= TBM_LINES.length) { _endTBM(); return; }
+  _tbmIdx = idx;
+  avEl.textContent       = '철';
+  avEl.style.borderColor = '#F97316';
+  avEl.style.background  = 'rgba(249,115,22,.14)';
+  avEl.style.color       = '#F97316';
+  nameEl.textContent     = '김철수';
+  roleEl.textContent     = '숙련공 · 10년차';
+  typewrite(textEl, TBM_LINES[idx], null, 26);
+  extraEl.innerHTML    = '';
+  choicesEl.innerHTML  = '';
+  const btn = document.createElement('button');
+  btn.className = 'dlg-btn' + (idx === TBM_LINES.length - 1 ? ' accent' : '');
+  btn.textContent = idx === TBM_LINES.length - 1 ? '작업 시작!' : '확인';
+  btn.addEventListener('click', () => _showTBMLine(idx + 1));
+  choicesEl.appendChild(btn);
+}
+
+function _endTBM() {
+  PHASE.flags.tbmDone = true;
+  PHASE.current = 'install';
+  dlgEl.classList.add('hidden');
+  if (typeof unlockPlayer === 'function') unlockPlayer();
+
+  if (typeof NPCS !== 'undefined') {
+    const spots = [[-6,0.85,14],[6,0.85,14],[-4,0.85,30],[4,0.85,30]];
+    NPCS.forEach((npc, i) => {
+      const p = spots[i] || spots[0];
+      npc.task = { phase:'goBriefing', target: new BABYLON.Vector3(p[0], p[1], p[2]) };
+    });
+  }
+
+  const jl = document.getElementById('joy-look');
+  if (jl && ('ontouchstart' in window)) setTimeout(() => { jl.style.display = 'block'; }, 400);
+
+  const cl = document.getElementById('install-checklist');
+  if (cl) cl.style.display = 'block';
+}
+
+/* ─── 설치 완료 핸들러 ──────────────────────────────────── */
+window.addEventListener('phase:installComplete', () => {
+  setTimeout(() => {
+    const cl = document.getElementById('install-checklist');
+    if (cl) cl.style.display = 'none';
+  }, 2000);
+  PHASE.flags.installDone = true;
+});
 </script>
 </body>
 </html>
