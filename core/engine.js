@@ -54,6 +54,12 @@ window.addEventListener('load', function _babylonInit() {
 
     _buildOfficeScene(scene);
 
+    // 모바일: Babylon PointerEvent 처리 완전 비활성화
+    // (카메라 회전은 player.js의 inertialAlphaOffset으로 직접 제어)
+    if ('ontouchstart' in window) {
+      scene.detachControl();
+    }
+
     engine.runRenderLoop(() => {
       if (GAME.state.paused) return;
       _updateWallOcclusion();

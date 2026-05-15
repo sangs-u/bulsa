@@ -677,6 +677,11 @@ const textEl   = document.getElementById('dlg-text');
 const extraEl  = document.getElementById('dlg-extra');
 const choicesEl = document.getElementById('dlg-choices');
 
+// Babylon PointerEvent 캡처가 dialog 영역을 막지 못하도록 전파 차단
+['pointerdown','pointerup','pointermove','touchstart','touchend','touchmove'].forEach(type => {
+  dlgEl.addEventListener(type, e => e.stopPropagation(), true);
+});
+
 let twTimer = null;
 
 function typewrite(el, str, cb, speed) {
@@ -759,7 +764,6 @@ function showStep(idx) {
     btn.className   = 'dlg-btn' + (c.accent ? ' accent' : '');
     btn.textContent = c.text;
     btn.addEventListener('click', () => showStep(c.next));
-    btn.addEventListener('touchstart', e => { e.preventDefault(); showStep(c.next); }, { passive: false });
     choicesEl.appendChild(btn);
   });
 }
@@ -768,7 +772,10 @@ function _endDialog() {
   dlgEl.classList.add('hidden');
   if (typeof unlockPlayer === 'function') unlockPlayer();
   if ('ontouchstart' in window) {
-    document.getElementById('joy-look').style.display = 'block';
+    // 트랜지션(0.35s) 종료 후 표시해서 dialog 페이드 중 겹침 방지
+    setTimeout(() => {
+      document.getElementById('joy-look').style.display = 'block';
+    }, 400);
   }
 }
 
