@@ -161,51 +161,61 @@ function _applyColor(mesh) {
 /* ─── 추가 애니메이션 리타깃 로드 ───────────────────────── */
 async function _loadExtraAnim(file, key) {
   try {
-    const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(
-      _CHAR_BASE, file, GAME.scene
+    // ImportMeshAsync: 오브젝트가 씬에 실제로 추가되어야 retarget 가능
+    const result = await BABYLON.SceneLoader.ImportMeshAsync(
+      '', _CHAR_BASE, file, GAME.scene
     );
-    const srcAg = container.animationGroups && container.animationGroups[0];
-    if (!srcAg) { container.dispose(); return; }
+    const srcAg = result.animationGroups && result.animationGroups[0];
+    if (!srcAg) {
+      result.meshes.forEach(function(m) { try { m.dispose(); } catch(e) {} });
+      return;
+    }
+    srcAg.stop();
 
-    if (CHARACTER.skeleton) {
-      // Mixamo bone 이름 매칭으로 리타깃
-      const newAg = new BABYLON.AnimationGroup(key, GAME.scene);
-      srcAg.targetedAnimations.forEach(function(ta) {
-        // skeleton bones 또는 씬 TransformNode 모두 탐색
-        var target = null;
-        var boneName = ta.target.name;
-
-        // 1. skeleton bones에서 찾기
-        var bone = CHARACTER.skeleton.bones.find(function(b) {
-          return b.name === boneName;
-        });
-        if (bone) { target = bone; }
-
-        // 2. 없으면 캐릭터 root의 자식 TransformNode에서 찾기
-        if (!target && CHARACTER.root) {
-          var nodes = CHARACTER.root.getChildTransformNodes(false);
-          var node = nodes.find(function(n) { return n.name === boneName; });
-          if (node) target = node;
-        }
-
-        if (target) newAg.addTargetedAnimation(ta.animation, target);
+    // 씬 전체 TransformNode 맵 (이름 → 노드)
+    // ldle.glb에서 로드된 노드만 추려야 하므로 CHARACTER.root 기준
+    var tnMap = {};
+    if (CHARACTER.root) {
+      CHARACTER.root.getChildTransformNodes(false).forEach(function(n) {
+        tnMap[n.name] = n;
       });
+    }
 
+    // 뼈대 맵
+    var boneMap = {};
+    if (CHARACTER.skeleton) {
+      CHARACTER.skeleton.bones.forEach(function(b) { boneMap[b.name] = b; });
+    }
+
+    var newAg = new BABYLON.AnimationGroup(key, GAME.scene);
+    var matched = 0, unmatched = [];
+
+    srcAg.targetedAnimations.forEach(function(ta) {
+      var name = ta.target ? ta.target.name : '';
+      var target = boneMap[name] || tnMap[name] || null;
+      if (target) {
+        newAg.addTargetedAnimation(ta.animation, target);
+        matched++;
+      } else {
+        unmatched.push(name);
+      }
+    });
+
+    console.log('[CHARACTER] retarget', key, ':', matched, '/', srcAg.targetedAnimations.length,
+      'matched. sample srcBone:', srcAg.targetedAnimations[0] ? srcAg.targetedAnimations[0].target.name : 'none',
+      '| ourBones sample:', CHARACTER.skeleton ? CHARACTER.skeleton.bones[0].name : 'no-skeleton');
+    if (unmatched.length) console.log('[CHARACTER] unmatched:', unmatched.slice(0, 5));
+
+    if (matched > 0) {
       newAg.normalize();
       newAg.stop();
       CHARACTER.anims[key] = newAg;
-
-      // container의 중복 mesh 제거
-      container.meshes.forEach(function(m) {
-        try { m.dispose(false, true); } catch(err) {}
-      });
-      console.log('[CHARACTER] anim retargeted:', key,
-        '— targeted:', newAg.targetedAnimations.length, 'bones');
-    } else {
-      container.addAllToScene();
-      srcAg.stop();
-      CHARACTER.anims[key] = srcAg;
     }
+
+    // 이 GLB의 여분 mesh·skeleton 정리
+    result.meshes.forEach(function(m) { try { m.dispose(); } catch(e) {} });
+    result.skeletons.forEach(function(s) { try { s.dispose(); } catch(e) {} });
+
   } catch (e) {
     console.warn('[CHARACTER] 애니메이션 로드 실패:', file, e.message);
   }
