@@ -172,19 +172,22 @@ async function _loadExtraAnim(file, key) {
     }
     srcAg.stop();
 
-    // 씬 전체 TransformNode 맵 (이름 → 노드)
-    // ldle.glb에서 로드된 노드만 추려야 하므로 CHARACTER.root 기준
-    var tnMap = {};
-    if (CHARACTER.root) {
-      CHARACTER.root.getChildTransformNodes(false).forEach(function(n) {
-        tnMap[n.name] = n;
+    // Babylon.js GLB 스키닝은 Bone이 아니라 Bone에 연결된 TransformNode를 통해 mesh를 변형함.
+    // linked TransformNode 우선 맵 구성
+    var linkedTnMap = {};
+    if (CHARACTER.skeleton) {
+      CHARACTER.skeleton.bones.forEach(function(b) {
+        var tn = b.getTransformNode ? b.getTransformNode() : null;
+        if (tn) linkedTnMap[b.name] = tn;
       });
     }
 
-    // 뼈대 맵
-    var boneMap = {};
-    if (CHARACTER.skeleton) {
-      CHARACTER.skeleton.bones.forEach(function(b) { boneMap[b.name] = b; });
+    // fallback: CHARACTER.root 자식 TransformNode 맵
+    var childTnMap = {};
+    if (CHARACTER.root) {
+      CHARACTER.root.getChildTransformNodes(false).forEach(function(n) {
+        childTnMap[n.name] = n;
+      });
     }
 
     var newAg = new BABYLON.AnimationGroup(key, GAME.scene);
@@ -192,7 +195,8 @@ async function _loadExtraAnim(file, key) {
 
     srcAg.targetedAnimations.forEach(function(ta) {
       var name = ta.target ? ta.target.name : '';
-      var target = boneMap[name] || tnMap[name] || null;
+      // 우선순위: linked TN → root 자식 TN
+      var target = linkedTnMap[name] || childTnMap[name] || null;
       if (target) {
         newAg.addTargetedAnimation(ta.animation, target);
         matched++;
@@ -201,10 +205,11 @@ async function _loadExtraAnim(file, key) {
       }
     });
 
+    var sampleSrc = srcAg.targetedAnimations[0] ? srcAg.targetedAnimations[0].target.name : 'none';
+    var linkedSample = Object.keys(linkedTnMap)[0] || 'no-linked-tn';
     console.log('[CHARACTER] retarget', key, ':', matched, '/', srcAg.targetedAnimations.length,
-      'matched. sample srcBone:', srcAg.targetedAnimations[0] ? srcAg.targetedAnimations[0].target.name : 'none',
-      '| ourBones sample:', CHARACTER.skeleton ? CHARACTER.skeleton.bones[0].name : 'no-skeleton');
-    if (unmatched.length) console.log('[CHARACTER] unmatched:', unmatched.slice(0, 5));
+      '| srcSample:', sampleSrc, '| linkedTnSample:', linkedSample);
+    if (unmatched.length > 0) console.log('[CHARACTER] unmatched (first 3):', unmatched.slice(0, 3));
 
     if (matched > 0) {
       newAg.normalize();
