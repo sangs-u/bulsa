@@ -275,6 +275,14 @@ function _bindInput() {
     if (GAME.currentScene !== 'site') return;
     if (GAME.state.dialogActive) return;
     if (e.key !== 'e' && e.key !== 'E') return;
+    // 굴착기 탑승 중 혹은 ready 상태에서 근접 시 → carry.js는 양보
+    if (typeof EXCAVATOR !== 'undefined') {
+      if (EXCAVATOR.mounted) return;
+      if (EXCAVATOR.state === 'ready' && GAME.player) {
+        const d = BABYLON.Vector3.Distance(GAME.player.position, EXCAVATOR.root.position);
+        if (d < 3.5) return;
+      }
+    }
     const ip = document.getElementById('interact-prompt');
     if (ip && ip.style.display !== 'none') return;
     _onInteract();

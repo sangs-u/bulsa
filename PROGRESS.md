@@ -141,3 +141,6 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 | 2026-05-14 | 모바일 버그픽스 1 | waterFill disableDepthWrite + attachControl(false) + SW 캐시 제외 | ⚠️ 미확인 |
 | 2026-05-15 | 모바일 버그픽스 2 | window.load 지연 초기화 + game:ready 이벤트 체계 + sw.js v6 + 버튼 touchstart + 모바일 attachControl 제거 | ✅ |
 | 2026-05-15 | 모바일 버그픽스 3 | scene.detachControl() + dialog stopPropagation + 버튼 click only — 대화버튼 터치 완전 해결 | ✅ 실기기 확인 |
+| 2026-05-15 | 시각 일관성 | 하늘 그라디언트 돔, 지반 분할(흙+콘크리트), 사무소 블루그레이+간판, NPC 헬멧/조끼/그림자/이름표, 황금빛 아침 조명 | 대기 중 |
+| 2026-05-15 | Batch 5 | 사전조사+작업계획서 11단계 다이얼로그 (토질조사·매설물 X-ray·공법선택·안전조치·서류 overlay) + phase.js + survey.js | 대기 중 |
+| 2026-05-15 | Batch 6 | 자재 운반/설치 시스템: carry.js, TBM 3단계 연출, 굴착 구역·더미·스냅 존 mesh, NPC 위임 AI, 체크리스트 HUD | 대기 중 |

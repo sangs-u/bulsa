@@ -803,6 +803,19 @@ function enterOffice() {
     if (GAME.carryZones)    GAME.carryZones.length    = 0;
     if (GAME.materialPiles) GAME.materialPiles.length = 0;
     GAME.heldItem = null;
+    if (typeof EXCAVATOR !== 'undefined' && EXCAVATOR.root) {
+      try { EXCAVATOR.root.setEnabled(false); } catch(e) {}
+      EXCAVATOR.state  = 'idle';
+      EXCAVATOR.mounted = false;
+    }
+    if (typeof DUMPTRUCK !== 'undefined' && DUMPTRUCK.root) {
+      try { DUMPTRUCK.root.setEnabled(false); } catch(e) {}
+      DUMPTRUCK.state = 'idle';
+    }
+    if (typeof TERRAIN !== 'undefined') {
+      TERRAIN.cells = []; TERRAIN.dug = 0; TERRAIN.completed = false;
+      TERRAIN.baseMesh = null; TERRAIN.dirtPileMesh = null;
+    }
     if (typeof PLAYER !== 'undefined') PLAYER.speed = 0.055;
     if (typeof HAZARD_ZONES !== 'undefined') HAZARD_ZONES.length = 0;
 

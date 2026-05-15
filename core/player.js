@@ -27,6 +27,7 @@ window.addEventListener('game:ready', function() {
 function _initKeyboard() {
   const k = PLAYER.keys;
   window.addEventListener('keydown', e => {
+    if (typeof EXCAVATOR !== 'undefined' && EXCAVATOR.mounted) return;
     if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp')    k.w = true;
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft')  k.a = true;
     if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown')  k.s = true;
@@ -34,6 +35,7 @@ function _initKeyboard() {
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
   });
   window.addEventListener('keyup', e => {
+    if (typeof EXCAVATOR !== 'undefined' && EXCAVATOR.mounted) return;
     if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp')    k.w = false;
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft')  k.a = false;
     if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown')  k.s = false;
@@ -68,6 +70,12 @@ function _initMobileJoystick() {
     const dist = Math.hypot(dx, dy);
     if (dist > MAX) { dx *= MAX / dist; dy *= MAX / dist; }
     nub.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    // 굴착기 탑승 중 조이스틱을 굴착기로 라우팅
+    if (typeof EXCAVATOR !== 'undefined' && EXCAVATOR.mounted) {
+      EXCAVATOR.joyX = dx / MAX;
+      EXCAVATOR.joyY = -dy / MAX;
+      return;
+    }
     PLAYER.joy.x =  dx / MAX;
     PLAYER.joy.y = -dy / MAX;
   }, { passive: false });
@@ -97,6 +105,12 @@ function _initMobileJoystick() {
       const dx = t.clientX - lpx;
       const dy = t.clientY - lpy;
       lpx = t.clientX; lpy = t.clientY;
+      // 굴착기 탑승 중 우측 드래그를 붐/암으로 라우팅
+      if (typeof EXCAVATOR !== 'undefined' && EXCAVATOR.mounted) {
+        EXCAVATOR.boomAngle = Math.max(-0.80, Math.min(0.35, EXCAVATOR.boomAngle + dy * 0.005));
+        EXCAVATOR.armAngle  = Math.max(-1.40, Math.min(0.30, EXCAVATOR.armAngle  + dx * 0.006));
+        return;
+      }
       GAME.camera.inertialAlphaOffset -= dx * 0.004;
       GAME.camera.inertialBetaOffset  -= dy * 0.003;
     }, { passive: false });
@@ -106,6 +120,7 @@ function _initMobileJoystick() {
 
 /* ─── 매 프레임 이동 처리 ────────────────────────────────── */
 function _updatePlayer() {
+  if (typeof EXCAVATOR !== 'undefined' && EXCAVATOR.mounted) return;
   if (PLAYER.locked || GAME.state.paused || !PLAYER.mesh) return;
 
   const k   = PLAYER.keys;

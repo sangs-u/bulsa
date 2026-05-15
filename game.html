@@ -338,6 +338,62 @@
     .cl-label { font-size:.76rem; color:var(--txt); flex:1; }
     .cl-count { font-size:.76rem; font-weight:800; color:var(--acc); font-variant-numeric:tabular-nums; }
 
+    #excavator-hint {
+      position: fixed;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(13,27,42,.88);
+      border: 1px solid #FCD34D;
+      border-radius: 10px;
+      padding: 10px 18px;
+      backdrop-filter: blur(6px);
+      font-size: .78rem;
+      font-weight: 700;
+      color: #C8D8E8;
+      z-index: 55;
+      text-align: center;
+      line-height: 1.5;
+      display: none;
+    }
+    .exc-hint-title { color:#FCD34D; font-weight:900; margin-bottom:4px; display:block; }
+    #exc-bucket-roll {
+      position: fixed;
+      bottom: 130px;
+      right: 30px;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: rgba(252,211,77,.3);
+      border: 2.5px solid #FCD34D;
+      color: #FCD34D;
+      font-size: .7rem;
+      font-weight: 900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 55;
+      touch-action: none;
+      user-select: none;
+    }
+    #excavation-progress {
+      position: absolute;
+      top: 100px;
+      right: 16px;
+      background: rgba(13,27,42,.78);
+      border: 1px solid #FCD34D;
+      border-radius: 10px;
+      padding: 9px 14px;
+      min-width: 160px;
+      display: none;
+      backdrop-filter: blur(6px);
+      z-index: 55;
+    }
+    .exc-prog-title { font-size:.65rem; color:#3A6B9A; letter-spacing:.06em; margin-bottom:5px; font-weight:800; }
+    .exc-prog-bar-wrap { background:rgba(255,255,255,.08); height:8px; border-radius:4px; overflow:hidden; }
+    #exc-progress-bar { background:#FCD34D; height:100%; width:0%; transition:width .3s; }
+    .exc-prog-val { font-size:.7rem; color:#C8D8E8; font-weight:700; margin-top:5px; text-align:right; }
+
     /* 도면 */
     .blueprint {
       display: flex;
@@ -733,6 +789,15 @@
     </div>
   </div>
 
+  <!-- 굴착 진행률 -->
+  <div id="excavation-progress">
+    <div class="exc-prog-title">굴착 진행</div>
+    <div class="exc-prog-bar-wrap">
+      <div id="exc-progress-bar"></div>
+    </div>
+    <div class="exc-prog-val"><span id="exc-progress-val">0</span>%</div>
+  </div>
+
 </div>
 
 <!-- ④ 모바일 조이스틱 -->
@@ -750,6 +815,15 @@
   <span class="ip-key">E</span>
   <span class="ip-label" id="ctx-action-label">집기</span>
 </div>
+
+<!-- 굴착기 조작 가이드 -->
+<div id="excavator-hint">
+  <span class="exc-hint-title">굴착기 조작</span>
+  <div>WASD: 이동 · 마우스 드래그: 붐/암</div>
+  <div>Z: 버킷 굴림 · X: 버킷 펴기</div>
+</div>
+<!-- 모바일 버킷 버튼 -->
+<div id="exc-bucket-roll">버킷</div>
 
 <!-- ⑦ 작업계획서·보고서 오버레이 -->
 <div id="doc-overlay">
@@ -790,6 +864,9 @@
 <script src="core/phase.js?v=20260515a"></script>
 <script src="core/survey.js?v=20260515a"></script>
 <script src="core/carry.js?v=20260515b"></script>
+<script src="core/terrain.js?v=20260515b"></script>
+<script src="core/excavator.js?v=20260515b"></script>
+<script src="core/dumptruck.js?v=20260515b"></script>
 
 <script>
 /* ─── HUD 초기화 ─────────────────────────────────────────── */
@@ -1538,6 +1615,20 @@ function _endTBM() {
   if (cl) cl.style.display = 'block';
 }
 
+/* ─── 토스트 헬퍼 ─────────────────────────────────────── */
+function _showSiteToast(msg) {
+  let t = document.getElementById('site-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'site-toast';
+    t.style.cssText = 'position:fixed;top:40%;left:50%;transform:translateX(-50%);background:rgba(13,27,42,.92);border:2px solid #8DC63F;border-radius:14px;padding:14px 28px;font-size:1rem;font-weight:800;color:#8DC63F;z-index:80;backdrop-filter:blur(8px);pointer-events:none;opacity:0;transition:opacity .4s;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 2800);
+}
+
 /* ─── 설치 완료 핸들러 ──────────────────────────────────── */
 window.addEventListener('phase:installComplete', () => {
   setTimeout(() => {
@@ -1545,7 +1636,34 @@ window.addEventListener('phase:installComplete', () => {
     if (cl) cl.style.display = 'none';
   }, 2000);
   PHASE.flags.installDone = true;
+  setTimeout(() => {
+    _showSiteToast('굴착 단계 시작 — 굴착기가 진입합니다');
+    window.dispatchEvent(new Event('phase:excavationStart'));
+  }, 2500);
 });
+
+/* ─── phase:excavationComplete 핸들러 ─────────────────── */
+window.addEventListener('phase:excavationComplete', () => {
+  PHASE.current = 'foundation';
+  setTimeout(() => {
+    document.getElementById('excavation-progress').style.display = 'none';
+  }, 4000);
+  _showSiteToast('굴착 완료 — 다음 공정: 기초공사');
+});
+
+/* ─── 모바일 버킷 버튼 ────────────────────────────────── */
+(function() {
+  const btn = document.getElementById('exc-bucket-roll');
+  if (!btn) return;
+  let held = false;
+  btn.addEventListener('touchstart', e => { e.preventDefault(); held = true; }, { passive:false });
+  btn.addEventListener('touchend',   () => { held = false; });
+  setInterval(() => {
+    if (held && typeof EXCAVATOR !== 'undefined' && EXCAVATOR.mounted) {
+      EXCAVATOR.bucketAngle = Math.max(-1.20, EXCAVATOR.bucketAngle - 0.04);
+    }
+  }, 33);
+})();
 </script>
 </body>
 </html>
