@@ -92,8 +92,8 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 - [x] game.html danger-flash / safety-badge / party-panel 추가
 
 ### Batch 4 — NPC & 현장
-- [ ] core/npc.js 재작성 (등급, 피로도, 언어장벽)
-- [ ] core/hazard.js 신규 (위험 구역, 색상 오버레이)
+- [x] core/npc.js 재작성 (등급, 피로도, 언어장벽, mistakeRate 공식)
+- [x] core/hazard.js 신규 (위험 구역, 바닥 색상 오버레이, lifeDamage 연동)
 
 ### Batch 5 — 공정 시스템
 - [ ] core/phase.js 신규 (공정 흐름, 체크리스트)
@@ -112,16 +112,13 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 
 ## 발견된 버그 & 이슈
 
-### 모바일 버그 수정 현황 (2026-05-15, 세션 종료 직전)
+### 모바일 버그 수정 현황 (2026-05-15) — ✅ 전체 실기기 확인 완료
 
-#### 수정 완료 (미확인)
-- **3D 화면 안 나옴 (근본 원인)** — Babylon.js 초기화를 `window.load` 이후로 지연 (CSS 레이아웃 완료 보장). engine.js `parseState` IIFE 분리, player/life/hud는 `game:ready` 커스텀 이벤트로 초기화.
-- **SW 캐시 stale game.html** — sw.js에서 `.html` 파일도 캐시 제외 추가, SW 버전 v5→v6 갱신.
-- **대화 버튼 클릭 불가** — dialog 중 joy-look(z-60) 숨김, _endDialog 후 표시. 버튼에 touchstart 리스너 추가 + touch-action:manipulation.
-- **카메라 회전** — 모바일에서 `cam.attachControl` 제거 (joy-look 충돌 방지), `inertialAlphaOffset` 방식으로 변경.
-
-#### 다음 세션 확인 필요
-- 위 수정사항 실기기 전체 테스트 (3D 화면 표시 / 대화 버튼 / 카메라 회전 / 조이스틱 이동)
+- **3D 화면 안 나옴** ✅ — `window.load` 이후 Babylon.js 초기화, `game:ready` 이벤트 체계
+- **SW 캐시 stale** ✅ — `.html`도 캐시 제외, SW v6
+- **대화 버튼 클릭 불가** ✅ — 근본 원인: Babylon.js InputManager가 window 레벨에서 PointerEvent 캡처 → dialog 버튼의 click 합성 차단. 수정: `scene.detachControl()` (모바일) + dialog에 stopPropagation capture 리스너 + 버튼 touchstart 제거(click만 유지)
+- **카메라 회전** ✅ — `inertialAlphaOffset` 방식, `cam.attachControl` 제거
+- **조이스틱 이동** ✅ — 실기기 확인 완료
 
 ---
 
@@ -142,4 +139,5 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 | 2026-05-14 | Batch 2 | Three.js → Babylon.js 전환: engine.js + player.js + game.html 전면 재작성, 현장사무소 씬, NPC 대화 4개국어 | ✅ |
 | 2026-05-14 | Batch 3 | 命 게이지 시스템: life.js + hud.js + engine.js 물 수위 메시(clip plane) + game.html HUD 확장 | ✅ 데스크톱 확인 |
 | 2026-05-14 | 모바일 버그픽스 1 | waterFill disableDepthWrite + attachControl(false) + SW 캐시 제외 | ⚠️ 미확인 |
-| 2026-05-15 | 모바일 버그픽스 2 | window.load 지연 초기화 + game:ready 이벤트 체계 + sw.js v6 + 버튼 touchstart + 모바일 attachControl 제거 | ⚠️ 미확인 (다음 세션 실기기 확인 필수) |
+| 2026-05-15 | 모바일 버그픽스 2 | window.load 지연 초기화 + game:ready 이벤트 체계 + sw.js v6 + 버튼 touchstart + 모바일 attachControl 제거 | ✅ |
+| 2026-05-15 | 모바일 버그픽스 3 | scene.detachControl() + dialog stopPropagation + 버튼 click only — 대화버튼 터치 완전 해결 | ✅ 실기기 확인 |
