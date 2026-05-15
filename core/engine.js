@@ -471,6 +471,14 @@ function exitToSite() {
     setTimeout(() => {
       if (fade) fade.classList.remove('in');
       if (typeof PLAYER !== 'undefined') PLAYER.locked = false;
+
+      // 첫 현장 진입 시 사전조사 자동 시작
+      if (typeof PHASE !== 'undefined' && !PHASE.flags.surveyTriggered) {
+        PHASE.flags.surveyTriggered = true;
+        setTimeout(() => {
+          if (typeof _startSurveyDialog === 'function') _startSurveyDialog();
+        }, 600);
+      }
     }, 450);
   }, 450);
 }

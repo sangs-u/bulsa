@@ -479,6 +479,131 @@
       #party-panel { gap: 7px; padding: 6px 9px; }
       .party-av   { width: 22px; height: 22px; font-size: .6rem; }
     }
+
+    /* ── 사전조사 선택 카드 ──────────────────────────────────── */
+    .survey-cards {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .survey-card {
+      flex: 1;
+      min-width: 130px;
+      padding: 12px 10px;
+      background: rgba(22,40,64,.9);
+      border: 1.5px solid var(--bdr);
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color .18s, background .18s;
+      user-select: none;
+    }
+    .survey-card:hover  { border-color: var(--acc); background: rgba(141,198,63,.08); }
+    .survey-card.sel    { border-color: var(--acc); background: rgba(141,198,63,.15); }
+    .sc-icon  { font-size: 1.3rem; margin-bottom: 5px; }
+    .sc-title { font-size: .84rem; font-weight: 800; color: var(--txt); margin-bottom: 4px; }
+    .sc-desc  { font-size: .68rem; color: var(--dim); line-height: 1.4; }
+    .sc-badge {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 8px;
+      border-radius: 5px;
+      font-size: .65rem;
+      font-weight: 800;
+    }
+
+    /* ── 토질 결과 박스 ────────────────────────────────────── */
+    .soil-result-box {
+      margin-top: 6px;
+      padding: 10px 14px;
+      background: rgba(22,40,64,.9);
+      border: 1px solid var(--bdr);
+      border-radius: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .soil-dot   { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+    .soil-label { font-size: .82rem; font-weight: 800; color: var(--txt); }
+    .soil-sub   { font-size: .68rem; color: var(--dim); margin-top: 3px; }
+
+    /* ── 안전조치 멀티셀렉트 ────────────────────────────────── */
+    .safety-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .safety-chip {
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1.5px solid var(--bdr);
+      background: rgba(255,255,255,.04);
+      color: var(--txt);
+      font-size: .78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+    }
+    .safety-chip.sel { border-color: var(--acc); background: rgba(141,198,63,.18); color: var(--acc); }
+    .safety-done-btn {
+      display: block;
+      margin-top: 10px;
+      width: 100%;
+      padding: 9px;
+      border-radius: 8px;
+      border: 1.5px solid var(--acc);
+      background: rgba(141,198,63,.14);
+      color: var(--acc);
+      font-size: .86rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .18s;
+    }
+    .safety-done-btn:hover { background: var(--acc); color: #0D1B2A; }
+
+    /* ── 작업계획서 / 보고서 오버레이 ──────────────────────── */
+    #doc-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      background: rgba(0,0,0,.86);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    #doc-overlay.show { display: flex; }
+    .doc-paper {
+      background: #F8F7F2;
+      color: #1a1a1a;
+      width: min(620px, 94vw);
+      max-height: 84vh;
+      overflow-y: auto;
+      border-radius: 3px;
+      padding: 36px 40px 24px;
+      font-family: 'Noto Sans KR', 'Nunito', sans-serif;
+      box-shadow: 0 12px 56px rgba(0,0,0,.65);
+      font-size: .82rem;
+    }
+    .doc-header      { text-align: center; padding-bottom: 14px; border-bottom: 2px solid #333; margin-bottom: 18px; }
+    .doc-title       { font-size: 1.08rem; font-weight: 900; letter-spacing: .12em; }
+    .doc-sub         { font-size: .72rem; color: #555; margin-top: 4px; }
+    .doc-section     { font-size: .78rem; font-weight: 800; color: #333; margin: 14px 0 6px; border-left: 3px solid #E85A3A; padding-left: 8px; }
+    .doc-table       { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    .doc-table td    { border: 1px solid #bbb; padding: 7px 10px; vertical-align: top; }
+    .doc-table .dlbl { background: #EBEBDE; font-weight: 700; width: 32%; color: #333; }
+    .doc-table .dval { color: #1a1a1a; }
+    .doc-close-row   { text-align: center; margin-top: 16px; }
+    .doc-close-btn {
+      padding: 9px 28px;
+      border: 2px solid #333;
+      background: none;
+      font-size: .88rem;
+      font-weight: 800;
+      cursor: pointer;
+      border-radius: 4px;
+      font-family: inherit;
+      color: #333;
+    }
+    .doc-close-btn:hover { background: #333; color: #fff; }
   </style>
 </head>
 <body>
@@ -540,6 +665,11 @@
   <span class="ip-label" id="ip-label">말 걸기</span>
 </div>
 
+<!-- ⑦ 작업계획서·보고서 오버레이 -->
+<div id="doc-overlay">
+  <div class="doc-paper" id="doc-paper-inner"></div>
+</div>
+
 <!-- ⑥ NPC 대화창 -->
 <div id="dialog" class="hidden">
 
@@ -571,6 +701,8 @@
 <script src="core/npc.js?v=20260515"></script>
 <script src="core/hazard.js?v=20260515b"></script>
 <script src="core/hud.js?v=20260514"></script>
+<script src="core/phase.js?v=20260515a"></script>
+<script src="core/survey.js?v=20260515a"></script>
 
 <script>
 /* ─── HUD 초기화 ─────────────────────────────────────────── */
@@ -845,6 +977,416 @@ window.addEventListener('game:ready', () => {
   const el = document.getElementById('ip-label');
   if (el) el.textContent = labels[DLANG] || labels.ko;
 });
+</script>
+
+<!-- ──────────────────────────────────────────────────────
+     사전조사 / 작업계획서 대화 시스템
+     ────────────────────────────────────────────────────── -->
+<script>
+/* ─── 플로우 데이터 ────────────────────────────────────── */
+const SURVEY_FLOWS = [
+  // 0: 현장 진입 인사
+  {
+    npc: '김철수', role: '숙련공 · 10년차', color: '#F97316',
+    text: '"작업반장님, 현장에 입장했습니다.\n착공 전에 토질조사와 매설물 조사부터 실시해야 합니다."',
+    extra: null,
+    choices: [{ text: '알겠습니다', next: 1 }],
+  },
+  // 1: 사전조사 순서 안내
+  {
+    npc: '사전조사', role: '착공 전 안내', color: '#8DC63F',
+    text: '착공 전 사전조사 순서:\n① 토질조사 — 지반 강도·특성 파악\n② 매설물 조사 — 지하 배관·케이블 위치 확인\n③ 공법 선택 — 사면개착 또는 흙막이\n④ 작업계획서 작성',
+    extra: null,
+    choices: [{ text: '토질조사 시작', next: 2 }],
+  },
+  // 2: 토질조사 방법 선택 (카드 선택 → 3으로)
+  {
+    npc: '김철수', role: '숙련공 · 10년차', color: '#F97316',
+    text: '"토질조사 방법을 선택해주세요.\n정확한 지반 정보가 공법 선택에 결정적입니다."',
+    extra: 'soil_choice',
+    choices: [],
+  },
+  // 3: 토질조사 결과 (text 동적 주입)
+  {
+    npc: '토질조사 결과', role: '지반 분석', color: '#8DC63F',
+    text: '',
+    extra: 'soil_result',
+    choices: [{ text: '매설물 조사 진행', next: 4 }],
+  },
+  // 4: 매설물 조사 방법 선택 (카드 선택 → 5으로)
+  {
+    npc: '김철수', role: '숙련공 · 10년차', color: '#F97316',
+    text: '"매설물 조사를 실시합니다.\n지하 배관·케이블 위치를 반드시 확인해야 합니다."',
+    extra: 'utility_choice',
+    choices: [],
+  },
+  // 5: 매설물 조사 결과
+  {
+    npc: '매설물 조사 결과', role: '지하 현황', color: '#3A9AE8',
+    text: '',
+    extra: 'utility_result',
+    choices: [
+      { text: '조사 보고서 보기', next: 6 },
+      { text: '공법 선택으로', next: 7 },
+    ],
+  },
+  // 6: 보고서 (버튼으로 overlay 오픈)
+  {
+    npc: '매설물 조사 보고서', role: '공식 문서', color: '#3A9AE8',
+    text: '"배관 현황을 확인하세요.\n굴착 중 매설물 노출 시 관할 기관에 즉시 신고해야 합니다."',
+    extra: 'utility_doc_btn',
+    choices: [{ text: '공법 선택으로', next: 7 }],
+  },
+  // 7: 공법 선택 (카드 선택 → 8로)
+  {
+    npc: '김철수', role: '숙련공 · 10년차', color: '#F97316',
+    text: '"토질 조건을 고려하여 굴착 공법을 선택해주세요."',
+    extra: 'method_choice',
+    choices: [],
+  },
+  // 8: 굴착 깊이 선택
+  {
+    npc: '작업계획서', role: '문서 작성', color: '#8DC63F',
+    text: '"작업계획서를 작성합니다.\n계획 굴착 깊이를 선택해주세요."',
+    extra: null,
+    choices: [
+      { text: '4m', next: 9, pick: 4 },
+      { text: '6m', next: 9, pick: 6 },
+      { text: '8m', next: 9, pick: 8 },
+    ],
+  },
+  // 9: 안전조치 멀티셀렉트 (완료 버튼 → 10)
+  {
+    npc: '작업계획서', role: '문서 작성', color: '#8DC63F',
+    text: '"굴착 전 적용할 안전조치를 선택해주세요.\n(복수 선택 가능 — 완료 버튼으로 확정)"',
+    extra: 'safety_choice',
+    choices: [],
+  },
+  // 10: 작업계획서 완성
+  {
+    npc: '작업계획서 완성', role: '공식 문서', color: '#8DC63F',
+    text: '"작업계획서가 완성되었습니다.\n문서를 확인하고 착공 준비를 시작합니다."',
+    extra: 'workplan_btn',
+    choices: [{ text: '착공 준비 시작', next: 'done', accent: true }],
+  },
+];
+
+/* ─── 안전조치 옵션 목록 ────────────────────────────────── */
+const _SAFETY_OPTS = [
+  { id: 'guard',    label: '굴착 단부 난간 설치' },
+  { id: 'cone',     label: '라바콘 / 차선 규제' },
+  { id: 'tape',     label: '출입금지 테이프 설치' },
+  { id: 'net',      label: '낙하물 방지망' },
+  { id: 'check',    label: '작업 전 안전점검' },
+  { id: 'material', label: '흙막이 재료 사전 확보' },
+];
+
+/* ─── 내부 상태 ────────────────────────────────────────── */
+let _svStep = 0;
+const _svSafetySelected = new Set();
+
+/* ─── 진입점: 현장 사전조사 대화 시작 ─────────────────── */
+function _startSurveyDialog() {
+  if (GAME.state.dialogActive) return;
+  if (typeof lockPlayer === 'function') lockPlayer();
+  const jl = document.getElementById('joy-look');
+  if (jl) jl.style.display = 'none';
+  document.getElementById('interact-prompt').style.display = 'none';
+  dlgEl.classList.remove('hidden');
+  showSurveyStep(0);
+}
+
+/* ─── 단계 표시 ─────────────────────────────────────────── */
+function showSurveyStep(idx) {
+  if (idx === 'done') { _endSurveyDialog(); return; }
+  const step = SURVEY_FLOWS[idx];
+  if (!step) { _endSurveyDialog(); return; }
+  _svStep = idx;
+
+  avEl.textContent         = step.npc[0];
+  avEl.style.borderColor   = step.color;
+  avEl.style.background    = _hex2rgba(step.color, 0.14);
+  avEl.style.color         = step.color;
+  nameEl.textContent       = step.npc;
+  roleEl.textContent       = step.role;
+
+  typewrite(textEl, step.text || '', null, 24);
+
+  extraEl.innerHTML = _svExtraHTML(step.extra);
+  if (step.extra) _svBindExtra(step.extra);
+
+  choicesEl.innerHTML = '';
+  step.choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className   = 'dlg-btn' + (c.accent ? ' accent' : '');
+    btn.textContent = c.text;
+    btn.addEventListener('click', () => {
+      if (c.pick !== undefined) PHASE.workPlan.depth = c.pick;
+      showSurveyStep(c.next);
+    });
+    choicesEl.appendChild(btn);
+  });
+}
+
+function _endSurveyDialog() {
+  PHASE.flags.surveyComplete = true;
+  PHASE.flags.workPlanDone   = true;
+  PHASE.current              = 'excavation_prep';
+  dlgEl.classList.add('hidden');
+  if (typeof unlockPlayer === 'function') unlockPlayer();
+  const jl = document.getElementById('joy-look');
+  if (jl && 'ontouchstart' in window) setTimeout(() => { jl.style.display = 'block'; }, 400);
+}
+
+/* ─── Extra HTML 생성 ──────────────────────────────────── */
+function _svExtraHTML(type) {
+  switch (type) {
+    case 'soil_choice':    return _svSoilChoiceHTML();
+    case 'soil_result':    return _svSoilResultHTML();
+    case 'utility_choice': return _svUtilityChoiceHTML();
+    case 'utility_result': return _svUtilityResultHTML();
+    case 'utility_doc_btn':return `<div style="margin-top:4px"><button class="dlg-btn" id="sv-util-doc-btn" style="pointer-events:auto">📋 상세 보고서 열기</button></div>`;
+    case 'method_choice':  return _svMethodChoiceHTML();
+    case 'safety_choice':  return _svSafetyChoiceHTML();
+    case 'workplan_btn':   return `<div style="margin-top:4px"><button class="dlg-btn" id="sv-wp-btn" style="pointer-events:auto">📄 작업계획서 보기</button></div>`;
+    default: return '';
+  }
+}
+
+/* ─── Extra 이벤트 바인딩 ──────────────────────────────── */
+function _svBindExtra(type) {
+  if (type === 'soil_choice' || type === 'utility_choice' || type === 'method_choice') {
+    extraEl.querySelectorAll('.survey-card[data-sv]').forEach(card => {
+      card.addEventListener('click', () => _svCardClick(type, card.dataset.sv));
+    });
+  }
+  if (type === 'safety_choice') {
+    _svSafetySelected.clear();
+    extraEl.querySelectorAll('.safety-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const id = chip.dataset.svs;
+        if (_svSafetySelected.has(id)) {
+          _svSafetySelected.delete(id);
+          chip.classList.remove('sel');
+        } else {
+          _svSafetySelected.add(id);
+          chip.classList.add('sel');
+        }
+      });
+    });
+    const done = document.getElementById('sv-safety-done');
+    if (done) done.addEventListener('click', () => {
+      PHASE.workPlan.safetyMeasures = [..._svSafetySelected]
+        .map(id => _SAFETY_OPTS.find(o => o.id === id)?.label)
+        .filter(Boolean);
+      showSurveyStep(10);
+    });
+  }
+  if (type === 'utility_doc_btn') {
+    const b = document.getElementById('sv-util-doc-btn');
+    if (b) b.addEventListener('click', _showUtilityDocOverlay);
+  }
+  if (type === 'workplan_btn') {
+    const b = document.getElementById('sv-wp-btn');
+    if (b) b.addEventListener('click', _showWorkplanDocOverlay);
+  }
+}
+
+/* ─── 카드 선택 핸들러 ─────────────────────────────────── */
+function _svCardClick(type, val) {
+  if (type === 'soil_choice') {
+    PHASE.survey.soilMethod = val;
+    PHASE.survey.soilType   = val === 'standard' ? 'clay' :
+      (Math.random() > 0.35 ? 'clay' : 'sand');
+    const soilName = { clay: '점토질 지반', sand: '사질토 지반', rock: '암반' }[PHASE.survey.soilType];
+    const method   = val === 'quick' ? '간이조사' : '표준관입시험(SPT)';
+    SURVEY_FLOWS[3].text = `"${method} 결과 — ${soilName}으로 판별됩니다.\n굴착 공법 선택 시 참고하세요."`;
+    showSurveyStep(3);
+  }
+  else if (type === 'utility_choice') {
+    PHASE.survey.utilityMethod = val;
+    if (typeof initSurveyUtilities === 'function') initSurveyUtilities();
+    if (typeof showUtilityXray === 'function') showUtilityXray();
+    const method = val === 'gpr' ? '지표투과레이더(GPR)' : '시험굴착';
+    SURVEY_FLOWS[5].text = `"${method} 조사 완료. 3개 매설물이 부지 지하를 통과합니다.\nX-ray 시각화로 위치를 확인하세요."`;
+    showSurveyStep(5);
+  }
+  else if (type === 'method_choice') {
+    PHASE.workPlan.method = val;
+    showSurveyStep(8);
+  }
+}
+
+/* ─── 토질조사 선택 카드 HTML ──────────────────────────── */
+function _svSoilChoiceHTML() {
+  return `<div class="survey-cards">
+    <div class="survey-card" data-sv="quick">
+      <div class="sc-icon">🔍</div>
+      <div class="sc-title">간이조사</div>
+      <div class="sc-desc">육안 관찰 + 표면 샘플링<br>빠르고 무료</div>
+      <div class="sc-badge" style="background:rgba(141,198,63,.15);color:#8DC63F">무료 · 정확도 낮음</div>
+    </div>
+    <div class="survey-card" data-sv="standard">
+      <div class="sc-icon">🏗</div>
+      <div class="sc-title">표준관입시험</div>
+      <div class="sc-desc">SPT (N값 측정)<br>지반 강도 정밀 분석</div>
+      <div class="sc-badge" style="background:rgba(58,154,232,.15);color:#3A9AE8">비용 발생 · 정확도 높음</div>
+    </div>
+  </div>`;
+}
+
+/* ─── 토질 결과 박스 HTML ──────────────────────────────── */
+function _svSoilResultHTML() {
+  const t = PHASE.survey.soilType;
+  const info = {
+    clay: { c: '#FCD34D', label: '점토질 지반', n: 'SPT N값 약 8~15 (가소성 점토)', note: '사면개착 1:1.2 또는 흙막이 공법 적용 가능.' },
+    sand: { c: '#F97316', label: '사질토 지반', n: 'SPT N값 약 5~10 (느슨한 모래)',  note: '흙막이 공법 강력 권장. 수분 시 유동 위험.' },
+    rock: { c: '#8DC63F', label: '암반',        n: '일축압축강도 50MPa 이상',          note: '사면개착 적합. 사면비 1:0.5 이하 적용 가능.' },
+  }[t] || { c: '#C8D8E8', label: '판별 불가', n: '-', note: '추가 조사 필요.' };
+  return `<div class="soil-result-box">
+    <div class="soil-dot" style="background:${info.c}"></div>
+    <div>
+      <div class="soil-label">${info.label}</div>
+      <div class="soil-sub">${info.n}</div>
+      <div class="soil-sub" style="margin-top:4px">${info.note}</div>
+    </div>
+  </div>`;
+}
+
+/* ─── 매설물 조사 선택 카드 HTML ───────────────────────── */
+function _svUtilityChoiceHTML() {
+  return `<div class="survey-cards">
+    <div class="survey-card" data-sv="gpr">
+      <div class="sc-icon">📡</div>
+      <div class="sc-title">지표투과레이더 (GPR)</div>
+      <div class="sc-desc">전자파로 지하 구조물 탐지<br>비파괴 · 정밀 탐사</div>
+      <div class="sc-badge" style="background:rgba(58,154,232,.15);color:#3A9AE8">비용 발생 · 안전</div>
+    </div>
+    <div class="survey-card" data-sv="trial">
+      <div class="sc-icon">⛏</div>
+      <div class="sc-title">시험굴착</div>
+      <div class="sc-desc">직접 굴착하여 매설물 확인<br>정확하지만 파손 위험</div>
+      <div class="sc-badge" style="background:rgba(232,90,58,.15);color:#E85A3A">저비용 · 파손 위험</div>
+    </div>
+  </div>`;
+}
+
+/* ─── 매설물 조사 결과 (간략 목록) ────────────────────── */
+function _svUtilityResultHTML() {
+  const utils = PHASE.survey.utilities || [];
+  if (!utils.length) return '';
+  const colorMap = { water: '#3A9AE8', gas: '#FCD34D', elec: '#E85A3A' };
+  const rows = utils.map(u =>
+    `<div class="bp-row"><span class="bp-dot" style="background:${colorMap[u.id]||'#8DC63F'}"></span>${u.type} — 심도 ${u.depth}m</div>`
+  ).join('');
+  return `<div class="blueprint"><div class="bp-meta" style="gap:8px">${rows}</div></div>`;
+}
+
+/* ─── 공법 선택 카드 HTML ──────────────────────────────── */
+function _svMethodChoiceHTML() {
+  const soil = PHASE.survey.soilType;
+  const slopeRec = soil !== 'sand';
+  return `<div class="survey-cards">
+    <div class="survey-card${slopeRec ? ' sel' : ''}" data-sv="slope">
+      <div class="sc-icon">⛰</div>
+      <div class="sc-title">사면개착</div>
+      <div class="sc-desc">경사면을 주며 굴착<br>별도 가설 불필요</div>
+      <div class="sc-badge" style="background:rgba(141,198,63,.15);color:#8DC63F">${slopeRec ? '토질 기반 추천' : '적용 가능'}</div>
+    </div>
+    <div class="survey-card${!slopeRec ? ' sel' : ''}" data-sv="retaining">
+      <div class="sc-icon">🏗</div>
+      <div class="sc-title">흙막이 공법</div>
+      <div class="sc-desc">수직 굴착 + 가시설 설치<br>공간 제약 시 적합</div>
+      <div class="sc-badge" style="background:rgba(58,107,154,.15);color:#3A6B9A">${!slopeRec ? '토질 기반 추천' : '적용 가능'}</div>
+    </div>
+  </div>`;
+}
+
+/* ─── 안전조치 멀티셀렉트 HTML ─────────────────────────── */
+function _svSafetyChoiceHTML() {
+  const opts = PHASE.workPlan.method === 'retaining' ? _SAFETY_OPTS : _SAFETY_OPTS.slice(0, 5);
+  const chips = opts.map(o =>
+    `<div class="safety-chip" data-svs="${o.id}">${o.label}</div>`
+  ).join('');
+  return `<div class="safety-chips">${chips}</div>
+    <button class="safety-done-btn" id="sv-safety-done">완료 →</button>`;
+}
+
+/* ─── 매설물 보고서 오버레이 ───────────────────────────── */
+function _showUtilityDocOverlay() {
+  const utils = PHASE.survey.utilities || [];
+  const colorMap = { water: '#3A9AE8', gas: '#FCD34D', elec: '#E85A3A' };
+  const dirLabel = d => d === 'EW' ? '동-서 방향' : '남-북 방향';
+  const rows = utils.map(u =>
+    `<tr><td class="dlbl"><span style="color:${colorMap[u.id]||'#999'}">●</span> ${u.type}</td>
+     <td class="dval">심도 ${u.depth}m · ${dirLabel(u.dir)} 통과 · 이설 전 관할기관 신고 필요</td></tr>`
+  ).join('');
+  const method = PHASE.survey.utilityMethod === 'gpr' ? 'GPR 탐사' : '시험굴착';
+  _showDocOverlay(`
+    <div class="doc-header">
+      <div class="doc-title">지하 매설물 조사 보고서</div>
+      <div class="doc-sub">조사일: ${new Date().toLocaleDateString('ko-KR')} · 조사방법: ${method}</div>
+    </div>
+    <div class="doc-section">발견 매설물 현황</div>
+    <table class="doc-table"><tbody>${rows}</tbody></table>
+    <div class="doc-section">굴착 시 주의사항</div>
+    <table class="doc-table"><tbody>
+      <tr><td class="dlbl">매설물 노출 시</td><td class="dval">즉시 작업 중단 → 관할 기관 신고 → 확인 후 재개</td></tr>
+      <tr><td class="dlbl">이설 신청</td><td class="dval">굴착 계획선 ±1m 이내 매설물은 사전 이설 또는 우회 설계 필요</td></tr>
+    </tbody></table>
+    <div class="doc-close-row"><button class="doc-close-btn">닫기</button></div>
+  `);
+}
+
+/* ─── 작업계획서 오버레이 ──────────────────────────────── */
+function _showWorkplanDocOverlay() {
+  const wp = PHASE.workPlan;
+  const s  = PHASE.survey;
+  const methodName = wp.method === 'slope' ? '사면개착 공법' : '흙막이 공법';
+  const soilName   = { clay: '점토질 지반', sand: '사질토 지반', rock: '암반' }[s.soilType] || '-';
+  const slopeRatio = { clay: '1:1.2', sand: '1:1.8', rock: '1:0.5' }[s.soilType] || '-';
+  const utilList   = (s.utilities || []).map(u => `<li>${u.type} (심도 ${u.depth}m)</li>`).join('') || '<li>없음</li>';
+  const safetyList = (wp.safetyMeasures || []).map(m => `<li>${m}</li>`).join('') || '<li>미선택</li>';
+  _showDocOverlay(`
+    <div class="doc-header">
+      <div class="doc-title">굴착 공사 작업계획서</div>
+      <div class="doc-sub">작성일: ${new Date().toLocaleDateString('ko-KR')} · 현장: BULSA 건설 부지</div>
+    </div>
+    <div class="doc-section">공사 개요</div>
+    <table class="doc-table"><tbody>
+      <tr><td class="dlbl">적용 공법</td><td class="dval">${methodName}</td></tr>
+      <tr><td class="dlbl">굴착 깊이</td><td class="dval">${wp.depth}m</td></tr>
+      <tr><td class="dlbl">토질 조건</td><td class="dval">${soilName}</td></tr>
+      ${wp.method === 'slope' ? `<tr><td class="dlbl">사면비</td><td class="dval">${slopeRatio}</td></tr>` : ''}
+    </tbody></table>
+    <div class="doc-section">지하 매설물 현황</div>
+    <table class="doc-table"><tbody>
+      <tr><td colspan="2" class="dval"><ul style="margin:0;padding-left:16px">${utilList}</ul></td></tr>
+    </tbody></table>
+    <div class="doc-section">안전조치 계획</div>
+    <table class="doc-table"><tbody>
+      <tr><td colspan="2" class="dval"><ul style="margin:0;padding-left:16px">${safetyList}</ul></td></tr>
+    </tbody></table>
+    <div class="doc-section">긴급 연락처</div>
+    <table class="doc-table"><tbody>
+      <tr><td class="dlbl">가스 안전공사</td><td class="dval">1544-4500</td></tr>
+      <tr><td class="dlbl">한국전력</td><td class="dval">123</td></tr>
+      <tr><td class="dlbl">상수도 민원</td><td class="dval">121</td></tr>
+    </tbody></table>
+    <div class="doc-close-row"><button class="doc-close-btn">닫기</button></div>
+  `);
+}
+
+/* ─── 공통 문서 오버레이 표시 ──────────────────────────── */
+function _showDocOverlay(html) {
+  const overlay = document.getElementById('doc-overlay');
+  const paper   = document.getElementById('doc-paper-inner');
+  if (!overlay || !paper) return;
+  paper.innerHTML = html;
+  overlay.classList.add('show');
+  const btn = paper.querySelector('.doc-close-btn');
+  if (btn) btn.addEventListener('click', () => overlay.classList.remove('show'));
+}
 </script>
 </body>
 </html>
