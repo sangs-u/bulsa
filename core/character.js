@@ -59,7 +59,14 @@ function _attachToPlayer(player) {
   CHARACTER.root.position = new BABYLON.Vector3(0, -0.85, 0); // 발 위치 보정
   CHARACTER.root.rotation = new BABYLON.Vector3(0, Math.PI, 0); // 전면 보정
   CHARACTER.root.scaling  = new BABYLON.Vector3(1, 1, 1);
+
+  // 캡슐 본체 + 모든 자식 숨김 (playerWater 포함)
   player.isVisible = false;
+  player.getChildMeshes(false).forEach(function(m) {
+    // GLB 자식은 숨기지 않음
+    if (m === CHARACTER.root || CHARACTER.root.getChildMeshes(false).indexOf(m) !== -1) return;
+    m.isVisible = false;
+  });
 
   // 캡슐 dispose 시 GLB 분리 (scene 전환 대응)
   player.onDisposeObservable.addOnce(function() {
