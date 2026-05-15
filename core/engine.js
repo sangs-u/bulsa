@@ -80,11 +80,6 @@ window.addEventListener('load', function _babylonInit() {
     // 다른 모듈에 엔진 준비 완료 알림
     window.dispatchEvent(new Event('game:ready'));
 
-    requestAnimationFrame(() => {
-      const dbg = document.getElementById('_dbg');
-      if (dbg) dbg.textContent = `${canvas.width}×${canvas.height} / css ${canvas.clientWidth}×${canvas.clientHeight}`;
-    });
-
   } catch (err) {
     _showEngineError(err);
   }

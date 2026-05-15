@@ -362,37 +362,6 @@
       padding: 2px 7px; border-radius: 5px;
     }
 
-    /* ── 테스트 버튼 (命 게이지 ±) ────────────────────────── */
-    #test-panel {
-      position: absolute;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 8px;
-      pointer-events: auto;
-    }
-    .test-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 1.5px solid var(--bdr);
-      background: rgba(13,27,42,.82);
-      color: var(--txt);
-      font-size: 1.3rem;
-      font-weight: 900;
-      cursor: pointer;
-      font-family: inherit;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(4px);
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-    }
-    .test-btn.minus { color: #E85A3A; border-color: #E85A3A44; }
-    .test-btn.plus  { color: #8DC63F; border-color: #8DC63F44; }
-
     /* ── 씬 전환 페이드 ─────────────────────────────────────── */
     #scene-fade {
       position: fixed;
@@ -516,7 +485,6 @@
 
 <!-- ① 3D 캔버스 (Babylon.js 렌더 타겟) -->
 <canvas id="renderCanvas"></canvas>
-<div id="_dbg" style="position:fixed;top:4px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#8DC63F;font-size:11px;font-family:monospace;padding:3px 8px;border-radius:4px;z-index:9998;pointer-events:none">로딩 중...</div>
 
 <!-- ② 씬 페이드 / 위험 플래시 -->
 <div id="scene-fade"></div>
@@ -532,12 +500,6 @@
       <div class="hud-name"  id="hud-name">로딩 중...</div>
       <div class="hud-role">신입 현장인부</div>
     </div>
-  </div>
-
-  <!-- 상단 중앙: 테스트 버튼 -->
-  <div id="test-panel">
-    <button class="test-btn minus" onclick="lifeDamage(10)">−</button>
-    <button class="test-btn plus"  onclick="lifeHeal(10)">＋</button>
   </div>
 
   <!-- 좌상단: 安全지수 (플레이어 배지 아래) -->
@@ -603,8 +565,8 @@
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 <script src="i18n/strings.js?v=20260514"></script>
-<script src="core/engine.js?v=20260515e"></script>
-<script src="core/player.js?v=20260515e"></script>
+<script src="core/engine.js?v=20260515f"></script>
+<script src="core/player.js?v=20260515f"></script>
 <script src="core/life.js?v=20260514"></script>
 <script src="core/npc.js?v=20260515"></script>
 <script src="core/hazard.js?v=20260515b"></script>
