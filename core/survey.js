@@ -3,7 +3,7 @@
 const UTILITY_DEFS = [
   { id: 'water', type: '상수도관 Ø200',        x:  5, z: 22, dir: 'EW', depth: 1.2, color: [0.18, 0.52, 0.96] },
   { id: 'gas',   type: '도시가스 중압관 Ø100',  x: -2, z: 17, dir: 'NS', depth: 0.9, color: [0.96, 0.72, 0.10] },
-  { id: 'elec',  type: '전력케이블 22.9kV',     x:  1, z: 28, dir: 'EW', depth: 0.6, color: [0.88, 0.18, 0.88] },
+  { id: 'elec',  type: '전력케이블 22.9kV',     x:  1, z: 28, dir: 'EW', depth: 0.6, color: [0.48, 0.18, 0.82] },
 ];
 
 const _xrayMeshes = [];

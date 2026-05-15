@@ -45,6 +45,8 @@ class NPC {
     this.fatigue = Math.min(100, this.fatigue + dt * 0.8 / 60);
     _updatePartyBar(this.id, this.health, this.fatigue);
   }
+
+  setMeshVariant(role) { /* reserved for GLB swap when final chibi model arrives */ }
 }
 
 /* ─── 전역 NPC 배열 (다른 시스템에서 참조 가능) ─────────── */
@@ -63,6 +65,13 @@ function _updatePartyBar(id, health, fatigue) {
     health > 30 ? '#FCD34D' : '#E85A3A';
 }
 
+const HELMET_COLOR_MAP = {
+  expert:  [0.553, 0.776, 0.247],  // lime
+  semi:    [0.988, 0.827, 0.302],  // yellow
+  newbie:  [0.910, 0.910, 0.910],  // white
+  foreign: [0.227, 0.608, 0.910],  // blue
+};
+
 /* ─── 초기화 (game:ready 이후) ───────────────────────────── */
 window.addEventListener('game:ready', function() {
   NPC_DEFS.forEach((def, i) => {
@@ -79,16 +88,69 @@ window.addEventListener('game:ready', function() {
     mat.metallic    = 0.05;
     mesh.material   = mat;
 
-    // 머리 위 마커 (색깔 작은 구체 — 한눈에 NPC 식별)
-    const marker = BABYLON.MeshBuilder.CreateSphere('npcMarker_' + def.id,
-      { diameter: 0.22, segments: 8 }, GAME.scene);
-    marker.parent   = mesh;
-    marker.position = new BABYLON.Vector3(0, 1.05, 0);
-    marker.isPickable = false;
-    const mMat = new BABYLON.StandardMaterial('npcMarkerMat_' + def.id, GAME.scene);
-    mMat.diffuseColor  = new BABYLON.Color3(r, g, b);
-    mMat.emissiveColor = new BABYLON.Color3(r * 0.7, g * 0.7, b * 0.7);
-    marker.material = mMat;
+    // 헬멧 (반구 하드햇)
+    const [hr, hg, hb] = HELMET_COLOR_MAP[def.grade] || [0.9, 0.9, 0.9];
+    const helmet = BABYLON.MeshBuilder.CreateSphere('npcHelmet_' + def.id,
+      { diameter: 0.66, segments: 8 }, GAME.scene);
+    helmet.parent   = mesh;
+    helmet.position = new BABYLON.Vector3(0, 0.78, 0);
+    helmet.scaling  = new BABYLON.Vector3(1.05, 0.52, 1.05);
+    helmet.isPickable = false;
+    const helMat = new BABYLON.PBRMaterial('npcHelMat_' + def.id, GAME.scene);
+    helMat.albedoColor = new BABYLON.Color3(hr, hg, hb);
+    helMat.roughness = 0.45; helMat.metallic = 0.06;
+    helmet.material = helMat;
+    GAME.shadowGen.addShadowCaster(helmet);
+
+    // 조끼 띠 (캡슐 허리)
+    const vest = BABYLON.MeshBuilder.CreateCylinder('npcVest_' + def.id,
+      { diameter: 0.64, height: 0.30, tessellation: 12 }, GAME.scene);
+    vest.parent   = mesh;
+    vest.position = new BABYLON.Vector3(0, 0.10, 0);
+    vest.isPickable = false;
+    const vMat = new BABYLON.PBRMaterial('npcVestMat_' + def.id, GAME.scene);
+    vMat.albedoColor = new BABYLON.Color3(r * 0.8, g * 0.8, b * 0.8);
+    vMat.roughness = 0.80; vMat.metallic = 0;
+    vest.material = vMat;
+
+    // 블롭 그림자
+    const blob = BABYLON.MeshBuilder.CreateCylinder('npcBlob_' + def.id,
+      { diameter: 0.84, height: 0.015, tessellation: 16 }, GAME.scene);
+    blob.parent   = mesh;
+    blob.position = new BABYLON.Vector3(0, -0.84, 0);
+    blob.isPickable = false;
+    const blobMat = new BABYLON.StandardMaterial('npcBlobMat_' + def.id, GAME.scene);
+    blobMat.diffuseColor = BABYLON.Color3.Black();
+    blobMat.alpha = 0.35;
+    blob.material = blobMat;
+
+    // 이름 빌보드 라벨
+    const lPlane = BABYLON.MeshBuilder.CreatePlane('npcLabel_' + def.id,
+      { width: 1.3, height: 0.42 }, GAME.scene);
+    lPlane.parent = mesh;
+    lPlane.position = new BABYLON.Vector3(0, 1.28, 0);
+    lPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+    lPlane.isPickable = false;
+    const lTex = new BABYLON.DynamicTexture('npcLT_' + def.id,
+      { width: 256, height: 80 }, GAME.scene, true);
+    const lCtx = lTex.getContext();
+    lCtx.clearRect(0, 0, 256, 80);
+    lCtx.fillStyle = 'rgba(13,27,42,0.85)';
+    lCtx.fillRect(4, 4, 248, 72);
+    lCtx.fillStyle = '#C8D8E8';
+    lCtx.font = 'bold 30px Arial';
+    lCtx.textAlign = 'center';
+    lCtx.textBaseline = 'middle';
+    lCtx.fillText(def.name, 128, 40);
+    lTex.update();
+    lTex.hasAlpha = true;
+    const lMat = new BABYLON.StandardMaterial('npcLM_' + def.id, GAME.scene);
+    lMat.diffuseTexture = lTex;
+    lMat.emissiveTexture = lTex;
+    lMat.disableLighting = true;
+    lMat.useAlphaFromDiffuseTexture = true;
+    lMat.backFaceCulling = false;
+    lPlane.material = lMat;
 
     const npc = new NPC(def, mesh);
     NPCS.push(npc);

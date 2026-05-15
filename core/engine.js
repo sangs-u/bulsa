@@ -11,11 +11,13 @@ const GAME = {
   shadowGen: null,
   player:    null,
   npcBoss:   null,
+  bossRing:  null,
   waterMesh: null,  // 命 게이지 수위 시각화 메시
   walls:        [],    // 벽·천장 메시 (카메라 오클루전 페이드 대상)
   officeMeshes: [],
   officeLights: [],
   siteMeshes:   [],
+  lighting: { timeOfDay: 'morning' },
   currentScene: 'office',
   state: {
     gameStarted:  false,
@@ -102,20 +104,20 @@ function _buildScene(engine, canvas) {
   // 환경 헤미스피어
   const hemi = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), scene);
   hemi.intensity   = 0.30;
-  hemi.diffuse     = new BABYLON.Color3(0.65, 0.70, 0.80);
-  hemi.groundColor = new BABYLON.Color3(0.10, 0.12, 0.15);
+  hemi.diffuse     = new BABYLON.Color3(0.627, 0.722, 0.816);
+  hemi.groundColor = new BABYLON.Color3(0.545, 0.494, 0.400);
   hemi.specular    = BABYLON.Color3.Black();
 
   // 방향성 조명 (그림자 기준)
-  const sun = new BABYLON.DirectionalLight('sun', new BABYLON.Vector3(-1, -2, -0.8), scene);
+  const sun = new BABYLON.DirectionalLight('sun', new BABYLON.Vector3(-0.58, -0.57, 0.58).normalize(), scene);
   sun.position  = new BABYLON.Vector3(10, 18, 10);
   sun.intensity = 0.8;
-  sun.diffuse   = new BABYLON.Color3(0.95, 0.90, 0.80);
+  sun.diffuse   = new BABYLON.Color3(1.0, 0.894, 0.710);
 
   // 그림자
-  const sg = new BABYLON.ShadowGenerator(2048, sun);
+  const sg = new BABYLON.ShadowGenerator(1024, sun);
   sg.useBlurExponentialShadowMap = true;
-  sg.blurKernel = 16;
+  sg.blurKernel = 4;
   GAME.shadowGen = sg;
 
   // ArcRotateCamera
@@ -169,6 +171,14 @@ function _checkNpcProximity() {
   const d = BABYLON.Vector3.Distance(GAME.player.position, GAME.npcBoss.position);
   const prompt = document.getElementById('interact-prompt');
   if (prompt) prompt.style.display = d < 2.5 ? 'flex' : 'none';
+  if (GAME.bossRing) {
+    if (d < 2.5) {
+      const t = performance.now() / 1500;
+      GAME.bossRing.material.alpha = 0.5 * Math.abs(Math.sin(t * Math.PI));
+    } else {
+      GAME.bossRing.material.alpha = 0;
+    }
+  }
 }
 
 /* ─── 현장사무소 씬 ───────────────────────────────────────── */
@@ -435,6 +445,18 @@ function _buildOfficeScene(scene) {
   npc.material = pbr('npcMat', 0.20, 0.38, 0.65, 0.60);
   GAME.npcBoss = npc;
 
+  // 근접 시 라임 펄스 링
+  const pRing = BABYLON.MeshBuilder.CreateTorus('bossRing',
+    { diameter: 0.95, thickness: 0.06, tessellation: 28 }, scene);
+  pRing.position = new BABYLON.Vector3(0, 0.0, -5.3);
+  pRing.isPickable = false;
+  const pRingMat = new BABYLON.StandardMaterial('bossRingMat', scene);
+  pRingMat.diffuseColor  = new BABYLON.Color3(0.553, 0.776, 0.247);
+  pRingMat.emissiveColor = new BABYLON.Color3(0.553, 0.776, 0.247);
+  pRingMat.alpha = 0;
+  pRing.material = pRingMat;
+  GAME.bossRing = pRing;
+
   // 카메라: 방 전체가 보이도록 뒤쪽에서 바라봄
   GAME.camera.setTarget(new BABYLON.Vector3(0, 1.2, 0));
   GAME.camera.alpha  = -Math.PI / 2;
@@ -490,6 +512,7 @@ function _disposeOffice() {
   GAME.officeLights = [];
   GAME.walls = [];
   GAME.npcBoss = null;
+  GAME.bossRing = null;
   const ip = document.getElementById('interact-prompt');
   if (ip) ip.style.display = 'none';
 }
@@ -518,20 +541,54 @@ function _buildSiteScene(scene) {
   }
 
   // 하늘 & 조명
-  scene.clearColor = new BABYLON.Color4(0.53, 0.81, 0.98, 1);
-  const hemi = scene.getLightByName('hemi');
-  if (hemi) { hemi.intensity = 0.55; hemi.diffuse = new BABYLON.Color3(0.82, 0.90, 1.0); }
-  const sun  = scene.getLightByName('sun');
-  if (sun)  { sun.intensity  = 1.3; }
+  scene.clearColor = new BABYLON.Color4(0.486, 0.616, 0.722, 1);  // #7C9DB8 fallback
 
-  // 빈 지면
+  // 하늘 그라디언트 돔
+  const skyTex = new BABYLON.DynamicTexture('skyTex', {width: 512, height: 512}, scene, false);
+  const sCtx = skyTex.getContext();
+  const sGrad = sCtx.createLinearGradient(0, 0, 0, 512);
+  sGrad.addColorStop(0.0, '#6A8CA8');
+  sGrad.addColorStop(0.55, '#B8C8D8');
+  sGrad.addColorStop(1.0, '#E8DCC8');
+  sCtx.fillStyle = sGrad;
+  sCtx.fillRect(0, 0, 512, 512);
+  skyTex.update();
+  const skyDome = BABYLON.MeshBuilder.CreateSphere('skyDome',
+    {diameter: 800, sideOrientation: BABYLON.Mesh.BACKSIDE, segments: 10}, scene);
+  skyDome.isPickable = false;
+  const skyMat = new BABYLON.StandardMaterial('skyMat', scene);
+  skyMat.backFaceCulling = false;
+  skyMat.emissiveTexture = skyTex;
+  skyMat.disableLighting = true;
+  skyDome.material = skyMat;
+  _tr(skyDome);
+
+  const hemi = scene.getLightByName('hemi');
+  if (hemi) {
+    hemi.intensity   = 0.48;
+    hemi.diffuse     = new BABYLON.Color3(0.627, 0.722, 0.816);
+    hemi.groundColor = new BABYLON.Color3(0.545, 0.494, 0.400);
+  }
+  const sun = scene.getLightByName('sun');
+  if (sun) {
+    sun.intensity = 1.25;
+    sun.diffuse   = new BABYLON.Color3(1.0, 0.894, 0.710);
+  }
+
+  // 흙 지반
   const gnd = M.CreateGround('siteGround', {width:120, height:120}, scene);
-  gnd.material = pbr('gnd', 0.52, 0.44, 0.33, 0.96, 0.01);
+  gnd.material = pbr('gnd', 0.56, 0.47, 0.36, 0.96, 0.01);
   gnd.receiveShadows = true;
   _tr(gnd);
+  // 콘크리트 패드 (사무소 주변)
+  const pad = M.CreateGround('sitePad', {width:20, height:14}, scene);
+  pad.position = new BABYLON.Vector3(0, 0.005, 5.5);
+  pad.material = pbr('pad', 0.60, 0.61, 0.62, 0.88, 0.04);
+  pad.receiveShadows = true;
+  _tr(pad);
 
   // ── 현장사무소 외부 (컨테이너형 prefab, 8×5×3m) ──────────
-  const wC  = pbr('ow',  0.88, 0.86, 0.82, 0.82, 0.02);  // 외벽 베이지
+  const wC  = pbr('ow',  0.23, 0.42, 0.60, 0.78, 0.04);  // 한국 현장사무소 블루그레이
   const frC = pbr('ofr', 0.28, 0.28, 0.30, 0.55, 0.45);  // 금속 프레임
   const roC = pbr('oor', 0.26, 0.26, 0.28, 0.70, 0.15);  // 지붕
   const ccC = pbr('occ', 0.60, 0.58, 0.55, 0.92, 0.04);  // 기초/콘크리트
@@ -559,6 +616,13 @@ function _buildSiteScene(scene) {
   box('frTopN', 8.4, 0.10, 0.12, 0, 3.05, 3.0, frC, false);
   // 하단 프레임 (크리트 위)
   box('frBotS', 8.4, 0.10, 0.12, 0, 0.30, 8.0, frC, false);
+  // 모서리 안전띠 (검정, 높이 0.3m)
+  const stpMat = pbr('ost', 0.07, 0.07, 0.07, 0.88, 0.1);
+  [[-4,8],[ 4,8],[-4,3],[ 4,3]].forEach(([x,z],i) =>
+    box('ostr'+i, 0.22, 0.14, 0.22, x, 0.38, z, stpMat, false));
+  // 옥상 안전 깃발
+  box('flagPole', 0.04, 0.56, 0.04, 4.0, 3.58, 3.0, frC, false);
+  box('flag',     0.36, 0.18, 0.04, 4.20, 3.84, 3.0, pbr('ofl', 0.90, 0.22, 0.08, 0.82), false);
 
   // 지붕 (약간 돌출)
   box('roof',  8.6, 0.22, 5.4, 0, 3.16, 5.5, roC, false);
@@ -590,8 +654,24 @@ function _buildSiteScene(scene) {
   [[0.26, 0.13, 8.18], [0.17, 0.085, 8.50], [0.08, 0.04, 8.82]].forEach(([h,cy,pz],i) =>
     box('stp'+i, 1.5, h, 0.32, 0, cy, pz, ccC, false));
 
-  // 안내 간판 (노랑)
-  box('sign',   2.2, 0.38, 0.06, 0, 3.54, 7.96, pbr('sgn', 0.96, 0.78, 0.10, 0.82), false);
+  // 현장사무소 간판 (빨강 + 텍스트)
+  const signTex = new BABYLON.DynamicTexture('signTex', {width:256, height:64}, scene, true);
+  const stCtx = signTex.getContext();
+  stCtx.fillStyle = '#BB1111';
+  stCtx.fillRect(0, 0, 256, 64);
+  stCtx.fillStyle = '#FFFFFF';
+  stCtx.font = 'bold 26px Arial';
+  stCtx.textAlign = 'center';
+  stCtx.textBaseline = 'middle';
+  stCtx.fillText('현장사무소', 128, 32);
+  signTex.update();
+  const signMesh = BABYLON.MeshBuilder.CreateBox('s_sign', {width:2.2, height:0.38, depth:0.06}, scene);
+  signMesh.position = new BABYLON.Vector3(0, 3.54, 7.96);
+  const signMat = new BABYLON.StandardMaterial('signMat', scene);
+  signMat.diffuseTexture  = signTex;
+  signMat.emissiveTexture = signTex;
+  signMesh.material = signMat;
+  _tr(signMesh);
   box('signFr', 2.34, 0.50, 0.04, 0, 3.54, 7.94, frC, false);
 
   // 에어컨 실외기 (동쪽 벽 중간)
