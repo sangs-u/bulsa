@@ -150,8 +150,8 @@ function _updatePlayer() {
     if (p.x >  38) p.x =  38;
     if (p.z < -18) p.z = -18;
     if (p.z >  45) p.z =  45;
-    // 현장사무소 재진입
-    if (p.z < 8.5 && typeof enterOffice === 'function') enterOffice();
+    // 현장사무소 재진입 (건물 폭 x±4 이내 + z<8.5)
+    if (p.z < 8.5 && Math.abs(p.x) < 4 && typeof enterOffice === 'function') enterOffice();
   }
 
   // 이동 방향으로 캐릭터 회전

@@ -527,12 +527,77 @@ function _buildSiteScene(scene) {
   gnd.receiveShadows = true;
   _tr(gnd);
 
-  // 현장사무소 남쪽 외벽 (재진입 시각 기준점)
-  box('officeS', 20, 5, 0.35, 0, 2.5, 7.9, pbr('swall', 0.72, 0.68, 0.60, 0.90, 0.02), false);
-  const dMat = pbr('entryD', 0.32, 0.24, 0.16, 0.65);
-  box('entryL', 0.14, 2.6, 0.36, -0.85, 1.3, 7.9, dMat, false);
-  box('entryR', 0.14, 2.6, 0.36,  0.85, 1.3, 7.9, dMat, false);
-  box('entryT', 1.84, 0.12, 0.36, 0, 2.66, 7.9, dMat, false);
+  // ── 현장사무소 외부 (컨테이너형 prefab, 8×5×3m) ──────────
+  const wC  = pbr('ow',  0.88, 0.86, 0.82, 0.82, 0.02);  // 외벽 베이지
+  const frC = pbr('ofr', 0.28, 0.28, 0.30, 0.55, 0.45);  // 금속 프레임
+  const roC = pbr('oor', 0.26, 0.26, 0.28, 0.70, 0.15);  // 지붕
+  const ccC = pbr('occ', 0.60, 0.58, 0.55, 0.92, 0.04);  // 기초/콘크리트
+  const dMat = pbr('odr', 0.30, 0.22, 0.14, 0.62);        // 문
+
+  // 기초 플랫폼
+  box('fnd', 8.4, 0.24, 5.4, 0, 0.12, 5.5, ccC, false);
+
+  // 남쪽 외벽 (문 구멍 1.2m)
+  //   왼쪽 패널: x -4 ~ -0.6 (3.4m), 오른쪽: x 0.6 ~ 4 (3.4m)
+  box('swL', 3.4, 2.76, 0.20, -2.3, 1.62, 8.0, wC, false);
+  box('swR', 3.4, 2.76, 0.20,  2.3, 1.62, 8.0, wC, false);
+  box('swT', 1.2, 0.76, 0.20,  0.0, 2.62, 8.0, wC, false);  // 문 위 인방
+
+  // 동·서·북 벽
+  box('ewE', 0.20, 2.76, 5.0,  4.0, 1.62, 5.5, wC, false);
+  box('ewW', 0.20, 2.76, 5.0, -4.0, 1.62, 5.5, wC, false);
+  box('nwN', 8.4,  2.76, 0.20,  0,  1.62, 3.0, wC, false);
+
+  // 금속 코너 프레임 (4기둥)
+  [[-4,8],[ 4,8],[-4,3],[ 4,3]].forEach(([x,z],i) =>
+    box('fr'+i, 0.14, 3.10, 0.14, x, 1.79, z, frC, false));
+  // 상단 수평 프레임
+  box('frTopS', 8.4, 0.10, 0.12, 0, 3.05, 8.0, frC, false);
+  box('frTopN', 8.4, 0.10, 0.12, 0, 3.05, 3.0, frC, false);
+  // 하단 프레임 (크리트 위)
+  box('frBotS', 8.4, 0.10, 0.12, 0, 0.30, 8.0, frC, false);
+
+  // 지붕 (약간 돌출)
+  box('roof',  8.6, 0.22, 5.4, 0, 3.16, 5.5, roC, false);
+  box('eave',  8.6, 0.08, 0.4, 0, 3.05, 8.22, roC, false);  // 처마
+
+  // 창문 (남쪽 좌우 패널)
+  const winM = new BABYLON.StandardMaterial('site_win', scene);
+  winM.diffuseColor  = new BABYLON.Color3(0.52, 0.70, 0.88);
+  winM.emissiveColor = new BABYLON.Color3(0.10, 0.18, 0.28);
+  winM.alpha = 0.75;
+  [[-2.3, 1.95], [2.3, 1.95]].forEach(([x, y], i) => {
+    const w = M.CreateBox('s_win'+i, {width:1.05, height:0.65, depth:0.06}, scene);
+    w.position = new BABYLON.Vector3(x, y, 7.92); w.material = winM; _tr(w);
+    // 창틀
+    box('wfr'+i, 1.17, 0.77, 0.04, x, y, 7.88, frC, false);
+  });
+
+  // 문틀
+  box('dfrL', 0.10, 2.30, 0.22, -0.65, 1.15, 8.0, dMat, false);
+  box('dfrR', 0.10, 2.30, 0.22,  0.65, 1.15, 8.0, dMat, false);
+  box('dfrT', 1.40, 0.10, 0.22,  0.00, 2.35, 8.0, dMat, false);
+  // 문짝 (살짝 열림)
+  const door = M.CreateBox('s_door', {width:0.05, height:2.28, depth:1.14}, scene);
+  door.position = new BABYLON.Vector3(-0.60, 1.38, 7.46);
+  door.rotation.y = Math.PI * 0.10;
+  door.material = dMat; _tr(door);
+
+  // 계단 3단 (z+방향, 바깥으로 내려감)
+  [[0.26, 0.13, 8.18], [0.17, 0.085, 8.50], [0.08, 0.04, 8.82]].forEach(([h,cy,pz],i) =>
+    box('stp'+i, 1.5, h, 0.32, 0, cy, pz, ccC, false));
+
+  // 안내 간판 (노랑)
+  box('sign',   2.2, 0.38, 0.06, 0, 3.54, 7.96, pbr('sgn', 0.96, 0.78, 0.10, 0.82), false);
+  box('signFr', 2.34, 0.50, 0.04, 0, 3.54, 7.94, frC, false);
+
+  // 에어컨 실외기 (동쪽 벽 중간)
+  box('ac', 0.56, 0.40, 0.28, 4.12, 1.70, 6.2, pbr('oac', 0.40, 0.40, 0.42, 0.55, 0.22), false);
+
+  // 소화기 (문 왼쪽)
+  const ext = M.CreateCylinder('s_ext', {height:0.50, diameter:0.14, tessellation:10}, scene);
+  ext.position = new BABYLON.Vector3(-1.2, 0.49, 8.4);
+  ext.material = pbr('oex', 0.80, 0.07, 0.06, 0.65); _tr(ext);
 
   // 카메라
   GAME.camera.setTarget(new BABYLON.Vector3(0, 1.2, 15));
@@ -557,6 +622,10 @@ function enterOffice() {
     GAME.siteMeshes = [];
     if (typeof HAZARD_ZONES !== 'undefined') HAZARD_ZONES.length = 0;
 
+    // 잔상 방지: 기존 플레이어·워터 메시 명시적 폐기
+    if (GAME.player)    { try { GAME.player.dispose(false); }    catch(e) {} GAME.player    = null; }
+    if (GAME.waterMesh) { try { GAME.waterMesh.dispose(false); } catch(e) {} GAME.waterMesh = null; }
+
     // 조명·하늘 복구
     const scene = GAME.scene;
     scene.clearColor = new BABYLON.Color4(0.051, 0.106, 0.165, 1);
@@ -572,6 +641,9 @@ function enterOffice() {
     GAME.officeMeshes = scene.meshes.filter(m => !_preMeshIds.has(m.uniqueId) && m !== GAME.player && m !== GAME.waterMesh);
     GAME.officeLights = scene.lights.filter(l => !_preLightIds.has(l.uniqueId));
     GAME.currentScene = 'office';
+
+    // PLAYER.mesh를 새 플레이어 메시로 갱신
+    if (typeof PLAYER !== 'undefined') PLAYER.mesh = GAME.player;
 
     GAME.player.position = new BABYLON.Vector3(0, 0.85, 6.5);
 
