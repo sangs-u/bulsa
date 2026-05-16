@@ -14,29 +14,29 @@ const CHARACTER = {
 const _CHAR_PATH = 'assets/characters/';
 const _CHAR_FILE = 'player.glb';
 
-// 게임 상태 → 실제 GLB 클립 이름 매핑
-// (사용자 매핑표 — 이름은 Mixamo 원본이지만 실제 모션은 아래 한국어 주석대로)
-const _CLIP_MAP = {
-  idle:           'Running',                          // 대기
-  walk:           'Ladder_Mount_Start',               // 걷기
-  run:            'Ladder_Climb_Loop',                // 뛰기
-  sprint:         'Heavy_Hammer_Swing',               // 빠르게 뛰기
-  carry:          'Carry_Heavy_Object_Walk',          // 물건 들고 이동
-  push:           'Walking',                          // 밀기
-  jump:           'falling_down',                     // 점프
-  jump_obstacle:  'Collect_Object',                   // 장애물 뛰어넘기
-  fall:           'Idle_02',                          // 추락
-  trip:           'Limping_Walk',                     // 넘어지기
-  hammer:         'Climb_Attempt_and_Fall_5',         // 망치질
-  interact:       'Chair_Sit_Idle_M',                 // 상호작용 조작
-  throw:          'Injured_Walk',                     // 던지기
-  injured_light:  'Regular_Jump',                     // 경상
-  injured_heavy:  'Jump_Over_Obstacle',               // 중상
-  climb_start:    'Push_and_Walk_Forward',            // 사다리 오르기 처음 모습
-  climb_full:     'Female_Crouch_Pick_Throw_Forward', // 사다리 타고 올라가기
-  climb_finish:   'Ladder_Climb_Finish',              // 사다리 타고 올라가기 (완료)
-  sit_idle:       'Run_02',                           // 앉아서 대기
-  breakdance:     'Breakdance_1990',                  // 브레이크댄스
+// GLB 원본 클립명 → 실제 모션 기준 새 이름 (로드 직후 in-memory rename)
+// GLB 파일은 그대로, AnimationGroup.name만 바꿔서 코드는 새 이름으로 호출
+const _RENAME = {
+  'Running':                          'idle',           // 대기
+  'Ladder_Mount_Start':               'walk',           // 걷기
+  'Ladder_Climb_Loop':                'run',            // 뛰기
+  'Heavy_Hammer_Swing':               'sprint',         // 빠르게 뛰기
+  'Carry_Heavy_Object_Walk':          'carry',          // 물건 들고 이동
+  'Walking':                          'push',           // 밀기
+  'falling_down':                     'jump',           // 점프
+  'Collect_Object':                   'jump_obstacle',  // 장애물 뛰어넘기
+  'Idle_02':                          'fall',           // 추락
+  'Limping_Walk':                     'trip',           // 넘어지기
+  'Climb_Attempt_and_Fall_5':         'hammer',         // 망치질
+  'Chair_Sit_Idle_M':                 'interact',       // 상호작용 조작
+  'Injured_Walk':                     'throw',          // 던지기
+  'Regular_Jump':                     'injured_light',  // 경상
+  'Jump_Over_Obstacle':               'injured_heavy',  // 중상
+  'Push_and_Walk_Forward':            'climb_start',    // 사다리 오르기 처음
+  'Female_Crouch_Pick_Throw_Forward': 'climb_full',     // 사다리 타고 올라가기
+  'Ladder_Climb_Finish':              'climb_finish',   // 사다리 완료
+  'Run_02':                           'sit_idle',       // 앉아서 대기
+  'Breakdance_1990':                  'breakdance',     // 브레이크댄스
 };
 
 window.addEventListener('game:ready', function() { _loadCharacter(); });
@@ -57,19 +57,13 @@ async function _loadCharacter() {
     CHARACTER.root = result.meshes[0];
     result.meshes.forEach(_applyColor);
 
-    // GLB 클립명 → AnimationGroup 임시 맵
-    const byClip = {};
+    // AnimationGroup.name을 원본 GLB명 → 실제 모션 기준 새 이름으로 갈아치움
     result.animationGroups.forEach(function(ag) {
       try { ag.stop(); ag.reset(); } catch(e) {}
-      byClip[ag.name] = ag;
-    });
-
-    // 게임 상태명으로 매핑 저장
-    Object.keys(_CLIP_MAP).forEach(function(state) {
-      const clipName = _CLIP_MAP[state];
-      const ag = byClip[clipName];
-      if (ag) CHARACTER.anims[state] = ag;
-      else console.warn('[CHARACTER] 누락된 클립:', clipName, '(상태:', state + ')');
+      const newName = _RENAME[ag.name];
+      if (newName) ag.name = newName;
+      else console.warn('[CHARACTER] 매핑 없는 원본 클립:', ag.name);
+      CHARACTER.anims[ag.name] = ag;
     });
 
     console.log('[CHARACTER] 로드 완료 —', Object.keys(CHARACTER.anims).length, '개 상태:',
