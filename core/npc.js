@@ -69,47 +69,61 @@ class NPC {
       return;
     }
 
-    const target = (t.phase === 'goPile')
-      ? new BABYLON.Vector3(t.pile.x, this.mesh.position.y, t.pile.z)
-      : new BABYLON.Vector3(t.zone.x, this.mesh.position.y, t.zone.z);
-    const diff = target.subtract(this.mesh.position);
-    diff.y = 0;
-    const dist = diff.length();
-    if (dist < 0.4) {
-      if (t.phase === 'goPile') {
-        const m = t.pile.type === 'guardrail'
-          ? BABYLON.MeshBuilder.CreateBox('npcHeld_'+this.id, {width:1.6, height:0.06, depth:0.06}, GAME.scene)
-          : BABYLON.MeshBuilder.CreateCylinder('npcHeld_'+this.id,
+    // install task: goPile → goTarget → done
+    if (t.phase === 'goPile' || t.phase === 'goTarget') {
+      const tx = (t.phase === 'goPile') ? t.pile.x   : t.target.x;
+      const tz = (t.phase === 'goPile') ? t.pile.z   : t.target.z;
+      const target = new BABYLON.Vector3(tx, this.mesh.position.y, tz);
+      const diff = target.subtract(this.mesh.position);
+      diff.y = 0;
+      const dist = diff.length();
+
+      if (dist < 0.4) {
+        if (t.phase === 'goPile') {
+          // 자재 집기
+          if (t.pile.count <= 0) { this.task = null; return; }
+          t.pile.count -= 1;
+          if (t.pile.count <= 0 && t.pile.mesh) t.pile.mesh.isVisible = false;
+          // 손에 메시
+          let m;
+          if (t.type === 'post') {
+            m = BABYLON.MeshBuilder.CreateCylinder('npcHeld_'+this.id, {diameter:0.06, height:1.15, tessellation:8}, GAME.scene);
+            m.rotation.z = Math.PI/2;
+          } else if (t.type === 'rail') {
+            m = BABYLON.MeshBuilder.CreateBox('npcHeld_'+this.id, {width:2.2, height:0.06, depth:0.06}, GAME.scene);
+            m.rotation.z = Math.PI/2;
+          } else {
+            m = BABYLON.MeshBuilder.CreateCylinder('npcHeld_'+this.id,
               {diameterTop:0.05, diameterBottom:0.32, height:0.5, tessellation:12}, GAME.scene);
-        m.parent = this.mesh;
-        m.position = new BABYLON.Vector3(0, 0.95, 0.35);
-        if (t.pile.type === 'guardrail') m.rotation.z = Math.PI/2;
-        const hm = new BABYLON.PBRMaterial('npcHM_'+this.id, GAME.scene);
-        hm.albedoColor = t.pile.type === 'guardrail'
-          ? new BABYLON.Color3(0.55,0.56,0.58)
-          : new BABYLON.Color3(0.95,0.45,0.10);
-        m.material = hm;
-        t.heldMesh = m;
-        t.pile.count -= 1;
-        t.phase = 'goZone';
-      } else {
-        if (t.heldMesh) t.heldMesh.dispose();
-        if (typeof _carrySpawnFinalMesh === 'function') _carrySpawnFinalMesh(t.zone);
-        t.zone.occupied = true;
-        if (t.zone.ghostMesh) t.zone.ghostMesh.isVisible = false;
-        if (typeof _carryOnZoneFilled === 'function') _carryOnZoneFilled(t.zone);
-        this.task = null;
+          }
+          m.parent = this.mesh;
+          m.position = new BABYLON.Vector3(0, 0.95, 0.35);
+          const hm = new BABYLON.PBRMaterial('npcHM_'+this.id, GAME.scene);
+          hm.albedoColor = (t.type === 'cone')
+            ? new BABYLON.Color3(0.95,0.45,0.10)
+            : new BABYLON.Color3(0.55,0.56,0.58);
+          m.material = hm;
+          t.heldMesh = m;
+          t.phase = 'goTarget';
+        } else {
+          // 설치
+          if (t.heldMesh) t.heldMesh.dispose();
+          if (t.type === 'post' && window._carrySpawnPost) window._carrySpawnPost(t.target.x, t.target.z);
+          else if (t.type === 'rail' && window._carrySpawnRail && t.target.pair) window._carrySpawnRail(t.target.pair[0], t.target.pair[1]);
+          else if (t.type === 'cone' && window._carrySpawnCone) window._carrySpawnCone(t.target.x, t.target.z);
+          this.task = null;
+        }
+        return;
       }
-      return;
+      diff.scaleInPlace(this.moveSpeed / dist);
+      this.mesh.position.addInPlace(diff);
+      this.mesh.rotation.y = Math.atan2(diff.x, diff.z);
     }
-    diff.scaleInPlace(this.moveSpeed / dist);
-    this.mesh.position.addInPlace(diff);
-    this.mesh.rotation.y = Math.atan2(diff.x, diff.z);
   }
 
-  goAndPlace(pile, zone) {
+  startInstallTask(type, pile, target) {
     if (this.task) return;
-    this.task = { phase: 'goPile', pile, zone, heldMesh: null };
+    this.task = { phase: 'goPile', type, pile, target, heldMesh: null };
   }
 
   moveToBriefingSpot(idx) {

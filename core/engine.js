@@ -753,28 +753,8 @@ function _buildSiteScene(scene) {
   GAME.siteMeshes.push(conePileProxy);
   GAME.materialPiles.push({ id:'pile_cone', type:'cone', x:-8, z:12, mesh:conePileProxy, count:4 });
 
-  // ── 스냅 존 ghost (라바콘 4개만 — 수직재/수평재는 자유 배치) ──
+  // 모든 부재(수직재/수평재/라바콘)는 자유 배치 — carryZone 없음
   GAME.carryZones = [];
-  const _zoneGhostM = (id) => {
-    const m = new BABYLON.StandardMaterial('s_zoneMat_'+id, scene);
-    m.diffuseColor  = new BABYLON.Color3(0.45, 0.55, 0.70);
-    m.emissiveColor = new BABYLON.Color3(0.18, 0.24, 0.36);
-    m.alpha = 0.35;
-    return m;
-  };
-  [
-    { id:'cone_NW', x:-7, z:15 },
-    { id:'cone_NE', x: 7, z:15 },
-    { id:'cone_SW', x:-7, z:29 },
-    { id:'cone_SE', x: 7, z:29 },
-  ].forEach(def => {
-    const g = BABYLON.MeshBuilder.CreateCylinder('s_zone_'+def.id, {diameter:0.7, height:0.04, tessellation:20}, scene);
-    g.position = new BABYLON.Vector3(def.x, 0.025, def.z);
-    g.material = _zoneGhostM(def.id);
-    g.isPickable = false;
-    GAME.siteMeshes.push(g);
-    GAME.carryZones.push({ id:def.id, x:def.x, z:def.z, rotY:0, radius:1.2, type:'cone', occupied:false, ghostMesh:g, finalMesh:null });
-  });
 
   // 카메라
   GAME.camera.setTarget(new BABYLON.Vector3(0, 1.2, 15));

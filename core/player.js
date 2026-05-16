@@ -2,12 +2,13 @@
 // WASD 이동, ArcRotateCamera 연동, 모바일 가상 조이스틱
 
 const PLAYER = {
-  speed:    0.055,
-  mesh:     null,
-  locked:   false,  // 시작부터 자유 이동, 대화 중에만 잠금
-  isMobile: ('ontouchstart' in window),
-  keys:     { w: false, a: false, s: false, d: false },
-  joy:      { x: 0, y: 0 },
+  speed:     0.055,   // 걷기
+  runSpeed:  0.10,    // 달리기 (Shift)
+  mesh:      null,
+  locked:    false,
+  isMobile:  ('ontouchstart' in window),
+  keys:      { w: false, a: false, s: false, d: false, shift: false },
+  joy:       { x: 0, y: 0 },
 };
 
 /* ─── 초기화 (game:ready 이후 — GAME.scene 보장) ─────────── */
@@ -32,6 +33,7 @@ function _initKeyboard() {
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft')  k.a = true;
     if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown')  k.s = true;
     if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') k.d = true;
+    if (e.key === 'Shift' || e.shiftKey)                          k.shift = true;
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
   });
   window.addEventListener('keyup', e => {
@@ -40,6 +42,7 @@ function _initKeyboard() {
     if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft')  k.a = false;
     if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown')  k.s = false;
     if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') k.d = false;
+    if (e.key === 'Shift')                                         k.shift = false;
   });
 }
 
@@ -148,7 +151,9 @@ function _updatePlayer() {
   const move = fwd.scale(-iy).add(right.scale(ix));
   const len  = move.length();
   if (len > 1) move.scaleInPlace(1 / len);
-  move.scaleInPlace(PLAYER.speed);
+  // 들고 있으면 PLAYER.speed가 carrySpeed로 이미 줄어든 상태. Shift는 carry 중엔 미적용
+  const sp = (k.shift && !(typeof CARRY !== 'undefined' && CARRY.held)) ? PLAYER.runSpeed : PLAYER.speed;
+  move.scaleInPlace(sp);
 
   PLAYER.mesh.position.addInPlace(move);
 

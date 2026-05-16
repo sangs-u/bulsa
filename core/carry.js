@@ -39,7 +39,7 @@ const PLACED = {
   _n: 0,
 };
 
-let _ghost = { post: null, rail: null }; // 미리보기 ghost
+let _ghost = { post: null, rail: null, cone: null }; // 미리보기 ghost
 
 /* ─── 초기화 ─────────────────────────────────────────────── */
 window.addEventListener('game:ready', () => {
@@ -74,6 +74,13 @@ function _makeGhosts() {
   _ghost.rail.setEnabled(false);
   _ghost.rail._top = top;
   _ghost.rail._mid = mid;
+
+  // 라바콘 ghost
+  _ghost.cone = BABYLON.MeshBuilder.CreateCylinder('cGhostCone',
+    { diameterTop: 0.05, diameterBottom: 0.32, height: 0.5, tessellation: 12 }, GAME.scene);
+  _ghost.cone.material   = gm1;
+  _ghost.cone.isPickable = false;
+  _ghost.cone.setEnabled(false);
 }
 
 /* ─── 매 프레임 ──────────────────────────────────────────── */
@@ -83,6 +90,7 @@ function _carryTick() {
   if (PHASE.current !== 'install') {
     CARRY.nearbyPile = null;
     CARRY.nearbyZone = null;
+    CARRY.nearbyNpc  = null;
     _ghost.post.setEnabled(false);
     _ghost.rail.setEnabled(false);
     const btn = document.getElementById('ctx-action-btn');
@@ -91,7 +99,7 @@ function _carryTick() {
   }
 
   CARRY.nearbyPile = _findNearestPile();
-  CARRY.nearbyZone = (CARRY.held && CARRY.held.type === MATERIAL.CONE) ? _findNearestEmptyZone(MATERIAL.CONE) : null;
+  CARRY.nearbyNpc  = _findNearestIdleNpc();
 
   _updatePreview();
   _updateCarryHUD();
@@ -112,15 +120,14 @@ function _findNearestPile() {
   return best;
 }
 
-function _findNearestEmptyZone(type) {
-  if (!GAME.player || !GAME.carryZones) return null;
+function _findNearestIdleNpc() {
+  if (typeof NPCS === 'undefined' || !NPCS.length || !GAME.player) return null;
   const p = GAME.player.position;
-  let best = null, bestD = INTERACT_DIST;
-  GAME.carryZones.forEach(z => {
-    if (z.occupied) return;
-    if (type && z.type !== type) return;
-    const d = Math.hypot(p.x - z.x, p.z - z.z);
-    if (d < bestD) { bestD = d; best = z; }
+  let best = null, bestD = 2.5;
+  NPCS.forEach(n => {
+    if (!n.mesh || n.task) return;
+    const d = Math.hypot(p.x - n.mesh.position.x, p.z - n.mesh.position.z);
+    if (d < bestD) { bestD = d; best = n; }
   });
   return best;
 }
@@ -159,17 +166,14 @@ function _nearestPostPair() {
 
 /* ─── 미리보기 ghost 업데이트 ────────────────────────────── */
 function _updatePreview() {
-  if (!CARRY.held || CARRY.held.count <= 0) {
-    _ghost.post.setEnabled(false);
-    _ghost.rail.setEnabled(false);
-    return;
-  }
+  const hide = () => { _ghost.post.setEnabled(false); _ghost.rail.setEnabled(false); _ghost.cone.setEnabled(false); };
+  if (!CARRY.held || CARRY.held.count <= 0) { hide(); return; }
 
+  hide();
+  const p = _placePos();
   if (CARRY.held.type === MATERIAL.POST) {
-    const p = _placePos();
     _ghost.post.position.set(p.x, POST_H / 2, p.z);
     _ghost.post.setEnabled(true);
-    _ghost.rail.setEnabled(false);
   } else if (CARRY.held.type === MATERIAL.RAIL) {
     const pair = _nearestPostPair();
     if (pair) {
@@ -182,13 +186,10 @@ function _updatePreview() {
       _ghost.rail._top.scaling.z = dist / GAP_MAX;
       _ghost.rail._mid.scaling.z = dist / GAP_MAX;
       _ghost.rail.setEnabled(true);
-    } else {
-      _ghost.rail.setEnabled(false);
     }
-    _ghost.post.setEnabled(false);
-  } else {
-    _ghost.post.setEnabled(false);
-    _ghost.rail.setEnabled(false);
+  } else if (CARRY.held.type === MATERIAL.CONE) {
+    _ghost.cone.position.set(p.x, 0.25, p.z);
+    _ghost.cone.setEnabled(true);
   }
 }
 
@@ -220,7 +221,7 @@ function pickupItem(pile) {
   _updateHeldMesh();
   _updateCarryHUD();
 
-  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('interact', 'carry');
+  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('interact', 'idle');
 }
 
 function _updateHeldMesh() {
@@ -272,10 +273,8 @@ function placeItem() {
     PHASE.checklist.rails.done = Math.min(
       PHASE.checklist.rails.done + 1, PHASE.checklist.rails.total);
   } else if (CARRY.held.type === MATERIAL.CONE) {
-    if (!CARRY.nearbyZone || CARRY.nearbyZone.type !== MATERIAL.CONE) return;
-    _spawnConeAtZone(CARRY.nearbyZone);
-    CARRY.nearbyZone.occupied = true;
-    if (CARRY.nearbyZone.ghostMesh) CARRY.nearbyZone.ghostMesh.isVisible = false;
+    const p = _placePos();
+    _spawnCone(p.x, p.z);
     CARRY.held.count--;
     PHASE.checklist.cones.done = Math.min(
       PHASE.checklist.cones.done + 1, PHASE.checklist.cones.total);
@@ -292,7 +291,7 @@ function placeItem() {
   _updateCarryHUD();
   _checkChecklistDone();
 
-  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('interact', CARRY.held ? 'carry' : 'idle');
+  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('interact', 'idle');
 }
 
 /* ─── 부재 스폰 ──────────────────────────────────────────── */
@@ -339,17 +338,18 @@ function _spawnRail(a, b) {
   PLACED._n++;
 }
 
-function _spawnConeAtZone(zone) {
-  const mesh = BABYLON.MeshBuilder.CreateCylinder('final_' + zone.id,
+function _spawnCone(x, z) {
+  const mesh = BABYLON.MeshBuilder.CreateCylinder('cone_' + PLACED._n,
     { diameterTop: 0.05, diameterBottom: 0.32, height: 0.5, tessellation: 12 }, GAME.scene);
-  mesh.position = new BABYLON.Vector3(zone.x, 0.25, zone.z);
-  const mat = new BABYLON.PBRMaterial('finalCM_' + zone.id, GAME.scene);
+  mesh.position = new BABYLON.Vector3(x, 0.25, z);
+  const mat = new BABYLON.PBRMaterial('coneMat_' + PLACED._n, GAME.scene);
   mat.albedoColor = new BABYLON.Color3(0.95, 0.45, 0.10);
   mat.metallic = 0.0; mat.roughness = 0.78;
   mesh.material = mat;
   mesh.isPickable = false;
-  zone.finalMesh = mesh;
+  if (GAME.shadowGen) GAME.shadowGen.addShadowCaster(mesh);
   GAME.siteMeshes.push(mesh);
+  PLACED._n++;
 }
 
 /* ─── 진행도 ────────────────────────────────────────────── */
@@ -397,24 +397,27 @@ function _updateContextButton() {
   if (!btn || !lbl) return;
 
   let label = null;
+  const LABELS = { post: '수직재', rail: '수평재', cone: '라바콘' };
 
-  // 1순위: 들고 있고 설치 가능
-  if (CARRY.held && CARRY.held.count > 0) {
-    if (CARRY.held.type === MATERIAL.POST) {
-      label = '수직재 박기';
-    } else if (CARRY.held.type === MATERIAL.RAIL && _nearestPostPair()) {
-      label = '수평재 걸기';
-    } else if (CARRY.held.type === MATERIAL.CONE && CARRY.nearbyZone) {
-      label = '라바콘 놓기';
-    }
+  // 1순위: 자재 더미 근처 + 같은 종류 들고 최대 미달 → 추가 집기
+  if (CARRY.nearbyPile) {
+    const max  = MAX_CARRY[CARRY.nearbyPile.type] || 1;
+    const same = CARRY.held && CARRY.held.type === CARRY.nearbyPile.type;
+    const cur  = same ? CARRY.held.count : 0;
+    const canPickup = (!CARRY.held || (same && cur < max));
+    if (canPickup) label = (LABELS[CARRY.nearbyPile.type] || '자재') + ' 집기 (' + cur + '/' + max + ')';
   }
 
-  // 2순위: 자재 더미 근처
-  if (!label && CARRY.nearbyPile) {
-    const labels = { post: '수직재', rail: '수평재', cone: '라바콘' };
-    const max = MAX_CARRY[CARRY.nearbyPile.type] || 1;
-    const cur = (CARRY.held && CARRY.held.type === CARRY.nearbyPile.type) ? CARRY.held.count : 0;
-    if (cur < max) label = (labels[CARRY.nearbyPile.type] || '자재') + ' 집기 (' + cur + '/' + max + ')';
+  // 2순위: 들고 있으면 설치 (단, 위 1순위가 잡혔으면 그게 우선)
+  if (!label && CARRY.held && CARRY.held.count > 0) {
+    if (CARRY.held.type === MATERIAL.POST)       label = '수직재 박기';
+    else if (CARRY.held.type === MATERIAL.RAIL)  label = _nearestPostPair() ? '수평재 걸기' : '수직재 필요';
+    else if (CARRY.held.type === MATERIAL.CONE)  label = '라바콘 놓기';
+  }
+
+  // 3순위: 빈손 + 한가한 NPC 근처 → 위임
+  if (!label && !CARRY.held && CARRY.nearbyNpc) {
+    label = CARRY.nearbyNpc.name + '에게 시키기';
   }
 
   if (label) { btn.classList.add('show'); lbl.textContent = label; }
@@ -460,13 +463,92 @@ function _onInteract() {
   if (PHASE.current !== 'install') return;
   if (GAME.state.dialogActive) return;
 
-  // 1순위: 들고 있으면 설치 시도
+  // 1순위: 자재 더미 근처 + 더 집을 수 있으면 집기 (집을 수 없으면 다음 우선순위로)
+  if (CARRY.nearbyPile) {
+    const max  = MAX_CARRY[CARRY.nearbyPile.type] || 1;
+    const same = CARRY.held && CARRY.held.type === CARRY.nearbyPile.type;
+    const cur  = same ? CARRY.held.count : 0;
+    const canPickup = (!CARRY.held || (same && cur < max));
+    if (canPickup) { pickupItem(CARRY.nearbyPile); return; }
+  }
+
+  // 2순위: 들고 있으면 설치
   if (CARRY.held && CARRY.held.count > 0) {
     if (CARRY.held.type === MATERIAL.POST) { placeItem(); return; }
     if (CARRY.held.type === MATERIAL.RAIL && _nearestPostPair()) { placeItem(); return; }
-    if (CARRY.held.type === MATERIAL.CONE && CARRY.nearbyZone) { placeItem(); return; }
+    if (CARRY.held.type === MATERIAL.CONE) { placeItem(); return; }
   }
 
-  // 2순위: 자재 더미 근처면 집기
-  if (CARRY.nearbyPile) { pickupItem(CARRY.nearbyPile); return; }
+  // 3순위: 빈손 + 한가한 NPC 근처 → 위임
+  if (!CARRY.held && CARRY.nearbyNpc) {
+    _delegateToNpc(CARRY.nearbyNpc);
+    return;
+  }
 }
+
+/* ─── NPC 위임 ─────────────────────────────────────────── */
+function _delegateToNpc(npc) {
+  if (!npc || npc.task) return;
+  const cl = PHASE.checklist;
+
+  // 부족한 종류 우선: posts → rails → cones
+  let type = null, pile = null, targetPos = null;
+
+  if (cl.posts.done < cl.posts.total) {
+    type = MATERIAL.POST;
+    pile = GAME.materialPiles.find(p => p.type === type && p.count > 0);
+    if (pile) targetPos = _nextPostTarget();
+  } else if (cl.rails.done < cl.rails.total) {
+    const pair = _firstUnconnectedPair();
+    if (pair) {
+      type = MATERIAL.RAIL;
+      pile = GAME.materialPiles.find(p => p.type === type && p.count > 0);
+      const mx = (pair[0].x + pair[1].x) / 2, mz = (pair[0].z + pair[1].z) / 2;
+      targetPos = { x: mx, z: mz, pair };
+    }
+  } else if (cl.cones.done < cl.cones.total) {
+    type = MATERIAL.CONE;
+    pile = GAME.materialPiles.find(p => p.type === type && p.count > 0);
+    if (pile) targetPos = _nextConeTarget();
+  }
+
+  if (!type || !pile || !targetPos) { _msg('할 일이 없습니다'); return; }
+
+  npc.startInstallTask(type, pile, targetPos);
+  _msg(npc.name + '에게 ' + ({post:'수직재',rail:'수평재',cone:'라바콘'}[type]) + ' 설치 위임');
+}
+
+// NPC가 들어갈 다음 수직재 위치 — 그리드 패턴 (기존 위치 회피)
+function _nextPostTarget() {
+  const grid = [{x:3,z:18},{x:-3,z:18},{x:3,z:26},{x:-3,z:26},{x:5,z:22},{x:-5,z:22}];
+  for (const g of grid) {
+    const taken = PLACED.posts.some(p => Math.hypot(p.x-g.x, p.z-g.z) < 0.6);
+    if (!taken) return g;
+  }
+  return null;
+}
+
+function _nextConeTarget() {
+  const grid = [{x:-7,z:15},{x:7,z:15},{x:-7,z:29},{x:7,z:29}];
+  // 라바콘은 PLACED 추적 안 하니까 단순 cones.done 카운트로 다음 자리
+  return grid[PHASE.checklist.cones.done] || grid[0];
+}
+
+function _firstUnconnectedPair() {
+  for (let i = 0; i < PLACED.posts.length; i++) {
+    for (let j = i + 1; j < PLACED.posts.length; j++) {
+      const a = PLACED.posts[i], b = PLACED.posts[j];
+      const gap = Math.hypot(b.x - a.x, b.z - a.z);
+      if (gap > GAP_MAX) continue;
+      const exists = PLACED.rails.some(r =>
+        (r.aId === a.id && r.bId === b.id) || (r.aId === b.id && r.bId === a.id));
+      if (!exists) return [a, b];
+    }
+  }
+  return null;
+}
+
+// 외부 노출 (npc.js가 호출)
+window._carrySpawnPost = function(x, z) { _spawnPost(x, z); PHASE.checklist.posts.done++; _updateChecklistHUD(); _checkChecklistDone(); };
+window._carrySpawnRail = function(a, b) { _spawnRail(a, b); PHASE.checklist.rails.done++; _updateChecklistHUD(); _checkChecklistDone(); };
+window._carrySpawnCone = function(x, z) { _spawnCone(x, z); PHASE.checklist.cones.done++; _updateChecklistHUD(); _checkChecklistDone(); };

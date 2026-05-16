@@ -123,15 +123,18 @@ function _charTick() {
     _attachToPlayer(GAME.player);
   }
 
+  // 단순화: 들고 있어도 그냥 걷기/뛰기 모션 사용
   let next = 'idle';
-  if (typeof CARRY !== 'undefined' && CARRY.held) {
-    next = 'carry';
-  } else if (typeof PLAYER !== 'undefined') {
+  if (typeof PLAYER !== 'undefined') {
     const k  = PLAYER.keys || {};
     const jx = PLAYER.joy ? PLAYER.joy.x : 0;
     const jy = PLAYER.joy ? PLAYER.joy.y : 0;
     const moving = k.w || k.a || k.s || k.d || Math.abs(jx) > 0.1 || Math.abs(jy) > 0.1;
-    if (moving) next = (k.shift) ? 'run' : 'walk';
+    if (moving) {
+      // 들고 있을 땐 뛸 수 없음 (walk만)
+      const holding = typeof CARRY !== 'undefined' && CARRY.held;
+      next = (k.shift && !holding) ? 'run' : 'walk';
+    }
   }
 
   setState(next);
