@@ -61,8 +61,7 @@ bulsa/
 │   └── strings.js     ← 4개국어 문자열
 ├── assets/
 │   ├── equipment_catalog.json
-│   ├── characters/         ← GLB 캐릭터 (worker.glb 등)
-│   ├── glb/                ← 부재·도구·자재 GLB
+│   ├── characters/         ← GLB 캐릭터 (player.glb — 20개 통합 애니메이션)
 │   └── manifest.md
 └── qa/
     ├── syntax-check.js

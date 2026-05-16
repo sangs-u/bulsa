@@ -101,6 +101,9 @@ function pickupItem(pile) {
   pile.count -= 1;
   if (pile.count <= 0 && pile.mesh) pile.mesh.isVisible = false;
   _updateCarryHUD();
+
+  // 집기 애니메이션 → carry로 전환
+  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('pickup', 'carry');
 }
 
 function placeItem() {
@@ -121,6 +124,9 @@ function placeItem() {
 
   _onZoneFilled(zone);
   _updateCarryHUD();
+
+  // 놓기 → idle로 전환 (collect_object 한 번 재생 후)
+  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('pickup', 'idle');
 }
 
 /* ─── 최종 mesh 스폰 ─────────────────────────────────────── */

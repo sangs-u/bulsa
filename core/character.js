@@ -1,91 +1,96 @@
-// character.js — GLB 캐릭터 플레이어 비주얼 + 애니메이션
+// character.js — 통합 GLB 캐릭터 + 20개 애니메이션
+// assets/characters/player.glb 단일 파일에 모든 상태 클립 포함 (스켈레톤 공유)
 
 const CHARACTER = {
-  root:     null,   // GLB __root__ mesh
-  wrapper:  null,   // 위치 제어용 TransformNode (캡슐 자식)
-  skeleton: null,
-  anims:    { idle: null, walk: null, carry: null },
-  state:    'none',
-  loaded:   false,
+  root:    null,    // GLB root mesh
+  wrapper: null,    // 위치 제어 TransformNode (캡슐 자식)
+  anims:   {},      // { stateName: AnimationGroup }
+  state:   'none',  // 현재 재생 중인 상태
+  loaded:  false,
+  _once:   false,   // playOnce 중 플래그
 };
 
-const _CHAR_BASE = 'assets/glb/character/';
+const _CHAR_PATH = 'assets/characters/';
+const _CHAR_FILE = 'player.glb';
 
-window.addEventListener('game:ready', function() {
-  _loadAllCharacter();
-});
+// GLB 클립 이름 → 게임 상태 매핑
+const _ANIM_MAP = {
+  'Idle_02':                          'idle',
+  'Walking':                          'walk',
+  'Running':                          'run',
+  'Run_02':                           'run2',
+  'Carry_Heavy_Object_Walk':          'carry',
+  'Regular_Jump':                     'jump',
+  'Jump_Over_Obstacle':               'jump_obstacle',
+  'Heavy_Hammer_Swing':               'hammer',
+  'Collect_Object':                   'pickup',
+  'Female_Crouch_Pick_Throw_Forward': 'throw',
+  'Push_and_Walk_Forward':            'push',
+  'Ladder_Mount_Start':               'climb_start',
+  'Ladder_Climb_Loop':                'climb_loop',
+  'Ladder_Climb_Finish':              'climb_finish',
+  'Climb_Attempt_and_Fall_5':         'climb_fail',
+  'Injured_Walk':                     'injured',
+  'Limping_Walk':                     'limp',
+  'falling_down':                     'fall',
+  'Chair_Sit_Idle_M':                 'sit',
+  'Breakdance_1990':                  'celebrate',
+};
 
-async function _loadAllCharacter() {
+window.addEventListener('game:ready', function() { _loadCharacter(); });
+
+async function _loadCharacter() {
   try {
-    // ── 1. 베이스 GLB 로드 ────────────────────────────────
     const result = await BABYLON.SceneLoader.ImportMeshAsync(
-      '', _CHAR_BASE, 'ldle.glb', GAME.scene
+      '', _CHAR_PATH, _CHAR_FILE, GAME.scene
     );
 
-    // 디버그 — 콘솔에서 mesh 이름 확인 가능
-    console.log('[CHARACTER] meshes:', result.meshes.map(function(m) { return m.name; }));
-    console.log('[CHARACTER] skeletons:', result.skeletons.length);
-    console.log('[CHARACTER] animGroups:', result.animationGroups.map(function(ag) { return ag.name; }));
+    CHARACTER.root = result.meshes[0];
 
-    CHARACTER.root     = result.meshes[0];
-    CHARACTER.skeleton = result.skeletons[0] || null;
+    // 모든 자식 메시에 색상 적용
+    result.meshes.forEach(_applyColor);
 
-    // ── 2. 색상 적용 ──────────────────────────────────────
-    result.meshes.forEach(function(m) { _applyColor(m); });
+    // 20개 애니메이션 그룹을 상태 이름으로 매핑
+    result.animationGroups.forEach(function(ag) {
+      ag.stop();
+      const key = _ANIM_MAP[ag.name];
+      if (key) CHARACTER.anims[key] = ag;
+      else console.log('[CHARACTER] unmapped clip:', ag.name);
+    });
 
-    // ── 3. idle 애니메이션 ────────────────────────────────
-    if (result.animationGroups.length > 0) {
-      CHARACTER.anims.idle = result.animationGroups[0];
-      CHARACTER.anims.idle.stop();
-    }
-
-    // ── 4. 추가 애니메이션 로드 ───────────────────────────
-    await _loadExtraAnim('walking.glb', 'walk');
-    await _loadExtraAnim('pickup.glb',  'carry');
+    console.log('[CHARACTER] 로드 완료 —', Object.keys(CHARACTER.anims).length, '상태:',
+      Object.keys(CHARACTER.anims).join(', '));
 
     CHARACTER.loaded = true;
 
-    // ── 5. 플레이어에 부착 ────────────────────────────────
     if (GAME.player) _attachToPlayer(GAME.player);
-
-    if (CHARACTER.anims.idle) CHARACTER.anims.idle.play(true);
-    CHARACTER.state = 'idle';
+    setState('idle');
 
     GAME.scene.onBeforeRenderObservable.add(_charTick);
-
-    console.log('[CHARACTER] 로드 완료');
 
   } catch (e) {
     console.error('[CHARACTER] 로드 실패:', e.message || e);
   }
 }
 
-/* ─── 플레이어에 부착 ────────────────────────────────────── */
+/* ─── 플레이어 캡슐에 부착 ─────────────────────────────── */
 function _attachToPlayer(player) {
-  // 기존 wrapper 정리
   if (CHARACTER.wrapper) {
     try { CHARACTER.wrapper.dispose(); } catch(e) {}
   }
-
-  // wrapper TransformNode — GLB root의 internal transform을 건드리지 않음
   const wrapper = new BABYLON.TransformNode('charWrapper', GAME.scene);
   wrapper.parent   = player;
-  wrapper.position = new BABYLON.Vector3(0, -0.85, 0); // 발 위치 = 캡슐 중심 아래
+  wrapper.position = new BABYLON.Vector3(0, -0.85, 0);  // 발이 바닥에 닿도록
   CHARACTER.wrapper = wrapper;
-
-  // GLB root를 wrapper에 부착 — position/rotation은 건드리지 않음
   CHARACTER.root.parent = wrapper;
 
-  console.log('[CHARACTER] 부착됨 — player pos:', player.position);
-
-  // 캡슐 + 자식(playerWater 등) 숨김
+  // 캡슐 본체는 숨김, 자식 中 GLB 메시가 아닌 것만 숨김
   player.isVisible = false;
   player.getChildMeshes(false).forEach(function(m) {
-    if (_isCharMesh(m)) return; // GLB 메시는 건드리지 않음
+    if (_isCharMesh(m)) return;
     m.isVisible = false;
   });
 
-  // 캡슐 dispose 시 GLB 분리 보존
   player.onDisposeObservable.addOnce(function() {
     if (CHARACTER.root)    CHARACTER.root.parent = null;
     if (CHARACTER.wrapper) { CHARACTER.wrapper.dispose(); CHARACTER.wrapper = null; }
@@ -94,8 +99,7 @@ function _attachToPlayer(player) {
 
 function _isCharMesh(m) {
   if (!CHARACTER.root) return false;
-  if (m === CHARACTER.root) return true;
-  var node = m.parent;
+  let node = m;
   while (node) {
     if (node === CHARACTER.root || node === CHARACTER.wrapper) return true;
     node = node.parent;
@@ -103,47 +107,80 @@ function _isCharMesh(m) {
   return false;
 }
 
-/* ─── 매 프레임 ──────────────────────────────────────────── */
+/* ─── 매 프레임 ────────────────────────────────────────── */
 function _charTick() {
-  if (!CHARACTER.loaded || !CHARACTER.root) return;
-  if (!GAME.player) return;
+  if (!CHARACTER.loaded || !CHARACTER.root || !GAME.player) return;
+  if (CHARACTER._once) return;  // 단발 애니메이션 재생 중
 
-  // 씬 전환 후 새 플레이어에 재부착
+  // 씬 전환 후 재부착
   if (!CHARACTER.wrapper || CHARACTER.wrapper.parent !== GAME.player) {
     _attachToPlayer(GAME.player);
   }
 
-  // 애니메이션 상태
-  var next = 'idle';
+  // 상태 결정
+  let next = 'idle';
   if (typeof CARRY !== 'undefined' && CARRY.held) {
     next = 'carry';
   } else if (typeof PLAYER !== 'undefined') {
-    var k  = PLAYER.keys;
-    var jx = PLAYER.joy ? PLAYER.joy.x : 0;
-    var jy = PLAYER.joy ? PLAYER.joy.y : 0;
-    if (k.w || k.a || k.s || k.d || Math.abs(jx) > 0.1 || Math.abs(jy) > 0.1) {
-      next = 'walk';
-    }
+    const k  = PLAYER.keys || {};
+    const jx = PLAYER.joy ? PLAYER.joy.x : 0;
+    const jy = PLAYER.joy ? PLAYER.joy.y : 0;
+    const moving = k.w || k.a || k.s || k.d || Math.abs(jx) > 0.1 || Math.abs(jy) > 0.1;
+    if (moving) next = (k.shift) ? 'run' : 'walk';
   }
 
-  if (next === CHARACTER.state) return;
-  CHARACTER.state = next;
+  setState(next);
+}
+
+/* ─── 외부 API ─────────────────────────────────────────── */
+function setState(name) {
+  if (!CHARACTER.loaded) return;
+  if (CHARACTER.state === name) return;
+
+  const ag = CHARACTER.anims[name] || CHARACTER.anims.idle;
+  if (!ag) return;
+
+  // 모든 애니메이션 정지 후 새 상태 재생
+  Object.keys(CHARACTER.anims).forEach(function(k) {
+    const a = CHARACTER.anims[k];
+    if (a && a !== ag) a.stop();
+  });
+  ag.start(true, 1.0, ag.from, ag.to, false);
+  CHARACTER.state = name;
+}
+
+// 한 번만 재생 후 다음 상태로 복귀
+function playOnce(name, afterState) {
+  if (!CHARACTER.loaded) return;
+  const ag = CHARACTER.anims[name];
+  if (!ag) {
+    setState(afterState || 'idle');
+    return;
+  }
+  CHARACTER._once = true;
 
   Object.keys(CHARACTER.anims).forEach(function(k) {
-    var ag = CHARACTER.anims[k];
-    if (!ag) return;
-    if (k === next) ag.play(true);
-    else ag.stop();
+    const a = CHARACTER.anims[k];
+    if (a && a !== ag) a.stop();
+  });
+  CHARACTER.state = name;
+  ag.start(false, 1.0, ag.from, ag.to, false);
+  ag.onAnimationEndObservable.addOnce(function() {
+    CHARACTER._once = false;
+    CHARACTER.state = 'none';
+    setState(afterState || 'idle');
   });
 }
 
-/* ─── 색상 적용 ──────────────────────────────────────────── */
+window.CHARACTER_API = { setState: setState, playOnce: playOnce };
+
+/* ─── 색상 적용 (PBR) ──────────────────────────────────── */
 function _applyColor(mesh) {
   if (!mesh) return;
   if (!mesh.getTotalVertices || mesh.getTotalVertices() === 0) return;
 
-  var name = (mesh.name || '').toLowerCase();
-  var mat  = new BABYLON.PBRMaterial('cMat_' + mesh.uniqueId, GAME.scene);
+  const name = (mesh.name || '').toLowerCase();
+  const mat  = new BABYLON.PBRMaterial('cMat_' + mesh.uniqueId, GAME.scene);
   mat.roughness = 0.75;
   mat.metallic  = 0.05;
 
@@ -154,78 +191,5 @@ function _applyColor(mesh) {
   } else {
     mat.albedoColor = new BABYLON.Color3(0.12, 0.20, 0.38);
   }
-
   mesh.material = mat;
-}
-
-/* ─── 추가 애니메이션 리타깃 로드 ───────────────────────── */
-async function _loadExtraAnim(file, key) {
-  try {
-    // ImportMeshAsync: 오브젝트가 씬에 실제로 추가되어야 retarget 가능
-    const result = await BABYLON.SceneLoader.ImportMeshAsync(
-      '', _CHAR_BASE, file, GAME.scene
-    );
-    const srcAg = result.animationGroups && result.animationGroups[0];
-    if (!srcAg) {
-      result.meshes.forEach(function(m) { try { m.dispose(); } catch(e) {} });
-      return;
-    }
-    srcAg.stop();
-
-    // Babylon.js GLB 스키닝은 Bone이 아니라 Bone에 연결된 TransformNode를 통해 mesh를 변형함.
-    // linked TransformNode 우선 맵 구성
-    var linkedTnMap = {};
-    if (CHARACTER.skeleton) {
-      CHARACTER.skeleton.bones.forEach(function(b) {
-        var tn = b.getTransformNode ? b.getTransformNode() : null;
-        if (tn) linkedTnMap[b.name] = tn;
-      });
-    }
-
-    // fallback: CHARACTER.root 자식 TransformNode 맵
-    var childTnMap = {};
-    if (CHARACTER.root) {
-      CHARACTER.root.getChildTransformNodes(false).forEach(function(n) {
-        childTnMap[n.name] = n;
-      });
-    }
-
-    var newAg = new BABYLON.AnimationGroup(key, GAME.scene);
-    var matched = 0, unmatched = [];
-
-    srcAg.targetedAnimations.forEach(function(ta) {
-      var name = ta.target ? ta.target.name : '';
-      // 우선순위: linked TN → root 자식 TN
-      var target = linkedTnMap[name] || childTnMap[name] || null;
-      if (target) {
-        newAg.addTargetedAnimation(ta.animation, target);
-        matched++;
-      } else {
-        unmatched.push(name);
-      }
-    });
-
-    var sampleSrc = srcAg.targetedAnimations[0] ? srcAg.targetedAnimations[0].target.name : 'none';
-    var linkedSample = Object.keys(linkedTnMap)[0] || 'no-linked-tn';
-    console.log('[CHARACTER] retarget', key, ':', matched, '/', srcAg.targetedAnimations.length,
-      '| srcSample:', sampleSrc, '| linkedTnSample:', linkedSample);
-    if (unmatched.length > 0) console.log('[CHARACTER] unmatched (first 3):', unmatched.slice(0, 3));
-
-    if (matched > 0) {
-      newAg.normalize();
-      newAg.stop();
-      CHARACTER.anims[key] = newAg;
-    } else {
-      // retarget 실패 시 idle을 fallback으로 사용 → 캐릭터 얼어붙음 방지
-      console.warn('[CHARACTER]', key, 'retarget 실패 → idle fallback');
-      if (CHARACTER.anims.idle) CHARACTER.anims[key] = CHARACTER.anims.idle;
-    }
-
-    // 이 GLB의 여분 mesh·skeleton 정리
-    result.meshes.forEach(function(m) { try { m.dispose(); } catch(e) {} });
-    result.skeletons.forEach(function(s) { try { s.dispose(); } catch(e) {} });
-
-  } catch (e) {
-    console.warn('[CHARACTER] 애니메이션 로드 실패:', file, e.message);
-  }
 }
