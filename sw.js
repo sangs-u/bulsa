@@ -1,13 +1,12 @@
 // Service Worker — 오프라인 플레이 (PWA).
 // 처음 방문 후 핵심 자산을 캐시 → 네트워크 없어도 게임 동작.
 
-const CACHE = 'bulsa-v6';   // 캐시 키 갱신 시 자동 무효화
+const CACHE = 'bulsa-v7';   // 캐시 키 갱신 시 자동 무효화
 const PRECACHE = [
   './',
   './game.html',
   './index.html',
   './manifest.webmanifest',
-  './vendor/cannon.min.js',
 ];
 
 self.addEventListener('install', e => {

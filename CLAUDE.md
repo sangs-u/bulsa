@@ -15,7 +15,7 @@
 - 장르: 3인칭 건설 시뮬레이터 (GTA 스타일 조작)
 - 플랫폼: 브라우저 (PC + 모바일 동일 지원)
 - 배포: GitHub Pages (정적, 서버 없음)
-- 스택: Three.js + Cannon.js + Yuka AI + 바닐라 JS
+- 스택: Babylon.js + 바닐라 JS
 - 다국어: ko / en / vi / ar
 
 ---
@@ -39,11 +39,21 @@ bulsa/
 ├── sw.js              ← 서비스워커
 ├── manifest.webmanifest
 ├── core/
-│   ├── engine.js      ← GAME 객체, 렌더러, 게임루프
+│   ├── engine.js      ← GAME 객체, Babylon Scene, 렌더러, 게임루프
 │   ├── player.js      ← 플레이어 이동, 카메라, 입력
-│   ├── npc.js         ← NPC 클래스, Yuka AI
+│   ├── character.js   ← GLB 캐릭터 메시 + 애니메이션
+│   ├── npc.js         ← NPC 클래스
+│   ├── phase.js       ← 공정 단계 관리 (사전조사→설치→굴착→기초…)
+│   ├── survey.js      ← 사전조사 (매설물 X-ray)
+│   ├── carry.js       ← 자재 집기 / 운반 / 설치 (행위=오브젝트)
+│   ├── railing.js     ← 안전 난간 (수직재·수평재 부재 단위 배치)
+│   ├── terrain.js     ← 복셀 굴착 지형
+│   ├── excavator.js   ← 굴착기
+│   ├── dumptruck.js   ← 덤프트럭
+│   ├── hazard.js      ← 위험구역
 │   ├── accident.js    ← 사고 트리거, 연출
-│   ├── hud.js         ← HUD (미니맵, 命게이지, 파티창)
+│   ├── hud.js         ← HUD (命게이지, 체크리스트, 미니맵)
+│   ├── life.js        ← 命게이지 로직
 │   ├── sound.js       ← 효과음
 │   ├── bgm.js         ← 배경음악
 │   └── ending.js      ← 수료증
@@ -51,9 +61,9 @@ bulsa/
 │   └── strings.js     ← 4개국어 문자열
 ├── assets/
 │   ├── equipment_catalog.json
+│   ├── characters/         ← GLB 캐릭터 (worker.glb 등)
+│   ├── glb/                ← 부재·도구·자재 GLB
 │   └── manifest.md
-├── vendor/
-│   └── cannon.min.js
 └── qa/
     ├── syntax-check.js
     └── static-server.js
@@ -71,9 +81,15 @@ bulsa/
 
 ### 코드 규칙
 5. **SVG 텍스트 기반 UI 금지** — 문서처럼 보이는 UI 금지. 게임 UI 느낌으로.
-6. **바닐라 JS 유지** — 프레임워크 추가 금지. Three.js + Cannon.js + Yuka만 사용.
+6. **바닐라 JS 유지** — 프레임워크 추가 금지. Babylon.js만 사용 (CDN 로드).
 7. **정적 파일만** — 서버 필요한 코드 금지. GitHub Pages 배포 기준.
 8. **모바일 동시 지원** — PC/모바일 하나의 코드베이스. 입력 자동 감지.
+
+### 건설 방식 원칙
+12. **부재 단위 배치 (마인크래프트식)** — 행위 하나 = 씬에 오브젝트 하나 추가.
+    - 한 번에 묶음 자동 스폰 금지 (예: 난간 1.6m + 포스트 2개 한꺼번에 ❌)
+    - 자재 더미에서 부재 1개 집기 → 운반 → 1개 설치
+    - 수직재·수평재·볼트·플레이트 등 모든 구성요소가 개별 부재
 
 ### 문서 규칙
 9. **CLAUDE.md 수정 금지** — 읽기만. 변경 필요 시 개발자에게 제안.

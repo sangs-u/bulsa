@@ -215,6 +215,10 @@ async function _loadExtraAnim(file, key) {
       newAg.normalize();
       newAg.stop();
       CHARACTER.anims[key] = newAg;
+    } else {
+      // retarget 실패 시 idle을 fallback으로 사용 → 캐릭터 얼어붙음 방지
+      console.warn('[CHARACTER]', key, 'retarget 실패 → idle fallback');
+      if (CHARACTER.anims.idle) CHARACTER.anims[key] = CHARACTER.anims.idle;
     }
 
     // 이 GLB의 여분 mesh·skeleton 정리
