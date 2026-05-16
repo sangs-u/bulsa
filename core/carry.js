@@ -102,10 +102,8 @@ function pickupItem(pile) {
   if (pile.count <= 0 && pile.mesh) pile.mesh.isVisible = false;
   _updateCarryHUD();
 
-  // 집기 애니메이션 → carry로 전환
-  if (window.CHARACTER_API) {
-    window.CHARACTER_API.playOnce('Collect_Object', 'Carry_Heavy_Object_Walk');
-  }
+  // 집기 동작(상호작용 모션) 후 carry로 전환
+  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('interact', 'carry');
 }
 
 function placeItem() {
@@ -127,10 +125,8 @@ function placeItem() {
   _onZoneFilled(zone);
   _updateCarryHUD();
 
-  // 놓기 → idle로 전환 (Collect_Object 한 번 재생 후)
-  if (window.CHARACTER_API) {
-    window.CHARACTER_API.playOnce('Collect_Object', 'Idle_02');
-  }
+  // 놓기 → idle로 전환 (상호작용 모션 한 번 재생 후)
+  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('interact', 'idle');
 }
 
 /* ─── 최종 mesh 스폰 ─────────────────────────────────────── */

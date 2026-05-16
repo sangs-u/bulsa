@@ -1,11 +1,11 @@
 // character.js — 통합 GLB 캐릭터 + 20개 애니메이션
-// assets/characters/player.glb 단일 파일에 모든 상태 클립 포함 (스켈레톤 공유)
-// 클립 이름을 그대로 상태 키로 사용 (예: 'Walking', 'Running', 'Carry_Heavy_Object_Walk')
+// assets/characters/player.glb — 클립 이름과 실제 모션이 다름 (Mixamo 원본명 유지)
+// 게임 상태 이름 → 실제 GLB 클립명 매핑
 
 const CHARACTER = {
   root:    null,
   wrapper: null,
-  anims:   {},      // { [GLB 클립명]: AnimationGroup }
+  anims:   {},      // { [게임 상태명]: AnimationGroup }
   state:   'none',
   loaded:  false,
   _once:   false,
@@ -14,21 +14,36 @@ const CHARACTER = {
 const _CHAR_PATH = 'assets/characters/';
 const _CHAR_FILE = 'player.glb';
 
-// 자동 상태 결정용 클립 이름 (GLB 원본 그대로)
-const CLIP = {
-  IDLE:   'Idle_02',
-  WALK:   'Walking',
-  RUN:    'Running',
-  CARRY:  'Carry_Heavy_Object_Walk',
-  JUMP:   'Regular_Jump',
-  PICKUP: 'Collect_Object',
+// 게임 상태 → 실제 GLB 클립 이름 매핑
+// (사용자 매핑표 — 이름은 Mixamo 원본이지만 실제 모션은 아래 한국어 주석대로)
+const _CLIP_MAP = {
+  idle:           'Running',                          // 대기
+  walk:           'Ladder_Mount_Start',               // 걷기
+  run:            'Ladder_Climb_Loop',                // 뛰기
+  sprint:         'Heavy_Hammer_Swing',               // 빠르게 뛰기
+  carry:          'Carry_Heavy_Object_Walk',          // 물건 들고 이동
+  push:           'Walking',                          // 밀기
+  jump:           'falling_down',                     // 점프
+  jump_obstacle:  'Collect_Object',                   // 장애물 뛰어넘기
+  fall:           'Idle_02',                          // 추락
+  trip:           'Limping_Walk',                     // 넘어지기
+  hammer:         'Climb_Attempt_and_Fall_5',         // 망치질
+  interact:       'Chair_Sit_Idle_M',                 // 상호작용 조작
+  throw:          'Injured_Walk',                     // 던지기
+  injured_light:  'Regular_Jump',                     // 경상
+  injured_heavy:  'Jump_Over_Obstacle',               // 중상
+  climb_start:    'Push_and_Walk_Forward',            // 사다리 오르기 처음 모습
+  climb_full:     'Female_Crouch_Pick_Throw_Forward', // 사다리 타고 올라가기
+  climb_finish:   'Ladder_Climb_Finish',              // 사다리 타고 올라가기 (완료)
+  sit_idle:       'Run_02',                           // 앉아서 대기
+  breakdance:     'Breakdance_1990',                  // 브레이크댄스
 };
 
 window.addEventListener('game:ready', function() { _loadCharacter(); });
 
 async function _loadCharacter() {
   try {
-    // GLB 로더가 자동 재생하지 않도록 설정 (auto-play 방지)
+    // GLB 로더가 자동 재생하지 않도록 설정
     BABYLON.SceneLoader.OnPluginActivatedObservable.addOnce(function(plugin) {
       if (plugin.name === 'gltf' && plugin.animationStartMode !== undefined) {
         plugin.animationStartMode = 0; // GLTFLoaderAnimationStartMode.NONE
@@ -42,19 +57,28 @@ async function _loadCharacter() {
     CHARACTER.root = result.meshes[0];
     result.meshes.forEach(_applyColor);
 
-    // 모든 클립을 즉시 정지 + reset (안전망)
+    // GLB 클립명 → AnimationGroup 임시 맵
+    const byClip = {};
     result.animationGroups.forEach(function(ag) {
       try { ag.stop(); ag.reset(); } catch(e) {}
-      CHARACTER.anims[ag.name] = ag;
+      byClip[ag.name] = ag;
     });
 
-    console.log('[CHARACTER] 로드 완료 —', Object.keys(CHARACTER.anims).length, '개 클립:');
-    Object.keys(CHARACTER.anims).forEach(function(n) { console.log('  •', n); });
+    // 게임 상태명으로 매핑 저장
+    Object.keys(_CLIP_MAP).forEach(function(state) {
+      const clipName = _CLIP_MAP[state];
+      const ag = byClip[clipName];
+      if (ag) CHARACTER.anims[state] = ag;
+      else console.warn('[CHARACTER] 누락된 클립:', clipName, '(상태:', state + ')');
+    });
+
+    console.log('[CHARACTER] 로드 완료 —', Object.keys(CHARACTER.anims).length, '개 상태:',
+      Object.keys(CHARACTER.anims).join(', '));
 
     CHARACTER.loaded = true;
 
     if (GAME.player) _attachToPlayer(GAME.player);
-    setState(CLIP.IDLE);
+    setState('idle');
 
     GAME.scene.onBeforeRenderObservable.add(_charTick);
 
@@ -105,15 +129,15 @@ function _charTick() {
     _attachToPlayer(GAME.player);
   }
 
-  let next = CLIP.IDLE;
+  let next = 'idle';
   if (typeof CARRY !== 'undefined' && CARRY.held) {
-    next = CLIP.CARRY;
+    next = 'carry';
   } else if (typeof PLAYER !== 'undefined') {
     const k  = PLAYER.keys || {};
     const jx = PLAYER.joy ? PLAYER.joy.x : 0;
     const jy = PLAYER.joy ? PLAYER.joy.y : 0;
     const moving = k.w || k.a || k.s || k.d || Math.abs(jx) > 0.1 || Math.abs(jy) > 0.1;
-    if (moving) next = (k.shift) ? CLIP.RUN : CLIP.WALK;
+    if (moving) next = (k.shift) ? 'run' : 'walk';
   }
 
   setState(next);
@@ -126,7 +150,7 @@ function setState(name) {
 
   const ag = CHARACTER.anims[name];
   if (!ag) {
-    console.warn('[CHARACTER] 클립 없음:', name);
+    console.warn('[CHARACTER] 상태 없음:', name);
     return;
   }
 
@@ -141,7 +165,7 @@ function setState(name) {
 function playOnce(name, afterState) {
   if (!CHARACTER.loaded) return;
   const ag = CHARACTER.anims[name];
-  if (!ag) { setState(afterState || CLIP.IDLE); return; }
+  if (!ag) { setState(afterState || 'idle'); return; }
 
   CHARACTER._once = true;
   Object.keys(CHARACTER.anims).forEach(function(k) {
@@ -153,11 +177,11 @@ function playOnce(name, afterState) {
   ag.onAnimationEndObservable.addOnce(function() {
     CHARACTER._once = false;
     CHARACTER.state = 'none';
-    setState(afterState || CLIP.IDLE);
+    setState(afterState || 'idle');
   });
 }
 
-window.CHARACTER_API = { setState: setState, playOnce: playOnce, CLIP: CLIP };
+window.CHARACTER_API = { setState: setState, playOnce: playOnce };
 
 /* ─── 색상 적용 ────────────────────────────────────────── */
 function _applyColor(mesh) {
