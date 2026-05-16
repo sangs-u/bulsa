@@ -394,101 +394,8 @@
     #exc-progress-bar { background:#FCD34D; height:100%; width:0%; transition:width .3s; }
     .exc-prog-val { font-size:.7rem; color:#C8D8E8; font-weight:700; margin-top:5px; text-align:right; }
 
-    /* 난간 시스템 */
-    #railing-toggle-btn {
-      position: fixed;
-      bottom: 150px;
-      right: 16px;
-      width: 56px;
-      height: 56px;
-      border-radius: 12px;
-      background: rgba(13,27,42,.88);
-      border: 2px solid #8DC63F;
-      color: #8DC63F;
-      font-size: .6rem;
-      font-weight: 900;
-      letter-spacing: .04em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 2px;
-      z-index: 56;
-      cursor: pointer;
-      user-select: none;
-      backdrop-filter: blur(6px);
-    }
-    #railing-toggle-btn::before {
-      content: '';
-      width: 22px;
-      height: 14px;
-      border: 2px solid currentColor;
-      border-bottom: 4px solid currentColor;
-      border-radius: 1px;
-    }
-    #railing-toggle-btn.active { background: rgba(141,198,63,.22); }
-
-    #railing-hud {
-      position: fixed;
-      bottom: 220px;
-      right: 16px;
-      background: rgba(13,27,42,.88);
-      border: 1.5px solid #8DC63F;
-      border-radius: 12px;
-      padding: 10px;
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-      z-index: 56;
-      backdrop-filter: blur(6px);
-      min-width: 140px;
-    }
-    .rl-mode-row { display: flex; gap: 6px; }
-    .rl-btn {
-      flex: 1;
-      padding: 8px 10px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid var(--bdr);
-      border-radius: 6px;
-      color: var(--txt);
-      font-size: .72rem;
-      font-weight: 800;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .rl-btn:hover { border-color: #8DC63F; }
-    .rl-btn.active { background: rgba(141,198,63,.22); border-color: #8DC63F; color: #8DC63F; }
-    #railing-mode-lbl {
-      font-size: .68rem;
-      color: var(--dim);
-      letter-spacing: .04em;
-      text-align: center;
-      font-weight: 700;
-    }
-    .rl-action-row { display: flex; gap: 6px; }
-    .rl-place-btn {
-      flex: 1;
-      padding: 9px;
-      background: #8DC63F;
-      border: none;
-      border-radius: 6px;
-      color: #0D1B2A;
-      font-size: .78rem;
-      font-weight: 900;
-      cursor: pointer;
-    }
-    .rl-remove-btn {
-      width: 40px;
-      padding: 9px;
-      background: rgba(232,90,58,.22);
-      border: 1px solid #E85A3A;
-      border-radius: 6px;
-      color: #E85A3A;
-      font-size: .8rem;
-      font-weight: 900;
-      cursor: pointer;
-    }
-    #railing-msg {
+    /* 설치 메시지 (자재 부족/오류 안내) */
+    #install-msg {
       position: fixed;
       top: 180px;
       left: 50%;
@@ -890,8 +797,13 @@
   <div id="install-checklist">
     <div class="cl-title">설치 작업</div>
     <div class="cl-row">
-      <span class="cl-icon">▮</span>
-      <span class="cl-label">난간</span>
+      <span class="cl-icon">│</span>
+      <span class="cl-label">수직재</span>
+      <span class="cl-count"><span id="cl-post">0</span>/6</span>
+    </div>
+    <div class="cl-row">
+      <span class="cl-icon">━</span>
+      <span class="cl-label">수평재</span>
       <span class="cl-count"><span id="cl-rail">0</span>/4</span>
     </div>
     <div class="cl-row">
@@ -937,20 +849,8 @@
 <!-- 모바일 버킷 버튼 -->
 <div id="exc-bucket-roll">버킷</div>
 
-<!-- 난간 시스템 -->
-<div id="railing-toggle-btn" title="난간 설치 (R)">난간</div>
-<div id="railing-hud">
-  <div id="railing-mode-lbl">모드 선택</div>
-  <div class="rl-mode-row">
-    <button class="rl-btn" id="rbtn-post">수직재</button>
-    <button class="rl-btn" id="rbtn-rail">수평재</button>
-  </div>
-  <div class="rl-action-row">
-    <button class="rl-place-btn" id="rl-place-btn">설치</button>
-    <button class="rl-remove-btn" id="rl-remove-btn" title="제거">−</button>
-  </div>
-</div>
-<div id="railing-msg"></div>
+<!-- 설치 메시지 (오류/안내) -->
+<div id="install-msg"></div>
 
 <!-- ⑦ 작업계획서·보고서 오버레이 -->
 <div id="doc-overlay">
@@ -982,20 +882,19 @@
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 <script src="i18n/strings.js?v=20260514"></script>
-<script src="core/engine.js?v=20260515f"></script>
+<script src="core/engine.js?v=20260516f"></script>
 <script src="core/player.js?v=20260515f"></script>
 <script src="core/life.js?v=20260514"></script>
 <script src="core/npc.js?v=20260515"></script>
 <script src="core/hazard.js?v=20260515b"></script>
 <script src="core/hud.js?v=20260514"></script>
-<script src="core/phase.js?v=20260515a"></script>
+<script src="core/phase.js?v=20260516f"></script>
 <script src="core/survey.js?v=20260515a"></script>
-<script src="core/carry.js?v=20260515b"></script>
+<script src="core/carry.js?v=20260516f"></script>
 <script src="core/character.js?v=20260516e"></script>
 <script src="core/terrain.js?v=20260515b"></script>
 <script src="core/excavator.js?v=20260515b"></script>
 <script src="core/dumptruck.js?v=20260515b"></script>
-<script src="core/railing.js?v=20260516a"></script>
 
 <script>
 /* ─── HUD 초기화 ─────────────────────────────────────────── */
@@ -1794,56 +1693,6 @@ window.addEventListener('phase:excavationComplete', () => {
   }, 33);
 })();
 
-/* ─── 난간 시스템 키/버튼 바인딩 + 프리뷰 업데이트 ────────── */
-(function() {
-  function fwdVec() {
-    if (!GAME || !GAME.camera) return new BABYLON.Vector3(0, 0, 1);
-    const v = GAME.camera.target.subtract(GAME.camera.position);
-    v.y = 0;
-    const l = v.length();
-    return l > 0.001 ? v.scaleInPlace(1 / l) : new BABYLON.Vector3(0, 0, 1);
-  }
-
-  // R 키: 모드 순환 (none → post → rail → none)
-  // F 키: 가까운 난간 제거
-  window.addEventListener('keydown', e => {
-    if (typeof RAILING === 'undefined') return;
-    if (document.getElementById('dialog') && !document.getElementById('dialog').classList.contains('hidden')) return;
-    if (e.key === 'r' || e.key === 'R') RAILING.cycleMode();
-    else if (e.key === 'f' || e.key === 'F') RAILING.removeNearPlayer();
-    else if (e.key === 'q' || e.key === 'Q') {
-      if (RAILING.getMode() !== 'none') RAILING.interactFromBtn();
-    }
-  });
-
-  // 버튼 바인딩 (game:ready 후 DOM 준비됨)
-  window.addEventListener('game:ready', () => {
-    setTimeout(() => {
-      const tog = document.getElementById('railing-toggle-btn');
-      if (tog) tog.addEventListener('click', () => RAILING.cycleMode());
-
-      const bp = document.getElementById('rbtn-post');
-      const br = document.getElementById('rbtn-rail');
-      if (bp) bp.addEventListener('click', () => RAILING.setMode('post'));
-      if (br) br.addEventListener('click', () => RAILING.setMode('rail'));
-
-      const place = document.getElementById('rl-place-btn');
-      if (place) place.addEventListener('click', () => RAILING.interactFromBtn());
-
-      const rm = document.getElementById('rl-remove-btn');
-      if (rm) rm.addEventListener('click', () => RAILING.removeNearPlayer());
-
-      // per-frame preview update
-      if (GAME && GAME.scene) {
-        GAME.scene.onBeforeRenderObservable.add(() => {
-          if (typeof RAILING === 'undefined' || !GAME.player) return;
-          if (RAILING.getMode() === 'none') return;
-          RAILING.update(GAME.player.position, fwdVec());
-        });
-      }
-    }, 200);
-  });
-})();
 </script>
 </body>
 </html>

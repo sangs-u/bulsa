@@ -1,41 +1,99 @@
-// carry.js — 자재 집기 / 운반 / 설치 시스템
+// carry.js — 자재 집기 / 운반 / 설치 (부재 단위 행위=오브젝트)
+// 수직재(post) / 수평재(rail) / 라바콘(cone)
+// - 수직재: 자유 위치 박기, 최대 5개 운반
+// - 수평재: 가까운 수직재 2개 사이 자동 정렬, 최대 2개 운반
+// - 라바콘: 미리 정의된 carryZone, 최대 1개 운반
 
 const MATERIAL = {
-  GUARDRAIL: 'guardrail',
-  CONE:      'cone',
+  POST: 'post',
+  RAIL: 'rail',
+  CONE: 'cone',
+};
+
+const MAX_CARRY = {
+  post: 5,
+  rail: 2,
+  cone: 1,
 };
 
 const CARRY = {
-  held:       null,   // {type, mesh} | null
+  held:       null,   // {type, count, mesh} | null
   nearbyPile: null,
-  nearbyZone: null,
+  nearbyZone: null,   // cone 전용
   baseSpeed:  0.055,
   carrySpeed: 0.032,
 };
 
 const INTERACT_DIST = 2.2;
+const PLACE_DIST    = 2.0;   // 플레이어 전방 설치 거리
+const GAP_MAX       = 3.2;   // 수평재 연결 최대 간격
+const POST_H        = 1.15;  // 수직재 높이
+const RAIL_H1       = 1.02;  // 상단 수평재 높이
+const RAIL_H2       = 0.52;  // 중단 수평재 높이
+const POST_D        = 0.06;  // 수직재 지름
+
+// 설치된 부재 추적 (수평재 자동 정렬용)
+const PLACED = {
+  posts: [],   // [{id, mesh, x, z}]
+  rails: [],   // [{id, mT, mM, aId, bId}]
+  _n: 0,
+};
+
+let _ghost = { post: null, rail: null }; // 미리보기 ghost
 
 /* ─── 초기화 ─────────────────────────────────────────────── */
 window.addEventListener('game:ready', () => {
   CARRY.baseSpeed = PLAYER.speed;
+  _makeGhosts();
   GAME.scene.onBeforeRenderObservable.add(_carryTick);
   _bindInput();
 });
 
+function _makeGhosts() {
+  // 수직재 ghost
+  _ghost.post = BABYLON.MeshBuilder.CreateCylinder('cGhostPost',
+    { diameter: POST_D, height: POST_H, tessellation: 8 }, GAME.scene);
+  const gm1 = new BABYLON.StandardMaterial('cGhostPostM', GAME.scene);
+  gm1.diffuseColor    = new BABYLON.Color3(0.2, 0.7, 1.0);
+  gm1.emissiveColor   = new BABYLON.Color3(0.1, 0.4, 0.6);
+  gm1.alpha           = 0.45;
+  gm1.backFaceCulling = false;
+  _ghost.post.material   = gm1;
+  _ghost.post.isPickable = false;
+  _ghost.post.setEnabled(false);
+
+  // 수평재 ghost (상단 + 중단 두 줄)
+  const railGroup = new BABYLON.TransformNode('cGhostRail', GAME.scene);
+  const top = BABYLON.MeshBuilder.CreateBox('cGhostRailT', { width: POST_D, height: POST_D, depth: GAP_MAX }, GAME.scene);
+  const mid = BABYLON.MeshBuilder.CreateBox('cGhostRailM', { width: POST_D, height: POST_D, depth: GAP_MAX }, GAME.scene);
+  top.parent = mid.parent = railGroup;
+  top.position.y = RAIL_H1; mid.position.y = RAIL_H2;
+  top.material = mid.material = gm1;
+  top.isPickable = mid.isPickable = false;
+  _ghost.rail = railGroup;
+  _ghost.rail.setEnabled(false);
+  _ghost.rail._top = top;
+  _ghost.rail._mid = mid;
+}
+
+/* ─── 매 프레임 ──────────────────────────────────────────── */
 function _carryTick() {
   if (GAME.currentScene !== 'site') return;
   if (GAME.state.dialogActive) return;
-  if (!GAME.carryZones || !GAME.materialPiles) return;
   if (PHASE.current !== 'install') {
     CARRY.nearbyPile = null;
     CARRY.nearbyZone = null;
+    _ghost.post.setEnabled(false);
+    _ghost.rail.setEnabled(false);
     const btn = document.getElementById('ctx-action-btn');
     if (btn) btn.classList.remove('show');
     return;
   }
+
   CARRY.nearbyPile = _findNearestPile();
-  CARRY.nearbyZone = _findNearestEmptyZone(CARRY.held ? CARRY.held.type : null);
-  _updateGhostHighlight();
+  CARRY.nearbyZone = (CARRY.held && CARRY.held.type === MATERIAL.CONE) ? _findNearestEmptyZone(MATERIAL.CONE) : null;
+
+  _updatePreview();
   _updateCarryHUD();
   _updateChecklistHUD();
   _updateContextButton();
@@ -48,8 +106,7 @@ function _findNearestPile() {
   let best = null, bestD = INTERACT_DIST;
   GAME.materialPiles.forEach(pile => {
     if (pile.count <= 0) return;
-    const dx = p.x - pile.x, dz = p.z - pile.z;
-    const d = Math.sqrt(dx*dx + dz*dz);
+    const d = Math.hypot(p.x - pile.x, p.z - pile.z);
     if (d < bestD) { bestD = d; best = pile; }
   });
   return best;
@@ -62,144 +119,262 @@ function _findNearestEmptyZone(type) {
   GAME.carryZones.forEach(z => {
     if (z.occupied) return;
     if (type && z.type !== type) return;
-    const dx = p.x - z.x, dz = p.z - z.z;
-    const d = Math.sqrt(dx*dx + dz*dz);
+    const d = Math.hypot(p.x - z.x, p.z - z.z);
     if (d < bestD) { bestD = d; best = z; }
   });
   return best;
 }
 
-/* ─── 집기 / 놓기 ────────────────────────────────────────── */
-function pickupItem(pile) {
-  if (CARRY.held) return;
-  if (!pile || pile.count <= 0) return;
-  const type = pile.type;
-  let mesh;
-  if (type === MATERIAL.GUARDRAIL) {
-    mesh = BABYLON.MeshBuilder.CreateBox('held_rail', {width:1.6, height:0.06, depth:0.06}, GAME.scene);
-    const m = new BABYLON.PBRMaterial('held_railM', GAME.scene);
-    m.albedoColor = new BABYLON.Color3(0.55, 0.56, 0.58);
-    m.metallic = 0.7; m.roughness = 0.4;
-    mesh.material = m;
-    mesh.rotation = new BABYLON.Vector3(0, 0, Math.PI/2);
-  } else {
-    mesh = BABYLON.MeshBuilder.CreateCylinder('held_cone',
-      {diameterTop:0.05, diameterBottom:0.32, height:0.5, tessellation:12}, GAME.scene);
-    const m = new BABYLON.PBRMaterial('held_coneM', GAME.scene);
-    m.albedoColor = new BABYLON.Color3(0.95, 0.45, 0.10);
-    m.metallic = 0.0; m.roughness = 0.78;
-    mesh.material = m;
+function _fwd() {
+  if (!GAME.camera) return new BABYLON.Vector3(0, 0, 1);
+  const v = GAME.camera.target.subtract(GAME.camera.position);
+  v.y = 0;
+  const l = v.length();
+  return l > 0.001 ? v.scaleInPlace(1 / l) : new BABYLON.Vector3(0, 0, 1);
+}
+
+function _placePos() {
+  const p = GAME.player.position, f = _fwd();
+  return { x: p.x + f.x * PLACE_DIST, z: p.z + f.z * PLACE_DIST };
+}
+
+function _nearestPostPair() {
+  const p = _placePos();
+  let best = null, bestD = 8.0;
+  for (let i = 0; i < PLACED.posts.length; i++) {
+    for (let j = i + 1; j < PLACED.posts.length; j++) {
+      const a = PLACED.posts[i], b = PLACED.posts[j];
+      const gap = Math.hypot(b.x - a.x, b.z - a.z);
+      if (gap > GAP_MAX) continue;
+      const exists = PLACED.rails.some(r =>
+        (r.aId === a.id && r.bId === b.id) || (r.aId === b.id && r.bId === a.id));
+      if (exists) continue;
+      const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+      const d  = Math.hypot(p.x - mx, p.z - mz);
+      if (d < bestD) { bestD = d; best = [a, b]; }
+    }
   }
-  mesh.parent = GAME.player;
-  mesh.position = new BABYLON.Vector3(0, 0.95, 0.35);
-  mesh.isPickable = false;
+  return best;
+}
 
-  CARRY.held = { type, mesh };
-  GAME.heldItem = CARRY.held;
-  PLAYER.speed = CARRY.carrySpeed;
+/* ─── 미리보기 ghost 업데이트 ────────────────────────────── */
+function _updatePreview() {
+  if (!CARRY.held || CARRY.held.count <= 0) {
+    _ghost.post.setEnabled(false);
+    _ghost.rail.setEnabled(false);
+    return;
+  }
 
-  pile.count -= 1;
+  if (CARRY.held.type === MATERIAL.POST) {
+    const p = _placePos();
+    _ghost.post.position.set(p.x, POST_H / 2, p.z);
+    _ghost.post.setEnabled(true);
+    _ghost.rail.setEnabled(false);
+  } else if (CARRY.held.type === MATERIAL.RAIL) {
+    const pair = _nearestPostPair();
+    if (pair) {
+      const mx   = (pair[0].x + pair[1].x) / 2;
+      const mz   = (pair[0].z + pair[1].z) / 2;
+      const dist = Math.hypot(pair[1].x - pair[0].x, pair[1].z - pair[0].z);
+      const ang  = Math.atan2(pair[1].x - pair[0].x, pair[1].z - pair[0].z);
+      _ghost.rail.position.set(mx, 0, mz);
+      _ghost.rail.rotation.y = ang;
+      _ghost.rail._top.scaling.z = dist / GAP_MAX;
+      _ghost.rail._mid.scaling.z = dist / GAP_MAX;
+      _ghost.rail.setEnabled(true);
+    } else {
+      _ghost.rail.setEnabled(false);
+    }
+    _ghost.post.setEnabled(false);
+  } else {
+    _ghost.post.setEnabled(false);
+    _ghost.rail.setEnabled(false);
+  }
+}
+
+/* ─── 집기 ──────────────────────────────────────────────── */
+function pickupItem(pile) {
+  if (!pile || pile.count <= 0) return;
+
+  // 다른 종류 들고 있으면 거부
+  if (CARRY.held && CARRY.held.type !== pile.type) {
+    _msg('손에 든 자재를 먼저 모두 설치하세요');
+    return;
+  }
+
+  const max = MAX_CARRY[pile.type] || 1;
+  if (CARRY.held && CARRY.held.count >= max) {
+    _msg('최대 ' + max + '개까지만 들 수 있습니다');
+    return;
+  }
+
+  if (!CARRY.held) {
+    CARRY.held = { type: pile.type, count: 0, mesh: null };
+    GAME.heldItem = CARRY.held;
+    PLAYER.speed = CARRY.carrySpeed;
+  }
+  CARRY.held.count++;
+  pile.count--;
   if (pile.count <= 0 && pile.mesh) pile.mesh.isVisible = false;
+
+  _updateHeldMesh();
   _updateCarryHUD();
 
-  // 집기 동작(상호작용 모션) 후 carry로 전환
   if (window.CHARACTER_API) window.CHARACTER_API.playOnce('interact', 'carry');
 }
 
-function placeItem() {
-  if (!CARRY.held || !CARRY.nearbyZone) return;
-  if (CARRY.nearbyZone.type !== CARRY.held.type) return;
+function _updateHeldMesh() {
+  if (!CARRY.held) return;
+  if (CARRY.held.mesh) return;  // 이미 있으면 유지 (개수만 카운트로 표시)
 
-  CARRY.held.mesh.dispose();
-  _spawnFinalMesh(CARRY.nearbyZone);
+  let m;
+  if (CARRY.held.type === MATERIAL.POST) {
+    m = BABYLON.MeshBuilder.CreateCylinder('held_post', { diameter: POST_D, height: POST_H, tessellation: 8 }, GAME.scene);
+    m.rotation = new BABYLON.Vector3(0, 0, Math.PI / 2);
+  } else if (CARRY.held.type === MATERIAL.RAIL) {
+    m = BABYLON.MeshBuilder.CreateBox('held_rail', { width: 2.2, height: 0.06, depth: 0.06 }, GAME.scene);
+    m.rotation = new BABYLON.Vector3(0, 0, Math.PI / 2);
+  } else {
+    m = BABYLON.MeshBuilder.CreateCylinder('held_cone',
+      { diameterTop: 0.05, diameterBottom: 0.32, height: 0.5, tessellation: 12 }, GAME.scene);
+  }
+  m.parent = GAME.player;
+  m.position = new BABYLON.Vector3(0, 0.95, 0.35);
+  m.isPickable = false;
 
-  CARRY.nearbyZone.occupied = true;
-  if (CARRY.nearbyZone.ghostMesh) CARRY.nearbyZone.ghostMesh.isVisible = false;
-
-  const zone = CARRY.nearbyZone;
-  CARRY.held = null;
-  GAME.heldItem = null;
-  CARRY.nearbyZone = null;
-  PLAYER.speed = CARRY.baseSpeed;
-
-  _onZoneFilled(zone);
-  _updateCarryHUD();
-
-  // 놓기 → idle로 전환 (상호작용 모션 한 번 재생 후)
-  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('interact', 'idle');
+  const mat = new BABYLON.PBRMaterial('held_mat_' + CARRY.held.type, GAME.scene);
+  if (CARRY.held.type === MATERIAL.CONE) {
+    mat.albedoColor = new BABYLON.Color3(0.95, 0.45, 0.10);
+    mat.metallic = 0.0; mat.roughness = 0.78;
+  } else {
+    mat.albedoColor = new BABYLON.Color3(0.55, 0.56, 0.58);
+    mat.metallic = 0.62; mat.roughness = 0.45;
+  }
+  m.material = mat;
+  CARRY.held.mesh = m;
 }
 
-/* ─── 최종 mesh 스폰 ─────────────────────────────────────── */
-function _spawnFinalMesh(zone) {
-  let mesh;
-  if (zone.type === MATERIAL.GUARDRAIL) {
-    mesh = BABYLON.MeshBuilder.CreateBox('final_'+zone.id, {width:1.6, height:0.02, depth:0.05}, GAME.scene);
-    mesh.position = new BABYLON.Vector3(zone.x, 0.85, zone.z);
-    mesh.rotation.y = zone.rotY || 0;
-    // 수직 포스트 2개
-    [-0.65, 0.65].forEach((dx, i) => {
-      const post = BABYLON.MeshBuilder.CreateBox('finalP_'+zone.id+'_'+i, {width:0.05, height:0.9, depth:0.05}, GAME.scene);
-      post.position = new BABYLON.Vector3(zone.x, 0.45, zone.z);
-      const ox = Math.cos(zone.rotY||0)*dx, oz = -Math.sin(zone.rotY||0)*dx;
-      post.position.x += ox; post.position.z += oz;
-      const pm = new BABYLON.PBRMaterial('finalPM_'+zone.id+'_'+i, GAME.scene);
-      pm.albedoColor = new BABYLON.Color3(0.92, 0.15, 0.15);
-      pm.metallic = 0.3; pm.roughness = 0.6;
-      post.material = pm;
-      GAME.siteMeshes.push(post);
-    });
-    const rm = new BABYLON.PBRMaterial('finalRM_'+zone.id, GAME.scene);
-    rm.albedoColor = new BABYLON.Color3(0.92, 0.15, 0.15);
-    rm.metallic = 0.3; rm.roughness = 0.6;
-    mesh.material = rm;
-  } else {
-    mesh = BABYLON.MeshBuilder.CreateCylinder('final_'+zone.id,
-      {diameterTop:0.05, diameterBottom:0.32, height:0.5, tessellation:12}, GAME.scene);
-    mesh.position = new BABYLON.Vector3(zone.x, 0.25, zone.z);
-    const cm = new BABYLON.PBRMaterial('finalCM_'+zone.id, GAME.scene);
-    cm.albedoColor = new BABYLON.Color3(0.95, 0.45, 0.10);
-    cm.metallic = 0.0; cm.roughness = 0.78;
-    mesh.material = cm;
+/* ─── 설치 ──────────────────────────────────────────────── */
+function placeItem() {
+  if (!CARRY.held || CARRY.held.count <= 0) return;
+
+  if (CARRY.held.type === MATERIAL.POST) {
+    const p = _placePos();
+    _spawnPost(p.x, p.z);
+    CARRY.held.count--;
+    PHASE.checklist.posts.done = Math.min(
+      PHASE.checklist.posts.done + 1, PHASE.checklist.posts.total);
+  } else if (CARRY.held.type === MATERIAL.RAIL) {
+    const pair = _nearestPostPair();
+    if (!pair) { _msg('수직재 2개가 가까이 있어야 수평재를 걸 수 있습니다'); return; }
+    _spawnRail(pair[0], pair[1]);
+    CARRY.held.count--;
+    PHASE.checklist.rails.done = Math.min(
+      PHASE.checklist.rails.done + 1, PHASE.checklist.rails.total);
+  } else if (CARRY.held.type === MATERIAL.CONE) {
+    if (!CARRY.nearbyZone || CARRY.nearbyZone.type !== MATERIAL.CONE) return;
+    _spawnConeAtZone(CARRY.nearbyZone);
+    CARRY.nearbyZone.occupied = true;
+    if (CARRY.nearbyZone.ghostMesh) CARRY.nearbyZone.ghostMesh.isVisible = false;
+    CARRY.held.count--;
+    PHASE.checklist.cones.done = Math.min(
+      PHASE.checklist.cones.done + 1, PHASE.checklist.cones.total);
   }
+
+  // 다 떨어지면 손 비움
+  if (CARRY.held.count <= 0) {
+    if (CARRY.held.mesh) CARRY.held.mesh.dispose();
+    CARRY.held = null;
+    GAME.heldItem = null;
+    PLAYER.speed = CARRY.baseSpeed;
+  }
+
+  _updateCarryHUD();
+  _checkChecklistDone();
+
+  if (window.CHARACTER_API) window.CHARACTER_API.playOnce('interact', CARRY.held ? 'carry' : 'idle');
+}
+
+/* ─── 부재 스폰 ──────────────────────────────────────────── */
+function _spawnPost(x, z) {
+  const mesh = BABYLON.MeshBuilder.CreateCylinder('post_' + PLACED._n,
+    { diameter: POST_D, height: POST_H, tessellation: 8 }, GAME.scene);
+  mesh.position = new BABYLON.Vector3(x, POST_H / 2, z);
+  const mat = new BABYLON.PBRMaterial('postMat_' + PLACED._n, GAME.scene);
+  mat.albedoColor = new BABYLON.Color3(0.92, 0.15, 0.15);
+  mat.metallic = 0.3; mat.roughness = 0.6;
+  mesh.material = mat;
+  if (GAME.shadowGen) GAME.shadowGen.addShadowCaster(mesh);
+  PLACED.posts.push({ id: 'p' + PLACED._n, mesh, x, z });
+  GAME.siteMeshes.push(mesh);
+  PLACED._n++;
+}
+
+function _spawnRail(a, b) {
+  const mx   = (a.x + b.x) / 2;
+  const mz   = (a.z + b.z) / 2;
+  const dist = Math.hypot(b.x - a.x, b.z - a.z);
+  const ang  = Math.atan2(b.x - a.x, b.z - a.z);
+  const mat = new BABYLON.PBRMaterial('railMat_' + PLACED._n, GAME.scene);
+  mat.albedoColor = new BABYLON.Color3(0.92, 0.15, 0.15);
+  mat.metallic = 0.3; mat.roughness = 0.6;
+
+  function mkRail(name, y) {
+    const m = BABYLON.MeshBuilder.CreateBox(name,
+      { width: POST_D, height: POST_D, depth: dist }, GAME.scene);
+    m.position = new BABYLON.Vector3(mx, y, mz);
+    m.rotation.y = ang;
+    m.material = mat;
+    if (GAME.shadowGen) GAME.shadowGen.addShadowCaster(m);
+    GAME.siteMeshes.push(m);
+    return m;
+  }
+  const id = 'r' + PLACED._n;
+  PLACED.rails.push({
+    id,
+    mT:  mkRail('rT_' + id, RAIL_H1),
+    mM:  mkRail('rM_' + id, RAIL_H2),
+    aId: a.id, bId: b.id,
+  });
+  PLACED._n++;
+}
+
+function _spawnConeAtZone(zone) {
+  const mesh = BABYLON.MeshBuilder.CreateCylinder('final_' + zone.id,
+    { diameterTop: 0.05, diameterBottom: 0.32, height: 0.5, tessellation: 12 }, GAME.scene);
+  mesh.position = new BABYLON.Vector3(zone.x, 0.25, zone.z);
+  const mat = new BABYLON.PBRMaterial('finalCM_' + zone.id, GAME.scene);
+  mat.albedoColor = new BABYLON.Color3(0.95, 0.45, 0.10);
+  mat.metallic = 0.0; mat.roughness = 0.78;
+  mesh.material = mat;
   mesh.isPickable = false;
   zone.finalMesh = mesh;
   GAME.siteMeshes.push(mesh);
 }
 
-/* ─── 외부 노출 (NPC 위임용) ─────────────────────────────── */
-window._carrySpawnFinalMesh = _spawnFinalMesh;
-window._carryOnZoneFilled   = _onZoneFilled;
-
-/* ─── 체크리스트 갱신 ────────────────────────────────────── */
-function _onZoneFilled(zone) {
-  if (zone.type === MATERIAL.GUARDRAIL) {
-    PHASE.checklist.guardrails.done = Math.min(
-      PHASE.checklist.guardrails.done + 1, PHASE.checklist.guardrails.total);
-  } else {
-    PHASE.checklist.cones.done = Math.min(
-      PHASE.checklist.cones.done + 1, PHASE.checklist.cones.total);
-  }
-  _updateChecklistHUD();
-  _checkChecklistDone();
-}
-
+/* ─── 진행도 ────────────────────────────────────────────── */
 function _checkChecklistDone() {
   const cl = PHASE.checklist;
-  if (cl.guardrails.done >= cl.guardrails.total && cl.cones.done >= cl.cones.total) {
+  if (cl.posts.done >= cl.posts.total &&
+      cl.rails.done >= cl.rails.total &&
+      cl.cones.done >= cl.cones.total) {
     PHASE.flags.installDone = true;
     PHASE.current = 'excavation';
     window.dispatchEvent(new CustomEvent('phase:installComplete'));
   }
 }
 
-/* ─── HUD 갱신 ──────────────────────────────────────────── */
+/* ─── HUD ──────────────────────────────────────────────── */
 function _updateCarryHUD() {
   const hud = document.getElementById('carry-hud');
   if (!hud) return;
-  if (CARRY.held) {
+  if (CARRY.held && CARRY.held.count > 0) {
     hud.style.display = 'flex';
     const nameEl = document.getElementById('carry-name');
-    if (nameEl) nameEl.textContent = CARRY.held.type === MATERIAL.GUARDRAIL ? '난간 파이프' : '라바콘';
+    if (nameEl) {
+      const labels = { post: '수직재', rail: '수평재', cone: '라바콘' };
+      nameEl.textContent = (labels[CARRY.held.type] || '자재') + ' ×' + CARRY.held.count;
+    }
   } else {
     hud.style.display = 'none';
   }
@@ -207,81 +382,61 @@ function _updateCarryHUD() {
 
 function _updateChecklistHUD() {
   const cl = PHASE.checklist;
-  const railEl = document.getElementById('cl-rail');
-  const coneEl = document.getElementById('cl-cone');
-  if (railEl) railEl.textContent = cl.guardrails.done;
-  if (coneEl) coneEl.textContent = cl.cones.done;
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set('cl-post', cl.posts.done);
+  set('cl-rail', cl.rails.done);
+  set('cl-cone', cl.cones.done);
   const listEl = document.getElementById('install-checklist');
   if (listEl) listEl.style.display = PHASE.current === 'install' ? 'block' : 'none';
 }
 
-/* ─── ghost 하이라이트 ───────────────────────────────────── */
-function _updateGhostHighlight() {
-  if (!GAME.carryZones) return;
-  GAME.carryZones.forEach(z => {
-    if (!z.ghostMesh || z.occupied) return;
-    const isNear = CARRY.nearbyZone === z && CARRY.held && CARRY.held.type === z.type;
-    const m = z.ghostMesh.material;
-    if (!m) return;
-    if (isNear) {
-      m.diffuseColor  = new BABYLON.Color3(0.55, 0.87, 0.24);
-      m.emissiveColor = new BABYLON.Color3(0.22, 0.45, 0.09);
-      m.alpha = 0.6;
-    } else {
-      m.diffuseColor  = new BABYLON.Color3(0.45, 0.55, 0.70);
-      m.emissiveColor = new BABYLON.Color3(0.18, 0.24, 0.36);
-      m.alpha = 0.35;
-    }
-  });
-}
-
-/* ─── 컨텍스트 버튼 ─────────────────────────────────────── */
+/* ─── 컨텍스트 버튼 (E / 모바일 탭) ───────────────────────── */
 function _updateContextButton() {
   const btn = document.getElementById('ctx-action-btn');
   const lbl = document.getElementById('ctx-action-label');
   if (!btn || !lbl) return;
 
   let label = null;
-  if (CARRY.held && CARRY.nearbyZone && CARRY.nearbyZone.type === CARRY.held.type) {
-    label = '여기 놓기';
-  } else if (!CARRY.held && CARRY.nearbyPile && CARRY.nearbyPile.count > 0) {
-    label = '집기 (' + (CARRY.nearbyPile.type === MATERIAL.GUARDRAIL ? '난간' : '라바콘') + ')';
-  } else if (!CARRY.held && _nearestNpcForDelegate() && _firstAvailableZone()) {
-    label = '위임: 갖다놔';
+
+  // 1순위: 들고 있고 설치 가능
+  if (CARRY.held && CARRY.held.count > 0) {
+    if (CARRY.held.type === MATERIAL.POST) {
+      label = '수직재 박기';
+    } else if (CARRY.held.type === MATERIAL.RAIL && _nearestPostPair()) {
+      label = '수평재 걸기';
+    } else if (CARRY.held.type === MATERIAL.CONE && CARRY.nearbyZone) {
+      label = '라바콘 놓기';
+    }
   }
 
-  if (label) {
-    btn.classList.add('show');
-    lbl.textContent = label;
-  } else {
-    btn.classList.remove('show');
+  // 2순위: 자재 더미 근처
+  if (!label && CARRY.nearbyPile) {
+    const labels = { post: '수직재', rail: '수평재', cone: '라바콘' };
+    const max = MAX_CARRY[CARRY.nearbyPile.type] || 1;
+    const cur = (CARRY.held && CARRY.held.type === CARRY.nearbyPile.type) ? CARRY.held.count : 0;
+    if (cur < max) label = (labels[CARRY.nearbyPile.type] || '자재') + ' 집기 (' + cur + '/' + max + ')';
   }
+
+  if (label) { btn.classList.add('show'); lbl.textContent = label; }
+  else       { btn.classList.remove('show'); }
 }
 
-function _nearestNpcForDelegate() {
-  if (typeof NPCS === 'undefined' || !NPCS.length) return null;
-  const p = GAME.player.position;
-  let best = null, bestD = 2.5;
-  NPCS.forEach(npc => {
-    if (!npc.mesh || npc.task) return;
-    const d = BABYLON.Vector3.Distance(p, npc.mesh.position);
-    if (d < bestD) { bestD = d; best = npc; }
-  });
-  return best;
+/* ─── 메시지 ────────────────────────────────────────────── */
+function _msg(txt) {
+  const el = document.getElementById('railing-msg') || document.getElementById('install-msg');
+  if (!el) { console.log('[CARRY]', txt); return; }
+  el.textContent = txt;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = '0'; }, 2200);
 }
 
-function _firstAvailableZone() {
-  if (!GAME.carryZones) return null;
-  return GAME.carryZones.find(z => !z.occupied) || null;
-}
-
-/* ─── 입력 바인딩 ───────────────────────────────────────── */
+/* ─── 입력 ─────────────────────────────────────────────── */
 function _bindInput() {
   window.addEventListener('keydown', e => {
     if (GAME.currentScene !== 'site') return;
     if (GAME.state.dialogActive) return;
     if (e.key !== 'e' && e.key !== 'E') return;
-    // 굴착기 탑승 중 혹은 ready 상태에서 근접 시 → carry.js는 양보
     if (typeof EXCAVATOR !== 'undefined') {
       if (EXCAVATOR.mounted) return;
       if (EXCAVATOR.state === 'ready' && GAME.player) {
@@ -297,10 +452,7 @@ function _bindInput() {
   const btn = document.getElementById('ctx-action-btn');
   if (btn) {
     btn.addEventListener('click', _onInteract);
-    btn.addEventListener('touchstart', ev => {
-      ev.stopPropagation();
-      _onInteract();
-    }, { passive: true });
+    btn.addEventListener('touchstart', ev => { ev.stopPropagation(); _onInteract(); }, { passive: true });
   }
 }
 
@@ -308,25 +460,13 @@ function _onInteract() {
   if (PHASE.current !== 'install') return;
   if (GAME.state.dialogActive) return;
 
-  // 1순위: 들고 있고 스냅 존 근처 → 놓기
-  if (CARRY.held && CARRY.nearbyZone && CARRY.nearbyZone.type === CARRY.held.type) {
-    placeItem();
-    return;
+  // 1순위: 들고 있으면 설치 시도
+  if (CARRY.held && CARRY.held.count > 0) {
+    if (CARRY.held.type === MATERIAL.POST) { placeItem(); return; }
+    if (CARRY.held.type === MATERIAL.RAIL && _nearestPostPair()) { placeItem(); return; }
+    if (CARRY.held.type === MATERIAL.CONE && CARRY.nearbyZone) { placeItem(); return; }
   }
 
-  // 2순위: 빈손 + 자재 더미 근처 → 집기
-  if (!CARRY.held && CARRY.nearbyPile && CARRY.nearbyPile.count > 0) {
-    pickupItem(CARRY.nearbyPile);
-    return;
-  }
-
-  // 3순위: 빈손 + 가까운 NPC + 빈 zone → 위임
-  const npc = _nearestNpcForDelegate();
-  const zone = _firstAvailableZone();
-  if (!CARRY.held && npc && zone) {
-    const pile = GAME.materialPiles ? GAME.materialPiles.find(p => p.type === zone.type && p.count > 0) : null;
-    if (pile && typeof npc.goAndPlace === 'function') {
-      npc.goAndPlace(pile, zone);
-    }
-  }
+  // 2순위: 자재 더미 근처면 집기
+  if (CARRY.nearbyPile) { pickupItem(CARRY.nearbyPile); return; }
 }

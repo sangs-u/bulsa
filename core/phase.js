@@ -22,7 +22,8 @@ const PHASE = {
     safetyMeasures: [],
   },
   checklist: {
-    guardrails: { done: 0, total: 4 },
-    cones:      { done: 0, total: 4 },
+    posts: { done: 0, total: 6 },  // 수직재 (개별 부재)
+    rails: { done: 0, total: 4 },  // 수평재 (수직재 2개 사이)
+    cones: { done: 0, total: 4 },
   },
 };

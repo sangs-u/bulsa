@@ -706,17 +706,28 @@ function _buildSiteScene(scene) {
 
   // ── 자재 더미 ─────────────────────────────────────────────
   GAME.materialPiles = [];
-  // 난간 파이프 더미 (x=8, z=12)
-  const railPile = BABYLON.MeshBuilder.CreateBox('s_railPile', {width:1.8, height:0.45, depth:0.6}, scene);
-  railPile.position = new BABYLON.Vector3(8, 0.225, 12);
-  const railPileM = new BABYLON.PBRMaterial('s_railPileM', scene);
-  railPileM.albedoColor = new BABYLON.Color3(0.55, 0.56, 0.58);
-  railPileM.metallic = 0.62;
-  railPileM.roughness = 0.55;
-  railPile.material = railPileM;
-  railPile.metadata = { kind: 'pile', type: 'guardrail' };
+
+  // 부재용 공통 PBR 머티리얼
+  const _metalM = new BABYLON.PBRMaterial('s_metalPileM', scene);
+  _metalM.albedoColor = new BABYLON.Color3(0.55, 0.56, 0.58);
+  _metalM.metallic = 0.62;
+  _metalM.roughness = 0.55;
+
+  // 수직재 더미 (x=8, z=12) — 짧은 파이프 묶음
+  const postPile = BABYLON.MeshBuilder.CreateBox('s_postPile', {width:0.7, height:0.35, depth:1.4}, scene);
+  postPile.position = new BABYLON.Vector3(8, 0.175, 12);
+  postPile.material = _metalM;
+  postPile.metadata = { kind: 'pile', type: 'post' };
+  GAME.siteMeshes.push(postPile);
+  GAME.materialPiles.push({ id:'pile_post', type:'post', x:8, z:12, mesh:postPile, count:6 });
+
+  // 수평재 더미 (x=8, z=14) — 긴 파이프 묶음
+  const railPile = BABYLON.MeshBuilder.CreateBox('s_railPile', {width:2.2, height:0.30, depth:0.5}, scene);
+  railPile.position = new BABYLON.Vector3(8, 0.15, 14);
+  railPile.material = _metalM;
+  railPile.metadata = { kind: 'pile', type: 'rail' };
   GAME.siteMeshes.push(railPile);
-  GAME.materialPiles.push({ id:'pile_rail', type:'guardrail', x:8, z:12, mesh:railPile, count:8 });
+  GAME.materialPiles.push({ id:'pile_rail', type:'rail', x:8, z:14, mesh:railPile, count:4 });
 
   // 라바콘 더미 (x=-8, z=12)
   const conePileBase = BABYLON.MeshBuilder.CreateBox('s_conePileBase', {width:1.6, height:0.05, depth:1.0}, scene);
@@ -742,7 +753,7 @@ function _buildSiteScene(scene) {
   GAME.siteMeshes.push(conePileProxy);
   GAME.materialPiles.push({ id:'pile_cone', type:'cone', x:-8, z:12, mesh:conePileProxy, count:4 });
 
-  // ── 스냅 존 ghost (난간 4 + 라바콘 4) ────────────────────
+  // ── 스냅 존 ghost (라바콘 4개만 — 수직재/수평재는 자유 배치) ──
   GAME.carryZones = [];
   const _zoneGhostM = (id) => {
     const m = new BABYLON.StandardMaterial('s_zoneMat_'+id, scene);
@@ -751,20 +762,6 @@ function _buildSiteScene(scene) {
     m.alpha = 0.35;
     return m;
   };
-  [
-    { id:'rail_N', x: 0, z: 16, type:'guardrail', rotY: 0 },
-    { id:'rail_S', x: 0, z: 28, type:'guardrail', rotY: 0 },
-    { id:'rail_E', x: 6, z: 22, type:'guardrail', rotY: Math.PI/2 },
-    { id:'rail_W', x:-6, z: 22, type:'guardrail', rotY: Math.PI/2 },
-  ].forEach(def => {
-    const g = BABYLON.MeshBuilder.CreateBox('s_zone_'+def.id, {width:1.6, height:0.04, depth:0.4}, scene);
-    g.position = new BABYLON.Vector3(def.x, 0.025, def.z);
-    g.rotation.y = def.rotY;
-    g.material = _zoneGhostM(def.id);
-    g.isPickable = false;
-    GAME.siteMeshes.push(g);
-    GAME.carryZones.push({ id:def.id, x:def.x, z:def.z, rotY:def.rotY, radius:1.6, type:'guardrail', occupied:false, ghostMesh:g, finalMesh:null });
-  });
   [
     { id:'cone_NW', x:-7, z:15 },
     { id:'cone_NE', x: 7, z:15 },
