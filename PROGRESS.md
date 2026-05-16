@@ -144,3 +144,9 @@ core/weather.js    ← 날씨 & 시간 시스템 (신규)
 | 2026-05-15 | 시각 일관성 | 하늘 그라디언트 돔, 지반 분할(흙+콘크리트), 사무소 블루그레이+간판, NPC 헬멧/조끼/그림자/이름표, 황금빛 아침 조명 | 대기 중 |
 | 2026-05-15 | Batch 5 | 사전조사+작업계획서 11단계 다이얼로그 (토질조사·매설물 X-ray·공법선택·안전조치·서류 overlay) + phase.js + survey.js | 대기 중 |
 | 2026-05-15 | Batch 6 | 자재 운반/설치 시스템: carry.js, TBM 3단계 연출, 굴착 구역·더미·스냅 존 mesh, NPC 위임 AI, 체크리스트 HUD | 대기 중 |
+| 2026-05-15 | Batch 7 | 굴착 단계: 복셀 지형 terrain.js + excavator.js + dumptruck.js | ✅ |
+| 2026-05-16 | 롤백 + 정리 | 5/16 오전 잘못된 머지 폐기, 어제 KST 마지막(417966e)로 reset 후 재시작 | ✅ |
+| 2026-05-16 | 통합 GLB 캐릭터 | assets/characters/player.glb (8.8MB, 20 클립) 적용. 기존 11×22MB 개별 GLB 폐기 (≈242MB 감소). character.js 재작성: 로더 auto-play 차단, 클립명↔실제 모션 in-memory rename, setState/playOnce API | ✅ |
+| 2026-05-16 | 난간 재설계 | railing.js 폐기, carry.js에 통합. 부재 단위(POST/RAIL/CONE) 분리, 다중 집기(5/2/1), 자유 위치 설치, 수평재 자동 정렬, 미리보기 ghost. CLAUDE.md §12 "부재 단위 배치" 원칙 추가 | ✅ |
+| 2026-05-16 | 후속 보정 | 라바콘 자유 배치 통일, carry 모션 폐기(walk로 통일), Shift 달리기, 집기 우선순위 수정, NPC 위임(빈손+근처 NPC→자동 설치), 자재 더미 99/99/99 풍족화 | ⚠️ 다음 세션 검증 |
+| 2026-05-16 | 정리/푸시 | .gitignore 보강(.claude/worktrees, *.zip), 미사용 파일 삭제, PROGRESS.md 업데이트 | - |
