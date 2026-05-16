@@ -719,7 +719,7 @@ function _buildSiteScene(scene) {
   postPile.material = _metalM;
   postPile.metadata = { kind: 'pile', type: 'post' };
   GAME.siteMeshes.push(postPile);
-  GAME.materialPiles.push({ id:'pile_post', type:'post', x:8, z:12, mesh:postPile, count:6 });
+  GAME.materialPiles.push({ id:'pile_post', type:'post', x:8, z:12, mesh:postPile, count:99 });
 
   // 수평재 더미 (x=8, z=14) — 긴 파이프 묶음
   const railPile = BABYLON.MeshBuilder.CreateBox('s_railPile', {width:2.2, height:0.30, depth:0.5}, scene);
@@ -727,7 +727,7 @@ function _buildSiteScene(scene) {
   railPile.material = _metalM;
   railPile.metadata = { kind: 'pile', type: 'rail' };
   GAME.siteMeshes.push(railPile);
-  GAME.materialPiles.push({ id:'pile_rail', type:'rail', x:8, z:14, mesh:railPile, count:4 });
+  GAME.materialPiles.push({ id:'pile_rail', type:'rail', x:8, z:14, mesh:railPile, count:99 });
 
   // 라바콘 더미 (x=-8, z=12)
   const conePileBase = BABYLON.MeshBuilder.CreateBox('s_conePileBase', {width:1.6, height:0.05, depth:1.0}, scene);
@@ -751,7 +751,7 @@ function _buildSiteScene(scene) {
   conePileProxy.isVisible = false;
   conePileProxy.metadata = { kind: 'pile', type: 'cone' };
   GAME.siteMeshes.push(conePileProxy);
-  GAME.materialPiles.push({ id:'pile_cone', type:'cone', x:-8, z:12, mesh:conePileProxy, count:4 });
+  GAME.materialPiles.push({ id:'pile_cone', type:'cone', x:-8, z:12, mesh:conePileProxy, count:99 });
 
   // 모든 부재(수직재/수평재/라바콘)는 자유 배치 — carryZone 없음
   GAME.carryZones = [];
