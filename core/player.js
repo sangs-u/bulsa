@@ -2,14 +2,40 @@
 // WASD 이동, ArcRotateCamera 연동, 모바일 가상 조이스틱
 
 const PLAYER = {
-  speed:     0.055,   // 걷기
-  runSpeed:  0.10,    // 달리기 (Shift)
-  mesh:      null,
-  locked:    false,
-  isMobile:  ('ontouchstart' in window),
-  keys:      { w: false, a: false, s: false, d: false, shift: false },
-  joy:       { x: 0, y: 0 },
+  speed:       0.055,
+  runSpeed:    0.10,
+  mesh:        null,
+  locked:      false,
+  firstPerson: false,
+  isMobile:    ('ontouchstart' in window),
+  keys:        { w: false, a: false, s: false, d: false, shift: false },
+  joy:         { x: 0, y: 0 },
 };
+
+/* ─── 1인칭 ↔ 3인칭 전환 ───────────────────────────────────── */
+function setFirstPerson(on) {
+  const cam = GAME.camera;
+  if (!cam) return;
+  PLAYER.firstPerson = on;
+  if (on) {
+    cam.lowerRadiusLimit = 0.05;
+    cam.upperRadiusLimit = 0.2;
+    cam.radius           = 0.15;
+    cam.upperBetaLimit   = Math.PI * 0.85;
+    cam.lowerBetaLimit   = 0.05;
+    if (GAME.player) GAME.player.isVisible = false;
+    if (window.CHARACTER_API && CHARACTER_API.root) CHARACTER_API.root.setEnabled(false);
+  } else {
+    const r = GAME.currentScene === 'site' ? 20 : 12;
+    cam.lowerRadiusLimit = 2;
+    cam.upperRadiusLimit = GAME.currentScene === 'site' ? 60 : 22;
+    cam.radius           = r;
+    cam.upperBetaLimit   = Math.PI / 2.1;
+    cam.lowerBetaLimit   = 0.2;
+    if (GAME.player) GAME.player.isVisible = true;
+    if (window.CHARACTER_API && CHARACTER_API.root) CHARACTER_API.root.setEnabled(true);
+  }
+}
 
 /* ─── 초기화 (game:ready 이후 — GAME.scene 보장) ─────────── */
 window.addEventListener('game:ready', function() {
@@ -34,6 +60,7 @@ function _initKeyboard() {
     if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown')  k.s = true;
     if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') k.d = true;
     if (e.key === 'Shift' || e.shiftKey)                          k.shift = true;
+    if (e.key === 'v' || e.key === 'V') setFirstPerson(!PLAYER.firstPerson);
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
   });
   window.addEventListener('keyup', e => {
@@ -138,12 +165,16 @@ function _updatePlayer() {
   if (joy.x !== 0) ix = joy.x;
   if (joy.y !== 0) iy = -joy.y;
 
-  // 카메라 타겟 추적 — 입력 여부와 무관하게 매 프레임 실행 (멈춰도 lag 해소)
+  // 카메라 타겟 in-place 추적 — 매 프레임 실행, 객체 교체 금지(radius 누적 방지)
   if (PLAYER.mesh && GAME.camera) {
-    const sp0 = (k.shift && !(typeof CARRY !== 'undefined' && CARRY.held)) ? PLAYER.runSpeed : PLAYER.speed;
-    const lerpA = Math.min(1, sp0 * 2.2 + 0.12);
-    const tp = PLAYER.mesh.position.add(new BABYLON.Vector3(0, 0.85, 0));
-    GAME.camera.target = BABYLON.Vector3.Lerp(GAME.camera.target, tp, lerpA);
+    const eyeH = PLAYER.firstPerson ? 1.45 : 0.85;
+    const tx = PLAYER.mesh.position.x;
+    const ty = PLAYER.mesh.position.y + eyeH;
+    const tz = PLAYER.mesh.position.z;
+    const t = GAME.camera.target;
+    t.x += (tx - t.x) * 0.18;
+    t.y += (ty - t.y) * 0.18;
+    t.z += (tz - t.z) * 0.18;
   }
 
   if (ix === 0 && iy === 0) return;

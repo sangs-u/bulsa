@@ -132,11 +132,13 @@ function _buildScene(engine, canvas) {
   cam.upperRadiusLimit     = 22;   // 벽이 투명해지므로 넉넉히
   cam.upperBetaLimit       = Math.PI / 2.1;
   cam.lowerBetaLimit       = 0.2;
-  cam.wheelDeltaPercentage = 0.01;
+  cam.wheelDeltaPercentage = 0;
   cam.minZ = 0.1;
   // 데스크톱만 Babylon 기본 입력. 모바일은 joy-look이 직접 제어
   if (!('ontouchstart' in window)) {
     cam.attachControl(false);
+    // 마우스 휠 줌 제거 — 걷는 중 radius 누적 방지
+    cam.inputs.removeByType('ArcRotateCameraMouseWheelInput');
   }
   GAME.camera = cam;
 

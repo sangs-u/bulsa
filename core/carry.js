@@ -123,7 +123,7 @@ function _findNearestPile() {
 function _findNearestIdleNpc() {
   if (typeof NPCS === 'undefined' || !NPCS.length || !GAME.player) return null;
   const p = GAME.player.position;
-  let best = null, bestD = 2.5;
+  let best = null, bestD = 4.5;
   NPCS.forEach(n => {
     if (!n.mesh || n.task) return;
     const d = Math.hypot(p.x - n.mesh.position.x, p.z - n.mesh.position.z);
@@ -494,6 +494,15 @@ function _bindInput() {
     dropBtn.addEventListener('click', () => { if (CARRY.held) _dropItem(); });
     dropBtn.addEventListener('touchstart', ev => { ev.stopPropagation(); if (CARRY.held) _dropItem(); }, { passive: true });
   }
+
+  // 모바일 시점 전환 버튼
+  const camBtn = document.getElementById('cam-view-btn');
+  if (camBtn) {
+    camBtn.addEventListener('touchstart', ev => {
+      ev.stopPropagation();
+      if (typeof setFirstPerson === 'function') setFirstPerson(!PLAYER.firstPerson);
+    }, { passive: true });
+  }
 }
 
 function _onInteract() {
@@ -528,32 +537,34 @@ function _delegateToNpc(npc) {
   if (!npc || npc.task) return;
   const cl = PHASE.checklist;
 
-  // 수직재는 위임 불가 — 플레이어가 직접 위치 지정해야 함
-  if (cl.posts.done < cl.posts.total) {
-    _msg('수직재 위치는 직접 정해야 합니다 (E로 설치)');
-    return;
-  }
-
   let type = null, pile = null, targetPos = null;
 
-  if (cl.rails.done < cl.rails.total) {
+  // 수평재: 수직재 2개 이상 + 연결 안 된 쌍 있을 때
+  if (cl.rails.done < cl.rails.total && PLACED.posts.length >= 2) {
     const pair = _firstUnconnectedPair();
     if (pair) {
       type = MATERIAL.RAIL;
       pile = GAME.materialPiles.find(p => p.type === type && p.count > 0);
       const mx = (pair[0].x + pair[1].x) / 2, mz = (pair[0].z + pair[1].z) / 2;
       targetPos = { x: mx, z: mz, pair };
-    } else {
-      _msg('연결할 수직재 쌍이 없습니다');
-      return;
     }
-  } else if (cl.cones.done < cl.cones.total) {
+  }
+
+  // 라바콘: 수직재와 무관하게 언제든 위임 가능
+  if (!type && cl.cones.done < cl.cones.total) {
     type = MATERIAL.CONE;
     pile = GAME.materialPiles.find(p => p.type === type && p.count > 0);
     if (pile) targetPos = _nextConeTarget();
   }
 
-  if (!type || !pile || !targetPos) { _msg('위임할 작업이 없습니다'); return; }
+  if (!type || !pile || !targetPos) {
+    if (cl.posts.done < cl.posts.total) {
+      _msg('수직재는 직접 박아주세요. 라바콘은 NPC에게 맡길 수 있습니다.');
+    } else {
+      _msg('위임할 작업이 없습니다');
+    }
+    return;
+  }
 
   npc.startInstallTask(type, pile, targetPos);
   _msg(npc.name + '에게 ' + ({rail:'수평재',cone:'라바콘'}[type]) + ' 설치 위임');

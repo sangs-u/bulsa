@@ -315,6 +315,24 @@
       user-select: none;
     }
     #ctx-drop-btn .ip-key { background: #E85A3A; }
+    #cam-view-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 70;
+      background: rgba(13,27,42,.82);
+      border: 1.5px solid rgba(141,198,63,.6);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 13px;
+      padding: 7px 14px;
+      cursor: pointer;
+      user-select: none;
+      display: none;
+    }
+    @media (pointer: coarse) {
+      #cam-view-btn { display: block; }
+    }
     @media (pointer: coarse) {
       #ctx-action-btn { bottom: 28%; padding: 12px 26px; }
       #ctx-action-btn .ip-key { display: none; }
@@ -864,6 +882,9 @@
   <span class="ip-key">G</span>
   <span class="ip-label">내려놓기</span>
 </div>
+
+<!-- 시점 전환 버튼 (모바일) -->
+<div id="cam-view-btn">👁 시점</div>
 
 <!-- 굴착기 조작 가이드 -->
 <div id="excavator-hint">
