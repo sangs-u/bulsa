@@ -298,9 +298,28 @@
       user-select: none;
     }
     #ctx-action-btn.show { display: flex; }
+    #ctx-drop-btn {
+      position: fixed;
+      bottom: 26%;
+      left: calc(50% + 160px);
+      z-index: 65;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(42,13,13,.88);
+      border: 1.5px solid #E85A3A;
+      border-radius: 14px;
+      padding: 10px 18px 10px 14px;
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      user-select: none;
+    }
+    #ctx-drop-btn .ip-key { background: #E85A3A; }
     @media (pointer: coarse) {
       #ctx-action-btn { bottom: 28%; padding: 12px 26px; }
       #ctx-action-btn .ip-key { display: none; }
+      #ctx-drop-btn { bottom: 20%; left: 50%; transform: translateX(-50%); padding: 12px 26px; }
+      #ctx-drop-btn .ip-key { display: none; }
     }
     #carry-hud {
       position: absolute;
@@ -840,6 +859,12 @@
   <span class="ip-label" id="ctx-action-label">집기</span>
 </div>
 
+<!-- 내려놓기 버튼 (모바일용, 들고 있을 때만 표시) -->
+<div id="ctx-drop-btn">
+  <span class="ip-key">G</span>
+  <span class="ip-label">내려놓기</span>
+</div>
+
 <!-- 굴착기 조작 가이드 -->
 <div id="excavator-hint">
   <span class="exc-hint-title">굴착기 조작</span>
@@ -882,15 +907,15 @@
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 <script src="i18n/strings.js?v=20260514"></script>
-<script src="core/engine.js?v=20260516h"></script>
-<script src="core/player.js?v=20260516g"></script>
+<script src="core/engine.js?v=20260516i"></script>
+<script src="core/player.js?v=20260516h"></script>
 <script src="core/life.js?v=20260514"></script>
-<script src="core/npc.js?v=20260516g"></script>
+<script src="core/npc.js?v=20260516h"></script>
 <script src="core/hazard.js?v=20260515b"></script>
 <script src="core/hud.js?v=20260514"></script>
 <script src="core/phase.js?v=20260516f"></script>
 <script src="core/survey.js?v=20260515a"></script>
-<script src="core/carry.js?v=20260516g"></script>
+<script src="core/carry.js?v=20260516h"></script>
 <script src="core/character.js?v=20260516g"></script>
 <script src="core/terrain.js?v=20260515b"></script>
 <script src="core/excavator.js?v=20260515b"></script>
@@ -1041,14 +1066,17 @@ const choicesEl = document.getElementById('dlg-choices');
 });
 
 let twTimer = null;
+let _twTarget = '';   // 타이프라이터 전체 텍스트 (스킵 시 사용)
 
 function typewrite(el, str, cb, speed) {
   clearInterval(twTimer);
+  twTimer = null;
+  _twTarget = str;
   el.textContent = '';
   let i = 0;
   twTimer = setInterval(() => {
     el.textContent += str[i++];
-    if (i >= str.length) { clearInterval(twTimer); if (cb) cb(); }
+    if (i >= str.length) { clearInterval(twTimer); twTimer = null; if (cb) cb(); }
   }, speed || 28);
 }
 
@@ -1154,11 +1182,42 @@ const ipEl = document.getElementById('interact-prompt');
 ipEl.addEventListener('click', _startDialog);
 ipEl.addEventListener('touchstart', e => { e.stopPropagation(); _startDialog(); }, { passive: true });
 
-// E키 (데스크톱)
+// E키 — NPC 대화 시작 (인터랙션 프롬프트 표시 중, 대화 중엔 무시)
 window.addEventListener('keydown', e => {
+  if (GAME.state.dialogActive) return;
   if ((e.key === 'e' || e.key === 'E') && ipEl.style.display !== 'none') {
     _startDialog();
   }
+});
+
+// 대화 진행 공통 함수
+function _dlgAdvance() {
+  if (dlgEl.classList.contains('hidden')) return;
+  // 타이프라이터 진행 중 → 즉시 전체 텍스트
+  if (twTimer !== null) {
+    clearInterval(twTimer);
+    twTimer = null;
+    textEl.textContent = _twTarget;
+    return;
+  }
+  // 선택지 1개일 때만 자동 진행
+  const btns = choicesEl.querySelectorAll('button');
+  if (btns.length === 1) btns[0].click();
+}
+
+// Space / E 키보드 단축키
+window.addEventListener('keydown', e => {
+  if (e.key !== ' ' && e.key !== 'e' && e.key !== 'E' &&
+      e.code !== 'Space' && e.code !== 'KeyE') return;
+  if (dlgEl.classList.contains('hidden')) return;
+  e.preventDefault();
+  _dlgAdvance();
+});
+
+// 다이얼로그 패널 클릭으로도 진행 (버튼 클릭은 제외)
+dlgEl.addEventListener('click', e => {
+  if (e.target.closest('button')) return;  // 버튼 클릭은 각자 처리
+  _dlgAdvance();
 });
 
 // 언어별 프롬프트 문구 적용

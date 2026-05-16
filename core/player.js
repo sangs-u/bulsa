@@ -138,6 +138,14 @@ function _updatePlayer() {
   if (joy.x !== 0) ix = joy.x;
   if (joy.y !== 0) iy = -joy.y;
 
+  // 카메라 타겟 추적 — 입력 여부와 무관하게 매 프레임 실행 (멈춰도 lag 해소)
+  if (PLAYER.mesh && GAME.camera) {
+    const sp0 = (k.shift && !(typeof CARRY !== 'undefined' && CARRY.held)) ? PLAYER.runSpeed : PLAYER.speed;
+    const lerpA = Math.min(1, sp0 * 2.2 + 0.12);
+    const tp = PLAYER.mesh.position.add(new BABYLON.Vector3(0, 0.85, 0));
+    GAME.camera.target = BABYLON.Vector3.Lerp(GAME.camera.target, tp, lerpA);
+  }
+
   if (ix === 0 && iy === 0) return;
 
   // 카메라 방향 기준 이동
@@ -165,13 +173,16 @@ function _updatePlayer() {
     // 남쪽은 완전 개방 — z>8.5 통과 시 씬 전환
     if (p.z > 8.5 && typeof exitToSite === 'function') exitToSite();
   } else {
-    // 현장: 광범위 소프트 경계
-    if (p.x < -38) p.x = -38;
-    if (p.x >  38) p.x =  38;
-    if (p.z < -18) p.z = -18;
-    if (p.z >  45) p.z =  45;
-    // 현장사무소 재진입 — 문 정면(x±0.8) 에서만
-    if (p.z < 8.5 && Math.abs(p.x) < 0.8 && typeof enterOffice === 'function') enterOffice();
+    // 현장: 플레이 구역 내 경계 (자재 더미·굴착 구역·여유 공간)
+    if (p.x < -22) p.x = -22;
+    if (p.x >  22) p.x =  22;
+    if (p.z > 38)  p.z =  38;
+    // 남쪽: 문 앞(|x|<0.8)에서만 사무소 재진입, 나머지는 건물 외벽에 막힘
+    if (Math.abs(p.x) < 0.8) {
+      if (p.z < 8.5 && typeof enterOffice === 'function') enterOffice();
+    } else {
+      if (p.z < 9.2) p.z = 9.2;
+    }
   }
 
   // 이동 방향으로 캐릭터 회전
@@ -185,9 +196,6 @@ function _updatePlayer() {
     PLAYER.mesh.rotation.y = current + diff * 0.2;
   }
 
-  // 카메라 타겟 부드럽게 추적
-  const targetPos = PLAYER.mesh.position.add(new BABYLON.Vector3(0, 0.85, 0));
-  GAME.camera.target = BABYLON.Vector3.Lerp(GAME.camera.target, targetPos, 0.12);
 }
 
 /* ─── 이동 잠금 (대화 시작 시 호출) ─────────────────────── */

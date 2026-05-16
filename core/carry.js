@@ -373,10 +373,14 @@ function _updateCarryHUD() {
     const nameEl = document.getElementById('carry-name');
     if (nameEl) {
       const labels = { post: '수직재', rail: '수평재', cone: '라바콘' };
-      nameEl.textContent = (labels[CARRY.held.type] || '자재') + ' ×' + CARRY.held.count;
+      nameEl.textContent = (labels[CARRY.held.type] || '자재') + ' ×' + CARRY.held.count + '  [G: 내려놓기]';
     }
+    const dropBtn = document.getElementById('ctx-drop-btn');
+    if (dropBtn) dropBtn.style.display = 'flex';
   } else {
     hud.style.display = 'none';
+    const dropBtn = document.getElementById('ctx-drop-btn');
+    if (dropBtn) dropBtn.style.display = 'none';
   }
 }
 
@@ -424,6 +428,25 @@ function _updateContextButton() {
   else       { btn.classList.remove('show'); }
 }
 
+/* ─── 내려놓기 ──────────────────────────────────────────── */
+function _dropItem() {
+  if (!CARRY.held) return;
+  // 같은 종류 더미에 반환
+  const pile = GAME.materialPiles
+    ? GAME.materialPiles.find(p => p.type === CARRY.held.type)
+    : null;
+  if (pile) {
+    pile.count += CARRY.held.count;
+    if (pile.mesh) pile.mesh.isVisible = true;
+  }
+  if (CARRY.held.mesh) CARRY.held.mesh.dispose();
+  CARRY.held = null;
+  GAME.heldItem = null;
+  PLAYER.speed = CARRY.baseSpeed;
+  _updateCarryHUD();
+  _msg('자재를 내려놓았습니다');
+}
+
 /* ─── 메시지 ────────────────────────────────────────────── */
 function _msg(txt) {
   const el = document.getElementById('railing-msg') || document.getElementById('install-msg');
@@ -439,6 +462,13 @@ function _bindInput() {
   window.addEventListener('keydown', e => {
     if (GAME.currentScene !== 'site') return;
     if (GAME.state.dialogActive) return;
+
+    // G: 내려놓기
+    if (e.key === 'g' || e.key === 'G') {
+      if (CARRY.held) _dropItem();
+      return;
+    }
+
     if (e.key !== 'e' && e.key !== 'E') return;
     if (typeof EXCAVATOR !== 'undefined') {
       if (EXCAVATOR.mounted) return;
@@ -456,6 +486,13 @@ function _bindInput() {
   if (btn) {
     btn.addEventListener('click', _onInteract);
     btn.addEventListener('touchstart', ev => { ev.stopPropagation(); _onInteract(); }, { passive: true });
+  }
+
+  // 모바일 내려놓기 버튼
+  const dropBtn = document.getElementById('ctx-drop-btn');
+  if (dropBtn) {
+    dropBtn.addEventListener('click', () => { if (CARRY.held) _dropItem(); });
+    dropBtn.addEventListener('touchstart', ev => { ev.stopPropagation(); if (CARRY.held) _dropItem(); }, { passive: true });
   }
 }
 
@@ -491,20 +528,24 @@ function _delegateToNpc(npc) {
   if (!npc || npc.task) return;
   const cl = PHASE.checklist;
 
-  // 부족한 종류 우선: posts → rails → cones
+  // 수직재는 위임 불가 — 플레이어가 직접 위치 지정해야 함
+  if (cl.posts.done < cl.posts.total) {
+    _msg('수직재 위치는 직접 정해야 합니다 (E로 설치)');
+    return;
+  }
+
   let type = null, pile = null, targetPos = null;
 
-  if (cl.posts.done < cl.posts.total) {
-    type = MATERIAL.POST;
-    pile = GAME.materialPiles.find(p => p.type === type && p.count > 0);
-    if (pile) targetPos = _nextPostTarget();
-  } else if (cl.rails.done < cl.rails.total) {
+  if (cl.rails.done < cl.rails.total) {
     const pair = _firstUnconnectedPair();
     if (pair) {
       type = MATERIAL.RAIL;
       pile = GAME.materialPiles.find(p => p.type === type && p.count > 0);
       const mx = (pair[0].x + pair[1].x) / 2, mz = (pair[0].z + pair[1].z) / 2;
       targetPos = { x: mx, z: mz, pair };
+    } else {
+      _msg('연결할 수직재 쌍이 없습니다');
+      return;
     }
   } else if (cl.cones.done < cl.cones.total) {
     type = MATERIAL.CONE;
@@ -512,10 +553,10 @@ function _delegateToNpc(npc) {
     if (pile) targetPos = _nextConeTarget();
   }
 
-  if (!type || !pile || !targetPos) { _msg('할 일이 없습니다'); return; }
+  if (!type || !pile || !targetPos) { _msg('위임할 작업이 없습니다'); return; }
 
   npc.startInstallTask(type, pile, targetPos);
-  _msg(npc.name + '에게 ' + ({post:'수직재',rail:'수평재',cone:'라바콘'}[type]) + ' 설치 위임');
+  _msg(npc.name + '에게 ' + ({rail:'수평재',cone:'라바콘'}[type]) + ' 설치 위임');
 }
 
 // NPC가 들어갈 다음 수직재 위치 — 그리드 패턴 (기존 위치 회피)
